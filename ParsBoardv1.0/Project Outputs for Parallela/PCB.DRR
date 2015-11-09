@@ -1,0 +1,18 @@
+---------------------------------------------------------------------------
+NCDrill File Report For: PCB.PcbDoc   22.10.2015  09:47:54
+---------------------------------------------------------------------------
+
+Layer Pair : Component Side to Solder Side
+ASCII RoundHoles File : PCB.TXT
+EIA File   : PCB.DRL
+
+Tool         Hole Size           Hole Type     Hole Count Plated       Tool Travel
+---------------------------------------------------------------------------
+T1        0.2mm (7.874mil)         Round          113              530.35 mm (20.88 Inch)
+T2        0.9mm (35.433mil)        Round          4                7.63 mm (0.30 Inch)
+T3        3.175mm (125mil)         Round          4                208.28 mm (8.20 Inch)
+T4        1.016mm (40mil)          Round          8         NPTH   168.58 mm (6.64 Inch)
+---------------------------------------------------------------------------
+Totals                                            129              914.84 mm (36.02 Inch)
+
+Total Processing Time (hh:mm:ss) : 00:00:00
