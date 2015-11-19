@@ -1,0 +1,39 @@
+------------------------------------------------------------------------------------------
+Gerber File Extension Report For: PCB.GBR   19.11.2015  10:46:27
+------------------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------------------
+Layer Extension     Layer Description                      
+------------------------------------------------------------------------------------------
+.GTL                Top                                     
+.GP1                Ground Plane 1 (GND)                    
+.G1                 IN1                                     
+.G2                 IN2                                     
+.GP2                Power Plane (3V3)                       
+.G3                 IN3                                     
+.GP3                Ground Plane 2 (GND)                    
+.GBL                Bottom                                  
+.GPB                Bottom Pad Master                       
+.GPT                Top Pad Master                          
+.GTO                Top Overlay                             
+.GTP                Top Paste                               
+.GTS                Top Solder                              
+.GBS                Bottom Solder                           
+.GBP                Bottom Paste                            
+.GBO                Bottom Overlay                          
+.GKO                Keep-Out Layer                          
+.GM15               Mechanical 15                           
+.GM14               Mechanical 14                           
+.GM13               Mechanical 13                           
+.GM8                Mechanical 8                            
+.GM4                Mechanical 4                            
+.GM3                Mechanical 3                            
+.GM1                Mechanical 1                            
+.GD1                Drill Drawing                           
+.GD2                Drill Drawing                           
+.GD3                Drill Drawing                           
+.GG1                Drill Guide                             
+.GG2                Drill Guide                             
+.GG3                Drill Guide                             
+------------------------------------------------------------------------------------------

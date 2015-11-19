@@ -1,0 +1,40 @@
+﻿Field=#~Integer~#~50|Field=Comment~String~Comment~100|Field=Description~String~Description~100|Field=Designator~String~Designator~100|Field=Footprint~String~Footprint~100|Field=LibRef~String~LibRef~100|Field=Quantity~Integer~Quantity~100|ReportField=Currency~<none>|ReportField=ProductionQuantity~1|ReportField=ProjectFileName~parallela12.PrjPcb|ReportField=ProjectFullPath~C:\Users\Fatih\Desktop\Metin\Proje\parallela12.PrjPcb|ReportField=Title~Bill of Materials For Schematic Document [FPGA.SchDoc]|ReportField=TotalQuantity~170|ReportField=ReportTime~09:40:23|ReportField=ReportDate~19.11.2015|ReportField=ReportDateTime~19.11.2015 09:40:23|ReportField=OutputName~Bill of Materials|ReportField=OutputType~BOM_PartType|ReportField=GeneratorName~BOM|ReportField=GeneratorDescription~Bill of Materials|ReportField=VariantName~None|ReportField=Address1~|ReportField=Address2~|ReportField=Address3~|ReportField=Address4~|ReportField=Application_BuildNumber~|ReportField=ApprovedBy~|ReportField=Author~|ReportField=CheckedBy~|ReportField=CompanyName~|ReportField=CurrentDate~19.11.2015|ReportField=CurrentTime~09:39:38|ReportField=Date~|ReportField=DocumentFullPathAndName~C:\Users\Fatih\Desktop\Metin\Proje\FPGA.SchDoc|ReportField=DocumentName~FPGA.SchDoc|ReportField=DocumentNumber~|ReportField=DrawnBy~|ReportField=Engineer~|ReportField=ImagePath~|ReportField=ModifiedDate~18.11.2015|ReportField=Organization~|ReportField=ProjectName~parallela12.PrjPcb|ReportField=Revision~|ReportField=Rule~|ReportField=SheetNumber~|ReportField=SheetTotal~|ReportField=Time~|ReportField=Title~|ReportField=DataSourceFileName~FPGA.SchDoc|ReportField=DataSourceFullPath~C:\Users\Fatih\Desktop\Metin\Proje\FPGA.SchDoc
+1|10nF|Non-polarised capacitor|C25, C29|CAPC1608X87N|CC0603_10NF_50V_10%_X7R|2
+2|100nF|Non-polarised capacitor|C26, C27, C28, C30, C35, C38, C141|CAPC1608X87N|CC0603_100NF_50V_10%_X7R|7
+3|47pF|Non-polarised capacitor|C31, C43|CAPC1608X87N|CC0603_47PF_50V_5%_NP0|2
+4|47uF|Non-polarised capacitor|C32, C34, C44, C46|CAPC3225X270N|CC1210_47UF_10V_20%_X5R|4
+5|10uF|Non-polarised capacitor|C33, C37, C42, C45|CAPC2012X135N|CC0805_10UF_10V_10%_X7R|4
+6|470nF|Non-polarised capacitor|C36, C47, C48, C52, C53, C54, C55, C59, C60, C61, C62, C66, C67, C68, C69, C73, C74, C75, C76, C80, C81, C82, C83, C87, C88, C89, C90, C94, C95, C96, C97, C98, C99, C100, C101, C102, C103, C104, C105, C106, C107, C108, C109, C110, C111, C112, C113, C130, C131, C132, C133|CAPC1608X87N|CC0603_470NF_16V_10%_X5R|51
+7|10uF|Non-polarised capacitor|C39|CAPC1608X87N|CC0603_10UF_6.3V_20%_X5R|1
+8|22uF|Non-polarised capacitor|C40|CAPC2012X135N|CC0805_22UF_16V_10%_X5R|1
+9|4.7uF|Non-polarised capacitor|C41, C50, C51, C57, C58, C64, C65, C71, C72, C78, C79, C85, C86, C92, C93, C115, C116, C117, C118, C119, C120, C121, C122, C123, C124, C125, C126, C128, C129|CAPC1608X87N|CC0603_4.7UF_6.3V_10%_X5R|29
+10|47uF|Non-polarised capacitor|C49, C56, C63, C70, C77, C84, C91, C127|CAPC2012X140N|CC0805_47UF_6.3V_20%_X5R|8
+11|100uF|Non-polarised capacitor|C114, C134, C135, C136, C137, C138, C139, C140|CAPC3216X180N|CC1206_100UF_6.3V_20%_X5R|8
+12|LED0603|Diode, LED, 0603, Green|D1|LED0603|LED0603|1
+13|Jumper 0R||JM2, JM3, JM4, JM5, JM6, JM7, JM8, JM9, JM10, JM11, JM12, JM13|JUMPER_0R|Jumper 0R|12
+14|3.6uH, 12.5A|FERRITE CHIP 30 OHM 6A 0805|L1|R0805|MPZ2012S300AT000|1
+15|Push Button|Push-Button Switch SPDT|PB1|PB_TYCO_FSM2JSMA|PB_TYCO_FSM2JSMA|1
+16|0|Resistor - 1%|R13, R23|RESC1608X55N|R0603_0R_JUMPER|2
+17|2k2|Resistor - 1%|R14|RESC1608X55N|R0603_2K2_1%_0.1W_100PPM|1
+18|240|Resistor - 1%|R15, R16|RESC1608X55N|R0603_240R_1%_0.1W_100PPM|2
+19|4k7|Resistor - 1%|R17, R18, R19, R20, R21, R22, R24|RESC1608X55N|R0603_4K7_1%_0.1W_100PPM|7
+20|12k|Resistor - 1%|R25, R40|RESC1608X55N|R0603_12K_1%_0.1W_100PPM|2
+21|150k|Resistor - 0.1%|R26, R41|RESC1608X55N|R0603_150K_0.1%_0.063W_10PPM|2
+22|100k|Resistor - 1%|R27, R28, R29|RESC1608X55N|R0603_100K_1%_0.1W_100PPM|3
+23|200k|Resistor - 1%|R30, R32|RESC1608X55N|R0603_200K_1%_0.1W_100PPM|2
+24|162k|Resistor - 0.1%|R31|RESC2012X60N|R0805_162K_0.1%_0.125W_25PPM|1
+25|100|Resistor - 0.1%|R33|RESC1608X55N|R0603_100R_0.1%_0.063W_10PPM|1
+26|49R9|Resistor - 0.1%|R38|RESC1608X55N|R0603_49R9_0.1%_0.063W_10PPM|1
+27|25k5|Resistor - 0.1%|R39|RESC1608X55N|R0603_25K5_0.1%_0.063W_10PPM|1
+28|33k|Resistor - 1%|R42|RESC1608X55N|R0603_33K_1%_0.1W_100PPM|1
+29|330|Resistor - 1%|R43|RESC1608X55N|R0603_330R_1%_0.1W_100PPM|1
+30|BSH103|N-CHANNEL MOSFET WITH DIODE|T1|SOT95P230X110-3N|BSH103|1
+31|XC7A50T-1FGG484C||U1|FGG484|XLNX-XC7A50T-FGG484|1
+32|CDCLVC1106|IC, CDCLVC1106, CLOCK BUFFER, TSSOP-14|U2|TSSOP14|CDCLVC1106|1
+33|LM3880|IC,LM3880,TI, SEQUENCER CIRCUIT, SOT23-6, 120ms Delay|U3|SOT-23-6|LM3880|1
+34|M24C32-WMN6TP|IC EEPROM 32KBIT 400KHZ 8SO|U4|SO8|M24C32-WMN6TP|1
+35|N25Q256A13ESF40G|IC FLASH 256MBIT 108MHZ 16SO|U5|SOIC16W|N25Q256A13ESF40G|1
+36|TPS82085SILT|IC REG BUCK ADJ 3A SYNC 8USIP|U6|uSIP|TPS82085SILT|1
+37|EN5364QI|DC/DC CONVERTER 0.6-6.12V 37W|U7, U9|EN5364QI|EN5364QI|2
+38|LP3879MR-1.2/NOPB|IC REG LDO 1.2V 0.8A 8SOPWRPAD|U8|POWER SO8|LP3879MR-1.2/NOPB|1
+39|510BBA200M000BAG|OSC XO 200.000MHZ LVDS SMD|X1|5X3.2 Crystal|510BBA200M000BAG|1

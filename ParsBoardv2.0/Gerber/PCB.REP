@@ -1,0 +1,715 @@
+*************************************************************
+FileName = PCB.GBR
+AutoAperture = True
+*************************************************************
+Generating : Top
+      File : PCB.GTL
+
+    Adding Layer      : Top
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D11
+    D12
+    D13
+    D14
+    D15
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+    D22
+    D23
+    D24
+    D25
+    D26
+    D27
+    D28
+    D29
+    D30
+    D31
+    D32
+    D33
+    D34
+    D35
+    D36
+    D37
+    D38
+    D39
+    D40
+    D41
+    D42
+    D43
+    D44
+    D45
+    D46
+    D47
+    D48
+    D49
+    D50
+    D51
+    D52
+*************************************************************
+
+*************************************************************
+Generating : Ground Plane 1 (GND)
+      File : PCB.GP1
+
+    Adding Layer      : Ground Plane 1 (GND)
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D47
+    D52
+    D53
+    D54
+    D55
+    D56
+    D57
+*************************************************************
+
+*************************************************************
+Generating : IN1
+      File : PCB.G1
+
+    Adding Layer      : IN1
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D44
+    D45
+    D47
+    D49
+    D51
+    D52
+    D58
+    D59
+*************************************************************
+
+*************************************************************
+Generating : IN2
+      File : PCB.G2
+
+    Adding Layer      : IN2
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D44
+    D47
+    D49
+    D51
+    D52
+*************************************************************
+
+*************************************************************
+Generating : Power Plane (3V3)
+      File : PCB.GP2
+
+    Adding Layer      : Power Plane (3V3)
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D47
+    D52
+    D53
+    D54
+    D55
+    D56
+    D57
+    D60
+*************************************************************
+
+*************************************************************
+Generating : IN3
+      File : PCB.G3
+
+    Adding Layer      : IN3
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D47
+    D49
+    D51
+    D52
+    D61
+    D62
+*************************************************************
+
+*************************************************************
+Generating : Ground Plane 2 (GND)
+      File : PCB.GP3
+
+    Adding Layer      : Ground Plane 2 (GND)
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D47
+    D52
+    D53
+    D54
+    D55
+    D57
+*************************************************************
+
+*************************************************************
+Generating : Bottom
+      File : PCB.GBL
+
+    Adding Layer      : Bottom
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D12
+    D16
+    D17
+    D44
+    D47
+    D48
+    D49
+    D50
+    D51
+    D52
+    D63
+    D64
+    D65
+    D66
+    D67
+*************************************************************
+
+*************************************************************
+Generating : Bottom Pad Master
+      File : PCB.GPB
+
+    Adding Layer      : Bottom
+
+    Adding Layer      : Multi-Layer
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D12
+    D16
+    D17
+    D47
+    D48
+    D49
+    D50
+    D63
+    D64
+    D65
+    D66
+    D67
+*************************************************************
+
+*************************************************************
+Generating : Top Pad Master
+      File : PCB.GPT
+
+    Adding Layer      : Top
+
+    Adding Layer      : Multi-Layer
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D12
+    D13
+    D14
+    D15
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+    D22
+    D23
+    D24
+    D25
+    D26
+    D27
+    D28
+    D29
+    D30
+    D31
+    D32
+    D33
+    D34
+    D35
+    D36
+    D37
+    D38
+    D39
+    D40
+    D41
+    D42
+    D43
+    D47
+    D48
+    D49
+    D50
+*************************************************************
+
+*************************************************************
+Generating : Top Overlay
+      File : PCB.GTO
+
+    Adding Layer      : Top Overlay
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D44
+    D47
+    D60
+    D68
+    D69
+    D70
+    D71
+*************************************************************
+
+*************************************************************
+Generating : Top Paste
+      File : PCB.GTP
+
+    Adding Layer      : Top Paste
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Top
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D12
+    D13
+    D14
+    D16
+    D17
+    D18
+    D19
+    D20
+    D21
+    D22
+    D23
+    D24
+    D25
+    D26
+    D27
+    D28
+    D29
+    D30
+    D31
+    D32
+    D33
+    D34
+    D35
+    D36
+    D37
+    D38
+    D39
+    D40
+    D41
+    D42
+    D43
+    D47
+*************************************************************
+
+*************************************************************
+Generating : Top Solder
+      File : PCB.GTS
+
+    Adding Layer      : Top Solder
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Top
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D47
+    D51
+    D72
+    D73
+    D74
+    D75
+    D76
+    D77
+    D78
+    D79
+    D80
+    D81
+    D82
+    D83
+    D84
+    D85
+    D86
+    D87
+    D88
+    D89
+    D90
+    D91
+    D92
+    D93
+    D94
+    D95
+    D96
+    D97
+    D98
+    D99
+    D100
+    D101
+    D102
+    D103
+    D104
+    D105
+    D106
+*************************************************************
+
+*************************************************************
+Generating : Bottom Solder
+      File : PCB.GBS
+
+    Adding Layer      : Bottom Solder
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Bottom
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D47
+    D51
+    D75
+    D76
+    D103
+    D104
+    D105
+    D106
+    D107
+    D108
+    D109
+    D110
+    D111
+*************************************************************
+
+*************************************************************
+Generating : Bottom Paste
+      File : PCB.GBP
+
+    Adding Layer      : Bottom Paste
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Bottom
+
+    Adding Layer      : Multi-Layer
+
+
+Used DCodes :
+    D10
+    D16
+    D17
+    D47
+    D63
+    D64
+    D65
+    D66
+    D67
+*************************************************************
+
+*************************************************************
+Generating : Bottom Overlay
+      File : PCB.GBO
+
+    Adding Layer      : Bottom Overlay
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D44
+    D47
+    D60
+*************************************************************
+
+*************************************************************
+Generating : Keep-Out Layer
+      File : PCB.GKO
+
+    Adding Layer      : Keep-Out Layer
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D47
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 15
+      File : PCB.GM15
+
+    Adding Layer      : Mechanical 15
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D47
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 14
+      File : PCB.GM14
+
+    Adding Layer      : Mechanical 14
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D47
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 13
+      File : PCB.GM13
+
+    Adding Layer      : Mechanical 13
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D47
+    D112
+    D113
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 8
+      File : PCB.GM8
+
+    Adding Layer      : Mechanical 8
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D44
+    D47
+    D60
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 4
+      File : PCB.GM4
+
+    Adding Layer      : Mechanical 4
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D44
+    D47
+    D60
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 3
+      File : PCB.GM3
+
+    Adding Layer      : Mechanical 3
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D47
+*************************************************************
+
+*************************************************************
+Generating : Mechanical 1
+      File : PCB.GM1
+
+    Adding Layer      : Mechanical 1
+
+    Adding Layer      : Mechanical 1
+
+
+Used DCodes :
+    D10
+    D47
+*************************************************************
+
+*************************************************************
+Generating : Drill Drawing
+      File : PCB.GD1
+
+    Adding Layer      : Mechanical 1
+
+    Adding Drill Pair : Top-Bottom
+
+    Adding Layer      : Drill Drawing
+
+
+Used DCodes :
+    D10
+    D47
+    D60
+    D114
+*************************************************************
+
+*************************************************************
+Generating : Drill Drawing
+      File : PCB.GD2
+
+    Adding Layer      : Mechanical 1
+
+    Adding Drill Pair : Top-IN1
+
+    Adding Layer      : Drill Drawing
+
+
+Used DCodes :
+    D10
+    D47
+    D60
+    D114
+*************************************************************
+
+*************************************************************
+Generating : Drill Drawing
+      File : PCB.GD3
+
+    Adding Layer      : Mechanical 1
+
+    Adding Drill Pair : IN1-IN3
+
+    Adding Layer      : Drill Drawing
+
+
+Used DCodes :
+    D10
+    D47
+    D60
+    D114
+*************************************************************
+
+*************************************************************
+Generating : Drill Guide
+      File : PCB.GG1
+
+    Adding Layer      : Mechanical 1
+
+    Adding Drill Pair : Top-Bottom
+
+    Adding Layer      : Drill Guide
+
+
+Used DCodes :
+    D10
+    D47
+    D114
+*************************************************************
+
+*************************************************************
+Generating : Drill Guide
+      File : PCB.GG2
+
+    Adding Layer      : Mechanical 1
+
+    Adding Drill Pair : Top-IN1
+
+    Adding Layer      : Drill Guide
+
+
+Used DCodes :
+    D10
+    D47
+    D114
+*************************************************************
+
+*************************************************************
+Generating : Drill Guide
+      File : PCB.GG3
+
+    Adding Layer      : Mechanical 1
+
+    Adding Drill Pair : IN1-IN3
+
+    Adding Layer      : Drill Guide
+
+
+Used DCodes :
+    D10
+    D47
+    D114
+*************************************************************
+

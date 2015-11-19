@@ -1,0 +1,42 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [parallela12.PrjPcb]
+   Generated File[PCB.GTL]
+   Generated File[PCB.GP1]
+   Generated File[PCB.G1]
+   Generated File[PCB.G2]
+   Generated File[PCB.GP2]
+   Generated File[PCB.G3]
+   Generated File[PCB.GP3]
+   Generated File[PCB.GBL]
+   Generated File[PCB.GPB]
+   Generated File[PCB.GPT]
+   Generated File[PCB.GTO]
+   Generated File[PCB.GTP]
+   Generated File[PCB.GTS]
+   Generated File[PCB.GBS]
+   Generated File[PCB.GBP]
+   Generated File[PCB.GBO]
+   Generated File[PCB.GKO]
+   Generated File[PCB.GM15]
+   Generated File[PCB.GM14]
+   Generated File[PCB.GM13]
+   Generated File[PCB.GM8]
+   Generated File[PCB.GM4]
+   Generated File[PCB.GM3]
+   Generated File[PCB.GM1]
+   Generated File[PCB.GD1]
+   Generated File[PCB.GD2]
+   Generated File[PCB.GD3]
+   Generated File[PCB.GG1]
+   Generated File[PCB.GG2]
+   Generated File[PCB.GG3]
+   Generated File[PCB.RUL]
+   Generated File[PCB.EXTREP]
+   Generated File[PCB.REP]
+
+
+Files Generated   : 33
+Documents Printed : 0
+
+Finished Output Generation At 10:47:30 On 19.11.2015

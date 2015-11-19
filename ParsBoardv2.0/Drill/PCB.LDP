@@ -1,0 +1,4 @@
+Layer Pairs Export File for PCB: C:\Users\Fatih\Desktop\Metin\Proje\PCB.PcbDoc
+LayersSetName=Top_Bot_Thru_Holes|DrillFile=pcb.txt|DrillLayers=gtl,gp1,g2,g3,gp2,g4,gp3,gbl
+LayersSetName=Top_IN1_Blind_Vias|DrillFile=pcb.tx1|DrillLayers=gtl,gp1,g2
+LayersSetName=IN1_IN3_Buried_Vias|DrillFile=pcb.tx2|DrillLayers=g2,g3,gp2,g4

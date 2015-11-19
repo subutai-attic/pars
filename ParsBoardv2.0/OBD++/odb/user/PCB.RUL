@@ -1,0 +1,9 @@
+DRC Rules Export File for PCB: C:\Users\Fatih\Desktop\Metin\Proje\PCB.PcbDoc
+RuleKind=Width|RuleName=CLK|Scope=Board|Minimum=3.90
+RuleKind=MinimumAnnularRing|RuleName=MinimumAnnularRing|Scope=Board|Minimum=2.95
+RuleKind=ShortCircuit|RuleName=ShortCircuit|Scope=Board|Allowed=0
+RuleKind=Clearance|RuleName=Clearance|Scope=Board|Minimum=3.94
+RuleKind=Width|RuleName=Width|Scope=Board|Minimum=3.94
+RuleKind=SolderMaskExpansion|RuleName=SolderMaskExpansion|Scope=Board|Minimum=1.97
+RuleKind=Width|RuleName=QSPI|Scope=Board|Minimum=3.90
+RuleKind=Clearance|RuleName=Clearance_1|Scope=Board|Minimum=3.94
