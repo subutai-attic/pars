@@ -93,10 +93,10 @@ Generating : IN1
 
 Used DCodes :
     D10
-    D44
     D45
+    D46
     D47
-    D49
+    D48
     D51
     D52
     D58
@@ -116,9 +116,9 @@ Generating : IN2
 
 Used DCodes :
     D10
-    D44
+    D45
     D47
-    D49
+    D48
     D51
     D52
 *************************************************************
@@ -160,7 +160,7 @@ Generating : IN3
 Used DCodes :
     D10
     D47
-    D49
+    D48
     D51
     D52
     D61
@@ -184,7 +184,7 @@ Used DCodes :
     D52
     D53
     D54
-    D55
+    D56
     D57
 *************************************************************
 
@@ -201,10 +201,10 @@ Generating : Bottom
 
 Used DCodes :
     D10
-    D12
-    D16
-    D17
-    D44
+    D28
+    D36
+    D37
+    D45
     D47
     D48
     D49
@@ -231,9 +231,9 @@ Generating : Bottom Pad Master
 
 Used DCodes :
     D10
-    D12
-    D16
-    D17
+    D28
+    D36
+    D37
     D47
     D48
     D49
@@ -307,7 +307,7 @@ Generating : Top Overlay
 
 Used DCodes :
     D10
-    D44
+    D45
     D47
     D60
     D68
@@ -332,8 +332,8 @@ Generating : Top Paste
 Used DCodes :
     D10
     D12
-    D13
     D14
+    D15
     D16
     D17
     D18
@@ -380,6 +380,7 @@ Generating : Top Solder
 
 Used DCodes :
     D10
+    D28
     D47
     D51
     D72
@@ -434,10 +435,11 @@ Generating : Bottom Solder
 
 Used DCodes :
     D10
+    D28
     D47
     D51
-    D75
-    D76
+    D95
+    D96
     D103
     D104
     D105
@@ -464,8 +466,8 @@ Generating : Bottom Paste
 
 Used DCodes :
     D10
-    D16
-    D17
+    D36
+    D37
     D47
     D63
     D64
@@ -485,7 +487,7 @@ Generating : Bottom Overlay
 
 Used DCodes :
     D10
-    D44
+    D45
     D47
     D60
 *************************************************************
@@ -559,7 +561,7 @@ Generating : Mechanical 8
 
 Used DCodes :
     D10
-    D44
+    D45
     D47
     D60
 *************************************************************
@@ -575,7 +577,7 @@ Generating : Mechanical 4
 
 Used DCodes :
     D10
-    D44
+    D45
     D47
     D60
 *************************************************************
