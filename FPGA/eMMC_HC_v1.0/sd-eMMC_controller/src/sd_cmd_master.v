@@ -74,7 +74,7 @@ module sd_cmd_master(
        );
 
 //-----------Types--------------------------------------------------------
-(* mark_debug = "true" *) reg [`CMD_TIMEOUT_W-1:0] timeout_reg;
+reg [`CMD_TIMEOUT_W-1:0] timeout_reg;
 reg crc_check;
 reg index_check;
 reg busy_check;
@@ -83,10 +83,10 @@ reg long_response;
 reg [`INT_CMD_SIZE-1:0] int_status_reg;
 //reg card_present;
 //reg [3:0]debounce;
-(* mark_debug = "true" *) reg [`CMD_TIMEOUT_W-1:0] watchdog;
+reg [`CMD_TIMEOUT_W-1:0] watchdog;
 parameter SIZE = 2;
-(* mark_debug = "true" *) reg [SIZE-1:0] state;
-(* mark_debug = "true" *) reg [SIZE-1:0] next_state;
+reg [SIZE-1:0] state;
+reg [SIZE-1:0] next_state;
 parameter IDLE       = 2'b00;
 parameter EXECUTE    = 2'b01;
 parameter BUSY_CHECK = 2'b10;

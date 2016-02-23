@@ -8,7 +8,7 @@
                 
         // Parametets of Axi Master Bus Interface M_AXI
                 // Base address of targeted slave
-        		parameter  C_M_AXI_TARGET_SLAVE_BASE_ADDR	= 32'h40000000,
+//        		parameter  C_M_AXI_TARGET_SLAVE_BASE_ADDR	= 32'h40000000,
                 parameter integer C_M_AXI_BURST_LEN    = 16,
                 parameter integer C_M_AXI_ID_WIDTH    = 1,
                 parameter integer C_M_AXI_ADDR_WIDTH    = 32,
@@ -226,10 +226,23 @@
     wire start_tx;
     wire start_write_sd_clk;
     
+    //m_axi_interface wires
+    wire [31:0] dma_sys_addr;
+
+// Instantiation of DMA 
+    sd_emmc_controller_dma sd_emmc_controller_dma_i (
+        .clock(s00_axi_aclk),
+        .reset(s00_axi_aresetn),
+        .init_dma_sys_addr(dma_sys_addr),
+        .buf_boundary(block_size_reg_axi_clk [14:12]),
+        .block_count(block_count_reg_axi_clk)
+        
+    );
+        
+    
 
 // Instantiation of Axi Bus Interface M_AXI
 	m_axi_v1_0_M_AXI # ( 
-		.C_M_TARGET_SLAVE_BASE_ADDR(C_M_AXI_TARGET_SLAVE_BASE_ADDR),
 		.C_M_AXI_BURST_LEN(C_M_AXI_BURST_LEN),
 		.C_M_AXI_ID_WIDTH(C_M_AXI_ID_WIDTH),
 		.C_M_AXI_ADDR_WIDTH(C_M_AXI_ADDR_WIDTH),
@@ -356,7 +369,8 @@
             .com_inh_cmd(command_inhibit_cmd_axi_clk),
             .data_transfer_direction(dat_trans_dir_axi_clk),
             .start_tx_fifo_i(start_tx_fifo),
-            .start_tx_o(start_tx)
+            .start_tx_o(start_tx),
+            .DMASystemAddress(dma_sys_addr)
         );
 
     // Clock divider

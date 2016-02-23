@@ -46,8 +46,19 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
+//sdma boubdaries
+
+`define A11 128
+`define A12 256
+`define A13 512
+`define A14 1024
+`define A15 2048
+`define A16 4096
+`define A17 8192
+`define A18 16384
+
 //global defines
-`define BLKSIZE_W 12
+`define BLKSIZE_W 15
 `define BLKCNT_W 16
 `define CMD_TIMEOUT_W 24
 `define DATA_TIMEOUT_W 29

@@ -52,7 +52,7 @@ module sd_data_serial_host(
            input sd_clk,
            input rst,
            //Tx Fifo
-           (* mark_debug = "true" *) input [31:0] data_in,
+           input [31:0] data_in,
            output reg rd,
            //Rx Fifo
            output wire [31:0] data_out_o,
@@ -79,18 +79,18 @@ module sd_data_serial_host(
        );
        
 //reg [31:0] data_out;
-(* mark_debug = "true" *)reg [3:0] DAT_dat_reg;
+reg [7:0] DAT_dat_reg;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
 reg [7:0] crc_in;
-(* mark_debug = "true" *) reg crc_en;
+reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [7:0];
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
+reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-(* mark_debug = "true" *) reg [SIZE-1:0] state;
+reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;
@@ -107,10 +107,10 @@ reg [`BLKSIZE_W-1:0] blksize_reg;
 reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
-(* mark_debug = "true" *) reg [7:0] last_din;
+reg [7:0] last_din;
 reg [2:0] crc_s ;
 reg [4:0] data_index;
-reg [31:0] data_out;
+(* mark_debug = "true" *) reg [31:0] data_out;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
 
