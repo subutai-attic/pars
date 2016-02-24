@@ -121,7 +121,8 @@
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
 		output wire start_tx_o,
-		output wire [31:0] DMASystemAddress
+		output wire [31:0] DMASystemAddress,
+		output wire dma_en
 	);
     
 	// AXI4LITE signals
@@ -194,7 +195,8 @@
     assign int_sig_en_reg      = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
     assign sd_dat_bus_width    = slv_reg10 [1];                            // Select sd data bus width 
     assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
-    assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
+    assign data_transfer_direction = slv_reg3 [4];                         // transfer mode register
+    assign dma_en              = slv_reg3 [0];                             // transfer mode register
 	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
     assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};

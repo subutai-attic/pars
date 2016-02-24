@@ -221,6 +221,7 @@
     wire [31:0] write_fifo_out;
     wire        fifo_data_read_ready;
     wire        fifo_data_write_ready;
+    wire dma_ena_transfer_mode_reg;
     
     // data write to SD card
     wire start_tx;
@@ -228,6 +229,7 @@
     
     //m_axi_interface wires
     wire [31:0] dma_sys_addr;
+    wire        next_wdata;
 
 // Instantiation of DMA 
     sd_emmc_controller_dma sd_emmc_controller_dma_i (
@@ -235,8 +237,11 @@
         .reset(s00_axi_aresetn),
         .init_dma_sys_addr(dma_sys_addr),
         .buf_boundary(block_size_reg_axi_clk [14:12]),
-        .block_count(block_count_reg_axi_clk)
-        
+        .block_count(block_count_reg_axi_clk),
+        .dma_ena_trans_mode(dma_ena_transfer_mode_reg),
+        .dir_dat_trans_mode(dat_trans_dir_axi_clk),
+        .data_read_ready(fifo_data_read_ready),
+        .next_data_word(next_wdata)
     );
         
     
@@ -299,7 +304,9 @@
 		.M_AXI_RLAST(m_axi_rlast),
 		.M_AXI_RUSER(m_axi_ruser),
 		.M_AXI_RVALID(m_axi_rvalid),
-		.M_AXI_RREADY(m_axi_rready)
+		.M_AXI_RREADY(m_axi_rready),
+		.data_read_fifo(read_fifo_out),
+		.wnext(next_wdata)
 	);
 
 
@@ -370,7 +377,8 @@
             .data_transfer_direction(dat_trans_dir_axi_clk),
             .start_tx_fifo_i(start_tx_fifo),
             .start_tx_o(start_tx),
-            .DMASystemAddress(dma_sys_addr)
+            .DMASystemAddress(dma_sys_addr),
+            .dma_en(dma_ena_transfer_mode_reg)
         );
 
     // Clock divider
