@@ -26,7 +26,7 @@
         input wire  [31:0] response_3_reg,
         input wire  [31:0] read_fifo_in,
         output wire [31:0] write_fifo_out,
-        output wire        fifo_data_read_ready,
+//        output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
@@ -122,7 +122,8 @@
 		input wire start_tx_fifo_i,
 		output wire start_tx_o,
 		output wire [31:0] DMASystemAddress,
-		output wire dma_en
+		output wire dma_en,
+		output reg set_new_sys_addr
 	);
     
 	// AXI4LITE signals
@@ -325,6 +326,7 @@
 	      slv_reg18 <= 0;
 	      slv_reg19 <= 0;
 	      cmd_start <= 0;
+	      set_new_sys_addr <= 0;;
 	      cmd_int_rst <= 0;
 	      dat_int_rst <= 0;
 	      blk_size_cnt <= 0;
@@ -332,7 +334,7 @@
           blk_count_cnt <= 0;
 	    end
 	  else begin
-	    
+	    set_new_sys_addr <= 1'b0;
 	    cmd_start <= 1'b0;
 	    cmd_int_rst <= 1'b0;
 	    dat_int_rst <= 1'b0;
@@ -346,13 +348,15 @@
 	    if (slv_reg_wren)
 	      begin
 	        case ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	          5'h00:
+	          5'h00: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
+	              end
+	              set_new_sys_addr <= 1'b1;  
+	              end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin

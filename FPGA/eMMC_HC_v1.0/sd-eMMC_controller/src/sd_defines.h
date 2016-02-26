@@ -48,14 +48,14 @@
 
 //sdma boubdaries
 
-`define A11 128
-`define A12 256
-`define A13 512
-`define A14 1024
-`define A15 2048
-`define A16 4096
-`define A17 8192
-`define A18 16384
+`define A11 8
+`define A12 16
+`define A13 32
+`define A14 64
+`define A15 128
+`define A16 256
+`define A17 512
+`define A18 1024
 
 //global defines
 `define BLKSIZE_W 15

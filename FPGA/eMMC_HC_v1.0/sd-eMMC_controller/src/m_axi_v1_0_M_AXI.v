@@ -156,7 +156,10 @@
 		
 	// Data from FIFO
 	    input  wire [31:0] data_read_fifo,
-	    output wire        wnext  
+	    output wire        wnext,
+	    input wire dat_wr_valid,
+	    input wire [31:0] addr_wr,
+	    input wire addr_wr_valid
 	);
 
 
@@ -200,11 +203,11 @@
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals
-	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
+//	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awvalid;
 //	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
 	reg  	axi_wlast;
-	reg  	axi_wvalid;
+//	reg  	axi_wvalid;
 	reg  	axi_bready;
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	reg  	axi_arvalid;
@@ -243,7 +246,7 @@
 	//I/O Connections. Write Address (AW)
 	assign M_AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign M_AXI_AWADDR	= axi_awaddr;
+	assign M_AXI_AWADDR	= addr_wr;//axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_AWLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
@@ -256,14 +259,14 @@
 	assign M_AXI_AWPROT	= 3'h0;
 	assign M_AXI_AWQOS	= 4'h0;
 	assign M_AXI_AWUSER	= 'b1;
-	assign M_AXI_AWVALID	= axi_awvalid;
+	assign M_AXI_AWVALID	= addr_wr_valid; //axi_awvalid;
 	//Write Data(W)
 	assign M_AXI_WDATA	= data_read_fifo; //axi_wdata;
 	//All bursts are complete and aligned in this example
 	assign M_AXI_WSTRB	= {(C_M_AXI_DATA_WIDTH/8){1'b1}};
 	assign M_AXI_WLAST	= axi_wlast;
 	assign M_AXI_WUSER	= 'b0;
-	assign M_AXI_WVALID	= axi_wvalid;
+	assign M_AXI_WVALID	= dat_wr_valid; // axi_wvalid;
 	//Write Response (B)
 	assign M_AXI_BREADY	= axi_bready;
 	//Read Address (AR)
@@ -345,19 +348,19 @@
 	                                                                       
 	                                                                       
 //	// Next address after AWREADY indicates previous address acceptance    
-	  always @(posedge M_AXI_ACLK)                                         
-	  begin                                                                
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                            
-	      begin                                                            
-	        axi_awaddr <= 'b0;                                             
-	      end                                                              
-	    else if (M_AXI_AWREADY && axi_awvalid)                             
-	      begin                                                            
-	        axi_awaddr <= axi_awaddr + burst_size_bytes;                   
-	      end                                                              
-	    else                                                               
-	      axi_awaddr <= axi_awaddr;                                        
-	    end                                                                
+//	  always @(posedge M_AXI_ACLK)                                         
+//	  begin                                                                
+//	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                            
+//	      begin                                                            
+//	        axi_awaddr <= 'b0;                                             
+//	      end                                                              
+//	    else if (M_AXI_AWREADY && axi_awvalid)                             
+//	      begin                                                            
+//	        axi_awaddr <= axi_awaddr + burst_size_bytes;                   
+//	      end                                                              
+//	    else                                                               
+//	      axi_awaddr <= axi_awaddr;                                        
+//	    end                                                                
 
 
 	//--------------------
@@ -384,28 +387,28 @@
 
 	//Forward movement occurs when the write channel is valid and ready
 
-	  assign wnext = M_AXI_WREADY & axi_wvalid;                                   
+	  assign wnext = M_AXI_WREADY & dat_wr_valid; //axi_wvalid;                                   
 	                                                                                    
 	// WVALID logic, similar to the axi_awvalid always block above                      
-	  always @(posedge M_AXI_ACLK)                                                      
-	  begin                                                                             
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 )                                                        
-	      begin                                                                         
-	        axi_wvalid <= 1'b0;                                                         
-	      end                                                                           
-	    // If previously not valid, start next transaction                              
-	    else if (~axi_wvalid && start_single_burst_write)                               
-	      begin                                                                         
-	        axi_wvalid <= 1'b1;                                                         
-	      end                                                                           
-	    /* If WREADY and too many writes, throttle WVALID                               
-	    Once asserted, VALIDs cannot be deasserted, so WVALID                           
-	    must wait until burst is complete with WLAST */                                 
-	    else if (wnext && axi_wlast)                                                    
-	      axi_wvalid <= 1'b0;                                                           
-	    else                                                                            
-	      axi_wvalid <= axi_wvalid;                                                     
-	  end                                                                               
+//	  always @(posedge M_AXI_ACLK)                                                      
+//	  begin                                                                             
+//	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 )                                                        
+//	      begin                                                                         
+//	        axi_wvalid <= 1'b0;                                                         
+//	      end                                                                           
+//	    // If previously not valid, start next transaction                              
+//	    else if (~axi_wvalid && start_single_burst_write)                               
+//	      begin                                                                         
+//	        axi_wvalid <= 1'b1;                                                         
+//	      end                                                                           
+//	    /* If WREADY and too many writes, throttle WVALID                               
+//	    Once asserted, VALIDs cannot be deasserted, so WVALID                           
+//	    must wait until burst is complete with WLAST */                                 
+//	    else if (wnext && axi_wlast)                                                    
+//	      axi_wvalid <= 1'b0;                                                           
+//	    else                                                                            
+//	      axi_wvalid <= axi_wvalid;                                                     
+//	  end                                                                               
 	                                                                                    
 	                                                                                    
 	//WLAST generation on the MSB of a counter underflow                                

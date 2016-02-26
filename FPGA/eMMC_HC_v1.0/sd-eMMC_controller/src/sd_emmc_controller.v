@@ -230,6 +230,10 @@
     //m_axi_interface wires
     wire [31:0] dma_sys_addr;
     wire        next_wdata;
+    wire data_write_valid_maxi;
+    wire [31:0] write_addr_maxi;
+    wire addr_write_valid_maxi;
+    wire addr_write_ready_maxi;
 
 // Instantiation of DMA 
     sd_emmc_controller_dma sd_emmc_controller_dma_i (
@@ -240,8 +244,13 @@
         .block_count(block_count_reg_axi_clk),
         .dma_ena_trans_mode(dma_ena_transfer_mode_reg),
         .dir_dat_trans_mode(dat_trans_dir_axi_clk),
+        .is_fifo_emty_rd(rx_fifo_empty_sd_clk),
         .data_read_ready(fifo_data_read_ready),
-        .next_data_word(next_wdata)
+        .next_data_word(next_wdata),
+        .data_write_valid(data_write_valid_maxi),
+        .write_addr(write_addr_maxi),
+        .addr_write_valid(addr_write_valid_maxi),
+        .addr_write_ready(m_axi_awready)
     );
         
     
@@ -306,7 +315,10 @@
 		.M_AXI_RVALID(m_axi_rvalid),
 		.M_AXI_RREADY(m_axi_rready),
 		.data_read_fifo(read_fifo_out),
-		.wnext(next_wdata)
+		.wnext(next_wdata),
+        .dat_wr_valid(data_write_valid_maxi),
+        .addr_wr(write_addr_maxi),
+        .addr_wr_valid(addr_write_valid_maxi)
 	);
 
 
@@ -338,7 +350,7 @@
             .S_AXI_RREADY(s00_axi_rready),
             .read_fifo_in(read_fifo_out),
             .write_fifo_out(write_fifo_out),
-            .fifo_data_read_ready(fifo_data_read_ready),
+//            .fifo_data_read_ready(fifo_data_read_ready),
             .fifo_data_write_ready(fifo_data_write_ready),
             .clock_divisor(divisor),
 //            .internal_clock_en(int_clk_en),
