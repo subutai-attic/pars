@@ -200,7 +200,7 @@ begin
                 cmd_o[39:38] <= 2'b01;
                 cmd_o[37:32] <= command_i[`CMD_INDEX];  //CMD_INDEX
                 cmd_o[31:0] <= argument_i; //CMD_Argument
-                timeout_reg <= (command_i[`CMD_RESPONSE_CHECK] == 2'b10) ? 24'h0000C8 : ((command_i[`CMD_RESPONSE_CHECK] == 2'b01)? 24'h00015E: 0);
+                timeout_reg <= (command_i[`CMD_RESPONSE_CHECK] == 2'b10) ? 120 : ((command_i[`CMD_RESPONSE_CHECK] == 2'b01)? 250: 0);
                 watchdog <= 0;
                 if (start_i) begin
                     start_xfr_o <= 1;

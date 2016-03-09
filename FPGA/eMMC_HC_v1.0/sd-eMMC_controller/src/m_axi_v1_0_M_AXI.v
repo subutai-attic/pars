@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module m_axi_v1_0_M_AXI #
+	module sd_emmc_controller_m_axi #
 	(
 		// Users to add parameters here
 
@@ -11,23 +11,23 @@
 		// Base address of targeted slave
 		//parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h40000000,
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-		parameter integer C_M_AXI_BURST_LEN	= 16,
+		parameter integer M_AXI_BURST_LEN	= 16,
 		// Thread ID Width
-		parameter integer C_M_AXI_ID_WIDTH	= 1,
+		parameter integer M_AXI_ID_WIDTH	= 1,
 		// Width of Address Bus
-		parameter integer C_M_AXI_ADDR_WIDTH	= 32,
+		parameter integer M_AXI_ADDR_WIDTH	= 32,
 		// Width of Data Bus
-		parameter integer C_M_AXI_DATA_WIDTH	= 32,
+		parameter integer M_AXI_DATA_WIDTH	= 32,
 		// Width of User Write Address Bus
-		parameter integer C_M_AXI_AWUSER_WIDTH	= 0,
+		parameter integer M_AXI_AWUSER_WIDTH	= 0,
 		// Width of User Read Address Bus
-		parameter integer C_M_AXI_ARUSER_WIDTH	= 0,
+		parameter integer M_AXI_ARUSER_WIDTH	= 0,
 		// Width of User Write Data Bus
-		parameter integer C_M_AXI_WUSER_WIDTH	= 0,
+		parameter integer M_AXI_WUSER_WIDTH	= 0,
 		// Width of User Read Data Bus
-		parameter integer C_M_AXI_RUSER_WIDTH	= 0,
+		parameter integer M_AXI_RUSER_WIDTH	= 0,
 		// Width of User Response Bus
-		parameter integer C_M_AXI_BUSER_WIDTH	= 0
+		parameter integer M_AXI_BUSER_WIDTH	= 0
 	)
 	(
 		// Users to add ports here
@@ -46,9 +46,9 @@
 		// Global Reset Singal. This Signal is Active Low
 		input wire  M_AXI_ARESETN,
 		// Master Interface Write Address ID
-		output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_AWID,
+		output wire [M_AXI_ID_WIDTH-1 : 0] M_AXI_AWID,
 		// Master Interface Write Address
-		output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR,
+		output wire [M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR,
 		// Burst length. The burst length gives the exact number of transfers in a burst
 		output wire [7 : 0] M_AXI_AWLEN,
 		// Burst size. This signal indicates the size of each transfer in the burst
@@ -69,7 +69,7 @@
 		// Quality of Service, QoS identifier sent for each write transaction.
 		output wire [3 : 0] M_AXI_AWQOS,
 		// Optional User-defined signal in the write address channel.
-		output wire [C_M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER,
+		output wire [M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER,
 		// Write address valid. This signal indicates that
     // the channel is signaling valid write address and control information.
 		output wire  M_AXI_AWVALID,
@@ -77,15 +77,15 @@
     // the slave is ready to accept an address and associated control signals
 		input wire  M_AXI_AWREADY,
 		// Master Interface Write Data.
-		output wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA,
+		output wire [M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA,
 		// Write strobes. This signal indicates which byte
     // lanes hold valid data. There is one write strobe
     // bit for each eight bits of the write data bus.
-		output wire [C_M_AXI_DATA_WIDTH/8-1 : 0] M_AXI_WSTRB,
+		output wire [M_AXI_DATA_WIDTH/8-1 : 0] M_AXI_WSTRB,
 		// Write last. This signal indicates the last transfer in a write burst.
 		output wire  M_AXI_WLAST,
 		// Optional User-defined signal in the write data channel.
-		output wire [C_M_AXI_WUSER_WIDTH-1 : 0] M_AXI_WUSER,
+		output wire [M_AXI_WUSER_WIDTH-1 : 0] M_AXI_WUSER,
 		// Write valid. This signal indicates that valid write
     // data and strobes are available
 		output wire  M_AXI_WVALID,
@@ -93,11 +93,11 @@
     // can accept the write data.
 		input wire  M_AXI_WREADY,
 		// Master Interface Write Response.
-		input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_BID,
+		input wire [M_AXI_ID_WIDTH-1 : 0] M_AXI_BID,
 		// Write response. This signal indicates the status of the write transaction.
 		input wire [1 : 0] M_AXI_BRESP,
 		// Optional User-defined signal in the write response channel
-		input wire [C_M_AXI_BUSER_WIDTH-1 : 0] M_AXI_BUSER,
+		input wire [M_AXI_BUSER_WIDTH-1 : 0] M_AXI_BUSER,
 		// Write response valid. This signal indicates that the
     // channel is signaling a valid write response.
 		input wire  M_AXI_BVALID,
@@ -105,10 +105,10 @@
     // can accept a write response.
 		output wire  M_AXI_BREADY,
 		// Master Interface Read Address.
-		output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_ARID,
+		output wire [M_AXI_ID_WIDTH-1 : 0] M_AXI_ARID,
 		// Read address. This signal indicates the initial
     // address of a read burst transaction.
-		output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_ARADDR,
+		output wire [M_AXI_ADDR_WIDTH-1 : 0] M_AXI_ARADDR,
 		// Burst length. The burst length gives the exact number of transfers in a burst
 		output wire [7 : 0] M_AXI_ARLEN,
 		// Burst size. This signal indicates the size of each transfer in the burst
@@ -129,7 +129,7 @@
 		// Quality of Service, QoS identifier sent for each read transaction
 		output wire [3 : 0] M_AXI_ARQOS,
 		// Optional User-defined signal in the read address channel.
-		output wire [C_M_AXI_ARUSER_WIDTH-1 : 0] M_AXI_ARUSER,
+		output wire [M_AXI_ARUSER_WIDTH-1 : 0] M_AXI_ARUSER,
 		// Write address valid. This signal indicates that
     // the channel is signaling valid read address and control information
 		output wire  M_AXI_ARVALID,
@@ -138,15 +138,15 @@
 		input wire  M_AXI_ARREADY,
 		// Read ID tag. This signal is the identification tag
     // for the read data group of signals generated by the slave.
-		input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_RID,
+		input wire [M_AXI_ID_WIDTH-1 : 0] M_AXI_RID,
 		// Master Read Data
-		input wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_RDATA,
+		input wire [M_AXI_DATA_WIDTH-1 : 0] M_AXI_RDATA,
 		// Read response. This signal indicates the status of the read transfer
 		input wire [1 : 0] M_AXI_RRESP,
 		// Read last. This signal indicates the last transfer in a read burst
 		input wire  M_AXI_RLAST,
 		// Optional User-defined signal in the read address channel.
-		input wire [C_M_AXI_RUSER_WIDTH-1 : 0] M_AXI_RUSER,
+		input wire [M_AXI_RUSER_WIDTH-1 : 0] M_AXI_RUSER,
 		// Read valid. This signal indicates that the channel
     // is signaling the required read data.
 		input wire  M_AXI_RVALID,
@@ -163,9 +163,6 @@
 	);
 
 
-	// function called clogb2 that returns an integer which has the
-	//value of the ceiling of the log base 2
-
 	  // function called clogb2 that returns an integer which has the 
 	  // value of the ceiling of the log base 2.                      
 	  function integer clogb2 (input integer bit_depth);              
@@ -177,13 +174,13 @@
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
 	// number of write or read transaction.
-	 localparam integer C_TRANSACTIONS_NUM = clogb2(C_M_AXI_BURST_LEN-1);
+	 localparam integer C_TRANSACTIONS_NUM = clogb2(M_AXI_BURST_LEN-1);
 
-	// Burst length for transactions, in C_M_AXI_DATA_WIDTHs.
+	// Burst length for transactions, in M_AXI_DATA_WIDTHs.
 	// Non-2^n lengths will eventually cause bursts across 4K address boundaries.
 	 localparam integer C_MASTER_LENGTH	= 12;
 	// total number of burst transfers is master length divided by burst length and burst size
-	 localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((C_M_AXI_BURST_LEN*C_M_AXI_DATA_WIDTH/8)-1);
+	 localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((M_AXI_BURST_LEN*M_AXI_DATA_WIDTH/8)-1);
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
@@ -203,22 +200,22 @@
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals
-//	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
+//	reg [M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awvalid;
-//	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
+//	reg [M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
 	reg  	axi_wlast;
 //	reg  	axi_wvalid;
 	reg  	axi_bready;
-	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
+	reg [M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	reg  	axi_arvalid;
 	reg  	axi_rready;
 	//write beat count in a burst
 	reg [C_TRANSACTIONS_NUM : 0] 	write_index;
 	//read beat count in a burst
 	reg [C_TRANSACTIONS_NUM : 0] 	read_index;
-	//size of C_M_AXI_BURST_LEN length burst in bytes
+	//size of M_AXI_BURST_LEN length burst in bytes
 	wire [C_TRANSACTIONS_NUM+2 : 0] 	burst_size_bytes;
-	//The burst counters are used to track the number of burst transfers of C_M_AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
+	//The burst counters are used to track the number of burst transfers of M_AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
 	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
 	reg [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
 	reg  	start_single_burst_write;
@@ -230,7 +227,7 @@
 	reg  	read_mismatch;
 	reg  	burst_write_active;
 	reg  	burst_read_active;
-	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	expected_rdata;
+	reg [M_AXI_DATA_WIDTH-1 : 0] 	expected_rdata;
 	//Interface response error flags
 	wire  	write_resp_error;
 	wire  	read_resp_error;
@@ -248,9 +245,9 @@
 	//The AXI address is a concatenation of the target base address + active offset range
 	assign M_AXI_AWADDR	= addr_wr;//axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_AWLEN	= C_M_AXI_BURST_LEN - 1;
-	//Size should be C_M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
-	assign M_AXI_AWSIZE	= clogb2((C_M_AXI_DATA_WIDTH/8)-1);
+	assign M_AXI_AWLEN	= M_AXI_BURST_LEN - 1;
+	//Size should be M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
+	assign M_AXI_AWSIZE	= clogb2((M_AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
 	assign M_AXI_AWBURST	= 2'b01;
 	assign M_AXI_AWLOCK	= 1'b0;
@@ -263,7 +260,7 @@
 	//Write Data(W)
 	assign M_AXI_WDATA	= data_read_fifo; //axi_wdata;
 	//All bursts are complete and aligned in this example
-	assign M_AXI_WSTRB	= {(C_M_AXI_DATA_WIDTH/8){1'b1}};
+	assign M_AXI_WSTRB	= {(M_AXI_DATA_WIDTH/8){1'b1}};
 	assign M_AXI_WLAST	= axi_wlast;
 	assign M_AXI_WUSER	= 'b0;
 	assign M_AXI_WVALID	= dat_wr_valid; // axi_wvalid;
@@ -273,9 +270,9 @@
 	assign M_AXI_ARID	= 'b0;
 	assign M_AXI_ARADDR	= axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_ARLEN	= C_M_AXI_BURST_LEN - 1;
-	//Size should be C_M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
-	assign M_AXI_ARSIZE	= clogb2((C_M_AXI_DATA_WIDTH/8)-1);
+	assign M_AXI_ARLEN	= M_AXI_BURST_LEN - 1;
+	//Size should be M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
+	assign M_AXI_ARSIZE	= clogb2((M_AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
 	assign M_AXI_ARBURST	= 2'b01;
 	assign M_AXI_ARLOCK	= 1'b0;
@@ -290,7 +287,7 @@
 	//Example design I/O
 	assign TXN_DONE	= compare_done;
 	//Burst size in bytes
-	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH/8;
+	assign burst_size_bytes	= M_AXI_BURST_LEN * M_AXI_DATA_WIDTH/8;
 	assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
 
@@ -423,7 +420,7 @@
 	    // count reaches the penultimate count to synchronize                           
 	    // with the last write data when write_index is b1111                           
 	    // else if (&(write_index[C_TRANSACTIONS_NUM-1:1])&& ~write_index[0] && wnext)  
-	    else if (((write_index == C_M_AXI_BURST_LEN-2 && C_M_AXI_BURST_LEN >= 2) && wnext) || (C_M_AXI_BURST_LEN == 1 ))
+	    else if (((write_index == M_AXI_BURST_LEN-2 && M_AXI_BURST_LEN >= 2) && wnext) || (M_AXI_BURST_LEN == 1 ))
 	      begin                                                                         
 	        axi_wlast <= 1'b1;                                                          
 	      end                                                                           
@@ -431,7 +428,7 @@
 	    // accepted by the slave with a valid response                                  
 	    else if (wnext)                                                                 
 	      axi_wlast <= 1'b0;                                                            
-	    else if (axi_wlast && C_M_AXI_BURST_LEN == 1)                                   
+	    else if (axi_wlast && M_AXI_BURST_LEN == 1)                                   
 	      axi_wlast <= 1'b0;                                                            
 	    else                                                                            
 	      axi_wlast <= axi_wlast;                                                       
@@ -446,7 +443,7 @@
 	      begin                                                                         
 	        write_index <= 0;                                                           
 	      end                                                                           
-	    else if (wnext && (write_index != C_M_AXI_BURST_LEN-1))                         
+	    else if (wnext && (write_index != M_AXI_BURST_LEN-1))                         
 	      begin                                                                         
 	        write_index <= write_index + 1;                                             
 	      end                                                                           
@@ -578,7 +575,7 @@
 	      begin                                                             
 	        read_index <= 0;                                                
 	      end                                                               
-	    else if (rnext && (read_index != C_M_AXI_BURST_LEN-1))              
+	    else if (rnext && (read_index != M_AXI_BURST_LEN-1))              
 	      begin                                                             
 	        read_index <= read_index + 1;                                   
 	      end                                                               
@@ -900,7 +897,7 @@
 	                                                                                                            
 	    //The reads_done should be associated with a rready response                                            
 	    //else if (M_AXI_BVALID && axi_bready && (write_burst_counter == {(C_NO_BURSTS_REQ-1){1}}) && axi_wlast)
-	    else if (M_AXI_RVALID && axi_rready && (read_index == C_M_AXI_BURST_LEN-1) && (read_burst_counter[C_NO_BURSTS_REQ]))
+	    else if (M_AXI_RVALID && axi_rready && (read_index == M_AXI_BURST_LEN-1) && (read_burst_counter[C_NO_BURSTS_REQ]))
 	      reads_done <= 1'b1;                                                                                   
 	    else                                                                                                    
 	      reads_done <= reads_done;                                                                             

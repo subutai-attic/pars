@@ -2,22 +2,12 @@
 proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "Component_Name"
   #Adding Page
-  set Page_0 [ipgui::add_page $IPINST -name "Page 0" -display_name {Slave AXI Port}]
-  set_property tooltip {Slave AXI Port} ${Page_0}
+  set Page_0 [ipgui::add_page $IPINST -name "Page 0" -display_name {saxi}]
   ipgui::add_param $IPINST -name "C_S00_AXI_ADDR_WIDTH" -parent ${Page_0}
   ipgui::add_param $IPINST -name "C_S00_AXI_DATA_WIDTH" -parent ${Page_0}
 
   #Adding Page
-  set Master_AXI_port [ipgui::add_page $IPINST -name "Master AXI port"]
-  ipgui::add_param $IPINST -name "C_M_AXI_BURST_LEN" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_ID_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_ADDR_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_BUSER_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_RUSER_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_WUSER_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_ARUSER_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_AWUSER_WIDTH" -parent ${Master_AXI_port}
-  ipgui::add_param $IPINST -name "C_M_AXI_DATA_WIDTH" -parent ${Master_AXI_port}
+  ipgui::add_page $IPINST -name "maxi"
 
 
 }

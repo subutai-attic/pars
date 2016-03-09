@@ -26,7 +26,7 @@
         input wire  [31:0] response_3_reg,
         input wire  [31:0] read_fifo_in,
         output wire [31:0] write_fifo_out,
-//        output wire        fifo_data_read_ready,
+        output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
@@ -110,8 +110,7 @@
 		output wire [28:0] int_sig_en_reg,
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
-		output wire sd_dat_bus_width_8bit,
-        input wire buff_read_en,
+		input wire buff_read_en,
 		input wire buff_writ_en,
 		input wire write_trans_active,
 		input wire read_trans_active,
@@ -121,9 +120,10 @@
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
 		output wire start_tx_o,
-		output wire [31:0] DMASystemAddress,
-		output wire dma_en,
-		output reg set_new_sys_addr
+		output wire [2:0] bfr_bound,
+		output wire [31:0] sys_addr,
+		output wire [1:0] dma_en_and_blk_c_en,
+		output reg sys_addr_set
 	);
     
 	// AXI4LITE signals
@@ -178,7 +178,7 @@
     reg [11:0] blk_size_cnt = 0;
     reg [11:0] blk_size_cn  = 0;
     reg [15:0] blk_count_cnt = 0;
-    wire     buff_read_en_int;
+	wire     buff_read_en_int;
 	wire     buff_write_en_int;
      
     //SD-eMMC host controller registers
@@ -189,19 +189,19 @@
 	assign command_reg         = slv_reg3 [29:16];                         // CMD_INDEX
 	assign argument_reg        = slv_reg2;                                 // CMD_Argument 
 	assign timeout_reg         = slv_reg5 [15:0];                          // Time_out regester
-	assign block_size_reg      = slv_reg1 [`BLKSIZE_W -1 : 0];              // Block size register
+	assign block_size_reg      = slv_reg1 [11:0];                          // Block size register
 	assign block_count_reg     = slv_reg1 [31:16];                         // Block count register
 	assign int_stat_reg        = slv_reg12 [28:0];                         // Error and Normal Interrupts Status registers
     assign int_stat_en_reg     = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
     assign int_sig_en_reg      = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
     assign sd_dat_bus_width    = slv_reg10 [1];                            // Select sd data bus width 
-    assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
-    assign data_transfer_direction = slv_reg3 [4];                         // transfer mode register
-    assign dma_en              = slv_reg3 [0];                             // transfer mode register
+    assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
+    assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
 	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
     assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
-    assign DMASystemAddress    = slv_reg0;        
+    assign bfr_bound           = slv_reg1[14:12];
+    assign sys_addr            = slv_reg0;    
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -326,7 +326,6 @@
 	      slv_reg18 <= 0;
 	      slv_reg19 <= 0;
 	      cmd_start <= 0;
-	      set_new_sys_addr <= 0;;
 	      cmd_int_rst <= 0;
 	      dat_int_rst <= 0;
 	      blk_size_cnt <= 0;
@@ -334,11 +333,11 @@
           blk_count_cnt <= 0;
 	    end
 	  else begin
-	    set_new_sys_addr <= 1'b0;
 	    cmd_start <= 1'b0;
 	    cmd_int_rst <= 1'b0;
 	    dat_int_rst <= 1'b0;
 	    slv_reg11[26:24] <= 3'b000;
+	    sys_addr_set <= 1'b0;
 	    if (dat_int_st || cmd_int_st) begin
 	       slv_reg12_1 <= slv_reg12_1;
 	    end
@@ -355,8 +354,8 @@
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	              set_new_sys_addr <= 1'b1;  
-	              end
+	              sys_addr_set <= 1'b1;
+	            end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -685,11 +684,11 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h016432B2; //slv_reg16; Capabilities register
+	        5'h10   : reg_data_out <= 32'h016032B2; //slv_reg16; Capabilities register
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00000002;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00000001;  //Host Controller Version
 	        default : reg_data_out <= 0;
 	      endcase
 	end

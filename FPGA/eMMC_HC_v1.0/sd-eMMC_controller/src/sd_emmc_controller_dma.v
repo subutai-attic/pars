@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 1ps 
 `include "sd_defines.h"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
@@ -24,39 +24,57 @@
 module  sd_emmc_controller_dma (
             input  wire clock,
             input  wire reset,
-            
+
             // S_AXI
             input  wire [31:0] init_dma_sys_addr,
             input  wire [2:0] buf_boundary,
             input  wire [`BLKCNT_W -1:0] block_count,
-            input  wire sys_addr_changed, 
+            input  wire sys_addr_changed,
+            input wire dma_ena_trans_mode,
+            input wire dir_dat_trans_mode,
+            input wire blk_count_ena,
+            input wire int_rst,
+//            input wire [11:0] blk_size,
+            output reg [1:0] interr_dma,
 
+            // Data serial
+            input wire xfer_compl,
+            input  wire is_we_en,
+            
             // FIFO Filler
-(* mark_debug = "true" *)            input  wire dma_ena_trans_mode,
-(* mark_debug = "true" *)            input  wire dir_dat_trans_mode,
-(* mark_debug = "true" *)            input  wire is_fifo_emty_rd,
-(* mark_debug = "true" *)            output reg data_read_ready,
+           output reg data_read_ready,
 
             // M_AXI
-(* mark_debug = "true" *)            input  wire next_data_word,
-(* mark_debug = "true" *)            output reg data_write_valid,
-(* mark_debug = "true" *)            output reg [31:0] write_addr,
-(* mark_debug = "true" *)            output reg addr_write_valid,
-(* mark_debug = "true" *)            input wire addr_write_ready
+            input  wire next_data_word,
+            output reg data_write_valid,
+            output reg [31:0] write_addr,
+            output reg addr_write_valid,
+            input wire addr_write_ready
         );
 
-reg [16:0] block_count_bound;
-reg [16:0] total_trans_blk;
+reg [15:0] block_count_bound;
+reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [2:0] state;
-(* mark_debug = "true" *) reg [7:0] data_cycle;
-reg [16:0] trans_blk_inside_boundary;
+(* mark_debug = "true" *) reg [6:0] data_cycle;
+reg [15:0] blk_done_cnt_within_boundary;
+reg [11:0] we_counter;
+reg init_we_ff;
+reg init_we_ff2;
+reg addr_accepted;
+//reg init_dat_read_ready;
+//reg init_dat_read_ready2;
+reg we_counter_reset;
+reg fifo_read;
+(* mark_debug = "true" *) wire we_pulse;
 
-parameter IDLE          = 3'b000;
-parameter WRITE         = 3'b001;
-parameter READ          = 3'b010;
-parameter READ_ACT      = 3'b011;
-parameter NEW_SYS_ADDR  = 3'b100;
+parameter IDLE               = 3'b000;
+parameter WRITE              = 3'b001;
+parameter READ_WAIT          = 3'b010;
+parameter READ_ACT           = 3'b011;
+parameter NEW_SYS_ADDR       = 3'b100;
+parameter READ_BLK_CNT_CHECK = 3'b101;
+parameter TRANSFER_COMPLETE  = 3'b110;
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -110,84 +128,163 @@ parameter NEW_SYS_ADDR  = 3'b100;
         state <= IDLE;
         total_trans_blk <= 0;
         total_trans_blk <= 0;
-        data_read_ready <= 0;
         addr_write_valid <= 0;
         data_write_valid <= 0;
-        trans_blk_inside_boundary <= 0;
+        blk_done_cnt_within_boundary <= 0;
+        data_cycle <= 0;
+        write_addr <= 0;
+        data_read_ready <= 0;
       end
       else begin
-        if (dma_ena_trans_mode == 1'b1) begin
-          case (state)
-            IDLE: begin
-                    if (dir_dat_trans_mode && ~is_fifo_emty_rd) begin
-                      state <= READ;
-                      write_addr <= init_dma_sys_addr;
-                      data_read_ready <= 1'b1;
-                    end
-                    else if (~dir_dat_trans_mode && ~is_fifo_emty_rd)
-                      state <= WRITE;
-                    else
-                      state <= IDLE;
-                      total_trans_blk <= 16'h0000;
-                      data_read_ready <= 1'b0;
-                      addr_write_valid <= 1'b0;
-                      data_write_valid <= 1'b0;
-                      trans_blk_inside_boundary <= 16'h0000;
+        case (state)
+          IDLE: begin
+                  if (dir_dat_trans_mode & dma_ena_trans_mode & xfer_compl) begin
+                    write_addr <= init_dma_sys_addr;
+                    state <= READ_WAIT;
+                    we_counter_reset <= 1;
                   end
-            READ: begin
-                    if (block_count == total_trans_blk) begin
-                      state <= IDLE;
-                      // need to add transfer complete interrupt generation
-                    end
-                    else if (block_count_bound == trans_blk_inside_boundary) begin
-                        state <= NEW_SYS_ADDR;
-                        // need to add dma interrupt generation
-                        data_read_ready <= 1'b0;
-                        addr_write_valid <= 1'b0;
-                        data_write_valid <= 1'b0;
-                    end
-                    else begin
-                      state <= READ_ACT;
-                      data_cycle <= 0;
-                    end 
+                  else if (~dir_dat_trans_mode & dma_ena_trans_mode & xfer_compl) begin
+                    state <= WRITE;
                   end
-            READ_ACT: begin
-                        if (data_cycle == 8'h80) begin
-                          state <= READ;
-                          trans_blk_inside_boundary <= trans_blk_inside_boundary + 1;
-                          total_trans_blk <= total_trans_blk + 1;
-                        end
-                        else if (~is_fifo_emty_rd & next_data_word) begin
-                          write_addr <= write_addr + 3'h4;
-                          data_read_ready <= 1'b0;
-                          addr_write_valid <= 1'b0;
-                          data_write_valid <= 1'b0;
-                          data_cycle <= data_cycle + 1;
-                        end
-                        else begin
-                          addr_write_valid <= 1'b1;
-                          data_write_valid <= 1'b1;
-                          data_read_ready <= 1'b1;
-                        end 
-                      end
-            NEW_SYS_ADDR: begin
-                            if (sys_addr_changed) begin
-                              state <= READ;
-                              trans_blk_inside_boundary <= 16'h0000;
-                              write_addr <= init_dma_sys_addr;
-                              data_read_ready <= 1'b1;
-                            end
-                            else
-                              state <= NEW_SYS_ADDR; 
+                  else begin
+                    state <= IDLE;
+                    total_trans_blk <= 0;
+                    blk_done_cnt_within_boundary <= 0;
+                    write_addr <= 0;
+                    data_cycle <= 0;
+                  end
+                end
+          READ_WAIT: begin
+                  if (we_counter > data_cycle) begin
+                    state <= READ_ACT;
+                    data_read_ready <= 1'b0;
+                  end
+                  else if (data_cycle == 7'h7F) begin
+                    blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
+                    total_trans_blk <= total_trans_blk + 1;
+                    data_cycle <= 0;
+                    we_counter_reset <= 0;
+                    state <= READ_BLK_CNT_CHECK;
+                  end
+                  else begin
+                    state <= READ_WAIT;
+                    data_read_ready <= 1'b0;
+                  end 
+                end
+          READ_ACT: begin
+                      case (addr_accepted)
+                        1'b0: begin 
+                          if (addr_write_valid && addr_write_ready) begin
+                            addr_write_valid <= 1'b0;
+                            addr_accepted <= 1'b1;
+                            data_write_valid <= 1'b1;
                           end
-            WRITE:begin
-                  end
-          endcase
-        end
-        else
-          state <= IDLE;
+                          else begin
+                            addr_write_valid <= 1'b1;
+                            fifo_read <= 1'b0;
+                          end
+                        end
+                        1'b1: begin
+                          if (next_data_word) begin
+                            data_write_valid <= 1'b0;
+                            addr_accepted <= 1'b0;
+                            data_cycle <= data_cycle + 1;
+                            write_addr <= write_addr + 4;
+                            data_read_ready <= 1'b1;
+                            state <= READ_WAIT;
+                          end
+                          else begin
+                            data_write_valid <= 1'b1;
+                          end
+                        end
+                      endcase 
+                    end
+          NEW_SYS_ADDR: begin
+                          if (sys_addr_changed) begin
+                            state <= READ_WAIT;
+                            blk_done_cnt_within_boundary <= 0;
+                            write_addr <= init_dma_sys_addr;
+                          end
+                          else begin
+                            state <= NEW_SYS_ADDR;
+                          end 
+                        end
+          READ_BLK_CNT_CHECK: begin
+                                we_counter_reset <= 1'b1;
+                                if (blk_count_ena) begin
+                                  if (total_trans_blk < block_count) begin
+                                    if (blk_done_cnt_within_boundary == block_count_bound) begin
+                                      state <= NEW_SYS_ADDR;
+                                    end
+                                    else begin
+                                      state <= READ_WAIT;
+                                    end
+                                  end
+                                  else begin
+                                    state <= TRANSFER_COMPLETE;
+                                    //completion interrupt
+                                  end
+                                end
+                                else if (blk_done_cnt_within_boundary == block_count_bound) begin
+                                  state <= NEW_SYS_ADDR;
+                                end
+                                else begin
+                                  state <= READ_WAIT;
+                                end
+                              end
+          TRANSFER_COMPLETE:begin
+                              if (xfer_compl)
+                                state <= TRANSFER_COMPLETE;
+                              else
+                                state <= IDLE;
+                            end
+          WRITE:begin
+                end
+        endcase
+        if (int_rst)
+          interr_dma <= 2'b0;
       end
     end
     
-    
+//assign data_read_ready = (!init_dat_read_ready2) && init_dat_read_ready;
+
+//    always @ (posedge clock)
+//        begin: DATA_READ_READY_PULSE_GENERATOR
+//          if (reset == 1'b0) begin
+//            init_dat_read_ready <= 1'b0;
+//            init_dat_read_ready2 <= 1'b0;
+//          end
+//          else begin
+//            init_dat_read_ready <= fifo_read; 
+//            init_dat_read_ready2 <= init_dat_read_ready; 
+//          end
+//        end
+
+    always @ (posedge clock)
+      begin: NUMBER_OF_FIFO_WRITING_COUNTER
+        if ((reset == 1'b0) || (we_counter_reset == 1'b0)) begin
+          we_counter <= 0;
+        end
+        else begin
+          if (we_pulse)
+              we_counter <= we_counter + 12'h001;
+        end
+      end
+
+//	assign we_pulse	= (!init_we_ff2) && init_we_ff;
+	assign we_pulse	= init_we_ff2 && (!init_we_ff);
+	
+    always @ (posedge clock)
+      begin: WE_PULS_GENERATOR
+        if (reset == 1'b0) begin
+          init_we_ff <= 1'b0;
+          init_we_ff2 <= 1'b0;
+        end
+        else begin
+          init_we_ff <= is_we_en;
+          init_we_ff2 <= init_we_ff;
+        end
+      end
+
+
 endmodule

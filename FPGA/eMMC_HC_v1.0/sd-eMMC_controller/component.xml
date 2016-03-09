@@ -304,11 +304,11 @@
       </spirit:portMaps>
     </spirit:busInterface>
     <spirit:busInterface>
-      <spirit:name>m_axi</spirit:name>
+      <spirit:name>M_AXI</spirit:name>
       <spirit:busType spirit:vendor="xilinx.com" spirit:library="interface" spirit:name="aximm" spirit:version="1.0"/>
       <spirit:abstractionType spirit:vendor="xilinx.com" spirit:library="interface" spirit:name="aximm_rtl" spirit:version="1.0"/>
       <spirit:master>
-        <spirit:addressSpaceRef spirit:addressSpaceRef="m_axi"/>
+        <spirit:addressSpaceRef spirit:addressSpaceRef="M_AXI"/>
       </spirit:master>
       <spirit:portMaps>
         <spirit:portMap>
@@ -316,7 +316,7 @@
             <spirit:name>AWID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awid</spirit:name>
+            <spirit:name>M_AXI_AWID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -324,7 +324,7 @@
             <spirit:name>AWADDR</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awaddr</spirit:name>
+            <spirit:name>M_AXI_AWADDR</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -332,7 +332,7 @@
             <spirit:name>AWLEN</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awlen</spirit:name>
+            <spirit:name>M_AXI_AWLEN</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -340,7 +340,7 @@
             <spirit:name>AWSIZE</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awsize</spirit:name>
+            <spirit:name>M_AXI_AWSIZE</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -348,7 +348,7 @@
             <spirit:name>AWBURST</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awburst</spirit:name>
+            <spirit:name>M_AXI_AWBURST</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -356,7 +356,7 @@
             <spirit:name>AWLOCK</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awlock</spirit:name>
+            <spirit:name>M_AXI_AWLOCK</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -364,7 +364,7 @@
             <spirit:name>AWCACHE</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awcache</spirit:name>
+            <spirit:name>M_AXI_AWCACHE</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -372,7 +372,7 @@
             <spirit:name>AWPROT</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awprot</spirit:name>
+            <spirit:name>M_AXI_AWPROT</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -380,7 +380,7 @@
             <spirit:name>AWQOS</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awqos</spirit:name>
+            <spirit:name>M_AXI_AWQOS</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -388,7 +388,7 @@
             <spirit:name>AWUSER</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awuser</spirit:name>
+            <spirit:name>M_AXI_AWUSER</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -396,7 +396,7 @@
             <spirit:name>AWVALID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awvalid</spirit:name>
+            <spirit:name>M_AXI_AWVALID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -404,7 +404,7 @@
             <spirit:name>AWREADY</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_awready</spirit:name>
+            <spirit:name>M_AXI_AWREADY</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -412,7 +412,7 @@
             <spirit:name>WDATA</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_wdata</spirit:name>
+            <spirit:name>M_AXI_WDATA</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -420,7 +420,7 @@
             <spirit:name>WSTRB</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_wstrb</spirit:name>
+            <spirit:name>M_AXI_WSTRB</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -428,7 +428,7 @@
             <spirit:name>WLAST</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_wlast</spirit:name>
+            <spirit:name>M_AXI_WLAST</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -436,7 +436,7 @@
             <spirit:name>WUSER</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_wuser</spirit:name>
+            <spirit:name>M_AXI_WUSER</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -444,7 +444,7 @@
             <spirit:name>WVALID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_wvalid</spirit:name>
+            <spirit:name>M_AXI_WVALID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -452,7 +452,7 @@
             <spirit:name>WREADY</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_wready</spirit:name>
+            <spirit:name>M_AXI_WREADY</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -460,7 +460,7 @@
             <spirit:name>BID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_bid</spirit:name>
+            <spirit:name>M_AXI_BID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -468,7 +468,7 @@
             <spirit:name>BRESP</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_bresp</spirit:name>
+            <spirit:name>M_AXI_BRESP</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -476,7 +476,7 @@
             <spirit:name>BUSER</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_buser</spirit:name>
+            <spirit:name>M_AXI_BUSER</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -484,7 +484,7 @@
             <spirit:name>BVALID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_bvalid</spirit:name>
+            <spirit:name>M_AXI_BVALID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -492,7 +492,7 @@
             <spirit:name>BREADY</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_bready</spirit:name>
+            <spirit:name>M_AXI_BREADY</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -500,7 +500,7 @@
             <spirit:name>ARID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arid</spirit:name>
+            <spirit:name>M_AXI_ARID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -508,7 +508,7 @@
             <spirit:name>ARADDR</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_araddr</spirit:name>
+            <spirit:name>M_AXI_ARADDR</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -516,7 +516,7 @@
             <spirit:name>ARLEN</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arlen</spirit:name>
+            <spirit:name>M_AXI_ARLEN</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -524,7 +524,7 @@
             <spirit:name>ARSIZE</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arsize</spirit:name>
+            <spirit:name>M_AXI_ARSIZE</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -532,7 +532,7 @@
             <spirit:name>ARBURST</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arburst</spirit:name>
+            <spirit:name>M_AXI_ARBURST</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -540,7 +540,7 @@
             <spirit:name>ARLOCK</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arlock</spirit:name>
+            <spirit:name>M_AXI_ARLOCK</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -548,7 +548,7 @@
             <spirit:name>ARCACHE</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arcache</spirit:name>
+            <spirit:name>M_AXI_ARCACHE</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -556,7 +556,7 @@
             <spirit:name>ARPROT</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arprot</spirit:name>
+            <spirit:name>M_AXI_ARPROT</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -564,7 +564,7 @@
             <spirit:name>ARQOS</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arqos</spirit:name>
+            <spirit:name>M_AXI_ARQOS</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -572,7 +572,7 @@
             <spirit:name>ARUSER</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_aruser</spirit:name>
+            <spirit:name>M_AXI_ARUSER</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -580,7 +580,7 @@
             <spirit:name>ARVALID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arvalid</spirit:name>
+            <spirit:name>M_AXI_ARVALID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -588,7 +588,7 @@
             <spirit:name>ARREADY</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_arready</spirit:name>
+            <spirit:name>M_AXI_ARREADY</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -596,7 +596,7 @@
             <spirit:name>RID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_rid</spirit:name>
+            <spirit:name>M_AXI_RID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -604,7 +604,7 @@
             <spirit:name>RDATA</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_rdata</spirit:name>
+            <spirit:name>M_AXI_RDATA</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -612,7 +612,7 @@
             <spirit:name>RRESP</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_rresp</spirit:name>
+            <spirit:name>M_AXI_RRESP</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -620,7 +620,7 @@
             <spirit:name>RLAST</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_rlast</spirit:name>
+            <spirit:name>M_AXI_RLAST</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -628,7 +628,7 @@
             <spirit:name>RUSER</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_ruser</spirit:name>
+            <spirit:name>M_AXI_RUSER</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -636,7 +636,7 @@
             <spirit:name>RVALID</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_rvalid</spirit:name>
+            <spirit:name>M_AXI_RVALID</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -644,7 +644,7 @@
             <spirit:name>RREADY</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_rready</spirit:name>
+            <spirit:name>M_AXI_RREADY</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
       </spirit:portMaps>
@@ -660,7 +660,7 @@
       </spirit:parameters>
     </spirit:busInterface>
     <spirit:busInterface>
-      <spirit:name>m_axi_aresetn</spirit:name>
+      <spirit:name>M_AXI_ARESETN</spirit:name>
       <spirit:busType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="reset" spirit:version="1.0"/>
       <spirit:abstractionType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="reset_rtl" spirit:version="1.0"/>
       <spirit:slave/>
@@ -670,7 +670,7 @@
             <spirit:name>RST</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_aresetn</spirit:name>
+            <spirit:name>M_AXI_ARESETN</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
       </spirit:portMaps>
@@ -682,7 +682,7 @@
       </spirit:parameters>
     </spirit:busInterface>
     <spirit:busInterface>
-      <spirit:name>m_axi_aclk</spirit:name>
+      <spirit:name>M_AXI_ACLK</spirit:name>
       <spirit:busType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="clock" spirit:version="1.0"/>
       <spirit:abstractionType spirit:vendor="xilinx.com" spirit:library="signal" spirit:name="clock_rtl" spirit:version="1.0"/>
       <spirit:slave/>
@@ -692,18 +692,18 @@
             <spirit:name>CLK</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>m_axi_aclk</spirit:name>
+            <spirit:name>M_AXI_ACLK</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
       </spirit:portMaps>
       <spirit:parameters>
         <spirit:parameter>
           <spirit:name>ASSOCIATED_BUSIF</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.M_AXI_ACLK.ASSOCIATED_BUSIF">m_axi</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.M_AXI_ACLK.ASSOCIATED_BUSIF">M_AXI</spirit:value>
         </spirit:parameter>
         <spirit:parameter>
           <spirit:name>ASSOCIATED_RESET</spirit:name>
-          <spirit:value spirit:id="BUSIFPARAM_VALUE.M_AXI_ACLK.ASSOCIATED_RESET">m_axi_aresetn</spirit:value>
+          <spirit:value spirit:id="BUSIFPARAM_VALUE.M_AXI_ACLK.ASSOCIATED_RESET">M_AXI_ARESETN</spirit:value>
         </spirit:parameter>
       </spirit:parameters>
     </spirit:busInterface>
@@ -732,9 +732,9 @@
   </spirit:busInterfaces>
   <spirit:addressSpaces>
     <spirit:addressSpace>
-      <spirit:name>m_axi</spirit:name>
-      <spirit:range spirit:format="long" spirit:resolve="dependent" spirit:dependency="pow(2,(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ADDR_WIDTH&apos;)) - 1) + 1)" spirit:minimum="4096" spirit:rangeType="long">4294967296</spirit:range>
-      <spirit:width spirit:format="long" spirit:resolve="dependent" spirit:dependency="(spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_DATA_WIDTH&apos;)) - 1) + 1">32</spirit:width>
+      <spirit:name>M_AXI</spirit:name>
+      <spirit:range spirit:format="long" spirit:resolve="dependent" spirit:dependency="pow(2,(C_M_AXI_ADDR_WIDTH - 1) + 1)" spirit:minimum="4096" spirit:rangeType="long">4294967296</spirit:range>
+      <spirit:width spirit:format="long" spirit:resolve="dependent" spirit:dependency="(C_M_AXI_DATA_WIDTH - 1) + 1">32</spirit:width>
     </spirit:addressSpace>
   </spirit:addressSpaces>
   <spirit:memoryMaps>
@@ -762,7 +762,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>e3f99982</spirit:value>
+            <spirit:value>1bdc75a7</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -777,7 +777,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>68e96713</spirit:value>
+            <spirit:value>7363e5e5</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -791,7 +791,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>2cd05932</spirit:value>
+            <spirit:value>979571f7</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -854,7 +854,7 @@
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long">7</spirit:left>
+            <spirit:left spirit:format="long">3</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -871,7 +871,7 @@
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
-            <spirit:left spirit:format="long">7</spirit:left>
+            <spirit:left spirit:format="long">3</spirit:left>
             <spirit:right spirit:format="long">0</spirit:right>
           </spirit:vector>
           <spirit:wireTypeDefs>
@@ -1249,7 +1249,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_init_axi_txn</spirit:name>
+        <spirit:name>M_AXI_ACLK</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1262,33 +1262,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_txn_done</spirit:name>
-        <spirit:wire>
-          <spirit:direction>out</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>wire</spirit:typeName>
-              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
-              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>m_axi_error</spirit:name>
-        <spirit:wire>
-          <spirit:direction>out</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>wire</spirit:typeName>
-              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
-              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>m_axi_aclk</spirit:name>
+        <spirit:name>M_AXI_ARESETN</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1301,20 +1275,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_aresetn</spirit:name>
-        <spirit:wire>
-          <spirit:direction>in</spirit:direction>
-          <spirit:wireTypeDefs>
-            <spirit:wireTypeDef>
-              <spirit:typeName>wire</spirit:typeName>
-              <spirit:viewNameRef>xilinx_anylanguagesynthesis</spirit:viewNameRef>
-              <spirit:viewNameRef>xilinx_anylanguagebehavioralsimulation</spirit:viewNameRef>
-            </spirit:wireTypeDef>
-          </spirit:wireTypeDefs>
-        </spirit:wire>
-      </spirit:port>
-      <spirit:port>
-        <spirit:name>m_axi_awid</spirit:name>
+        <spirit:name>M_AXI_AWID</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1329,16 +1290,9 @@
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_awid" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ID_WIDTH&apos;)) >0">true</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awaddr</spirit:name>
+        <spirit:name>M_AXI_AWADDR</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1355,7 +1309,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awlen</spirit:name>
+        <spirit:name>M_AXI_AWLEN</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1372,7 +1326,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awsize</spirit:name>
+        <spirit:name>M_AXI_AWSIZE</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1389,7 +1343,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awburst</spirit:name>
+        <spirit:name>M_AXI_AWBURST</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1406,7 +1360,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awlock</spirit:name>
+        <spirit:name>M_AXI_AWLOCK</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1419,7 +1373,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awcache</spirit:name>
+        <spirit:name>M_AXI_AWCACHE</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1436,7 +1390,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awprot</spirit:name>
+        <spirit:name>M_AXI_AWPROT</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1453,7 +1407,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awqos</spirit:name>
+        <spirit:name>M_AXI_AWQOS</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1470,7 +1424,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awuser</spirit:name>
+        <spirit:name>M_AXI_AWUSER</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1485,16 +1439,9 @@
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_awuser" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_AWUSER_WIDTH&apos;)) >0">false</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awvalid</spirit:name>
+        <spirit:name>M_AXI_AWVALID</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1507,7 +1454,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_awready</spirit:name>
+        <spirit:name>M_AXI_AWREADY</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1523,7 +1470,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_wdata</spirit:name>
+        <spirit:name>M_AXI_WDATA</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1540,7 +1487,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_wstrb</spirit:name>
+        <spirit:name>M_AXI_WSTRB</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1557,7 +1504,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_wlast</spirit:name>
+        <spirit:name>M_AXI_WLAST</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1570,7 +1517,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_wuser</spirit:name>
+        <spirit:name>M_AXI_WUSER</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1585,16 +1532,9 @@
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_wuser" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_WUSER_WIDTH&apos;)) >0">false</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_wvalid</spirit:name>
+        <spirit:name>M_AXI_WVALID</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1607,7 +1547,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_wready</spirit:name>
+        <spirit:name>M_AXI_WREADY</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1623,7 +1563,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_bid</spirit:name>
+        <spirit:name>M_AXI_BID</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -1641,16 +1581,9 @@
             <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
           </spirit:driver>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_bid" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ID_WIDTH&apos;)) >0">true</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_bresp</spirit:name>
+        <spirit:name>M_AXI_BRESP</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -1670,7 +1603,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_buser</spirit:name>
+        <spirit:name>M_AXI_BUSER</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -1688,16 +1621,9 @@
             <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
           </spirit:driver>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_buser" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_BUSER_WIDTH&apos;)) >0">false</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_bvalid</spirit:name>
+        <spirit:name>M_AXI_BVALID</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1713,7 +1639,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_bready</spirit:name>
+        <spirit:name>M_AXI_BREADY</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1726,7 +1652,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arid</spirit:name>
+        <spirit:name>M_AXI_ARID</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1741,16 +1667,9 @@
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_arid" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ID_WIDTH&apos;)) >0">true</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_araddr</spirit:name>
+        <spirit:name>M_AXI_ARADDR</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1767,7 +1686,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arlen</spirit:name>
+        <spirit:name>M_AXI_ARLEN</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1784,7 +1703,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arsize</spirit:name>
+        <spirit:name>M_AXI_ARSIZE</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1801,7 +1720,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arburst</spirit:name>
+        <spirit:name>M_AXI_ARBURST</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1818,7 +1737,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arlock</spirit:name>
+        <spirit:name>M_AXI_ARLOCK</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1831,7 +1750,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arcache</spirit:name>
+        <spirit:name>M_AXI_ARCACHE</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1848,7 +1767,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arprot</spirit:name>
+        <spirit:name>M_AXI_ARPROT</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1865,7 +1784,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arqos</spirit:name>
+        <spirit:name>M_AXI_ARQOS</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1882,7 +1801,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_aruser</spirit:name>
+        <spirit:name>M_AXI_ARUSER</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:vector>
@@ -1897,16 +1816,9 @@
             </spirit:wireTypeDef>
           </spirit:wireTypeDefs>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_aruser" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ARUSER_WIDTH&apos;)) >0">false</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arvalid</spirit:name>
+        <spirit:name>M_AXI_ARVALID</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1919,7 +1831,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_arready</spirit:name>
+        <spirit:name>M_AXI_ARREADY</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1935,7 +1847,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_rid</spirit:name>
+        <spirit:name>M_AXI_RID</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -1953,16 +1865,9 @@
             <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
           </spirit:driver>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_rid" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_ID_WIDTH&apos;)) >0">true</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_rdata</spirit:name>
+        <spirit:name>M_AXI_RDATA</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -1982,7 +1887,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_rresp</spirit:name>
+        <spirit:name>M_AXI_RRESP</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -2002,7 +1907,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_rlast</spirit:name>
+        <spirit:name>M_AXI_RLAST</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -2018,7 +1923,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_ruser</spirit:name>
+        <spirit:name>M_AXI_RUSER</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:vector>
@@ -2036,16 +1941,9 @@
             <spirit:defaultValue spirit:format="long">0</spirit:defaultValue>
           </spirit:driver>
         </spirit:wire>
-        <spirit:vendorExtensions>
-          <xilinx:portInfo>
-            <xilinx:enablement>
-              <xilinx:isEnabled xilinx:resolve="dependent" xilinx:id="PORT_ENABLEMENT.m_axi_ruser" xilinx:dependency="spirit:decode(id(&apos;MODELPARAM_VALUE.C_M_AXI_RUSER_WIDTH&apos;)) >0">false</xilinx:isEnabled>
-            </xilinx:enablement>
-          </xilinx:portInfo>
-        </spirit:vendorExtensions>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_rvalid</spirit:name>
+        <spirit:name>M_AXI_RVALID</spirit:name>
         <spirit:wire>
           <spirit:direction>in</spirit:direction>
           <spirit:wireTypeDefs>
@@ -2061,7 +1959,7 @@
         </spirit:wire>
       </spirit:port>
       <spirit:port>
-        <spirit:name>m_axi_rready</spirit:name>
+        <spirit:name>M_AXI_RREADY</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -2166,11 +2064,19 @@
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
+        <spirit:name>src/m_axi_v1_0_M_AXI.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>src/sd_fifo_filler.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>src/sd_data_xfer_trig.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sd_emmc_controller_dma.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
@@ -2216,19 +2122,9 @@
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
-        <spirit:name>src/m_axi_v1_0_M_AXI.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-      </spirit:file>
-      <spirit:file>
         <spirit:name>src/sd_emmc_controller.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_ba4a2e98</spirit:userFileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/sd_emmc_controller_dma.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_fa564030</spirit:userFileType>
-        <spirit:logicalName>xil_defaultlib</spirit:logicalName>
+        <spirit:userFileType>CHECKSUM_e7ea1830</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -2254,12 +2150,22 @@
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
       </spirit:file>
       <spirit:file>
+        <spirit:name>src/m_axi_v1_0_M_AXI.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+        <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>src/sd_data_xfer_trig.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>src/sd_emmc_controller_S00_AXI.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+        <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sd_emmc_controller_dma.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
       </spirit:file>
@@ -2315,16 +2221,6 @@
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>src/m_axi_v1_0_M_AXI.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/sd_emmc_controller_dma.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
-      </spirit:file>
-      <spirit:file>
         <spirit:name>src/sd_crc_7.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
@@ -2335,7 +2231,7 @@
       <spirit:file>
         <spirit:name>xgui/sd_emmc_controller_v1_0.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_2cd05932</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_979571f7</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -2411,20 +2307,20 @@
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>sd_emmc_controller_v1_0</xilinx:displayName>
-      <xilinx:coreRevision>26</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-02-26T19:40:24Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>46</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-03-08T12:05:42Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
-        <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/azamat/Pictures/Eldar/sd-eMMC_controller</xilinx:tag>
+        <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/azamat/Git/sd-eMMC_controller_sdma</xilinx:tag>
       </xilinx:tags>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2015.4</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="2f447f38"/>
-      <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="3463fc87"/>
+      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="5d69a617"/>
+      <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="bb81e7fe"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="1caa5c2a"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="2b961b6b"/>
-      <xilinx:checksum xilinx:scope="ports" xilinx:value="3db3fe12"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="9fac5e48"/>
+      <xilinx:checksum xilinx:scope="ports" xilinx:value="83bd4c51"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="71835b92"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="e62aeebc"/>
     </xilinx:packagingInfo>
