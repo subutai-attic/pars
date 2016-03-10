@@ -49,14 +49,15 @@ module  sd_emmc_controller_dma (
             output reg data_write_valid,
             output reg [31:0] write_addr,
             output reg addr_write_valid,
-            input wire addr_write_ready
+            input wire addr_write_ready,
+            output reg w_last
         );
 
 reg [15:0] block_count_bound;
 reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [2:0] state;
-(* mark_debug = "true" *) reg [6:0] data_cycle;
+(* mark_debug = "true" *) reg [7:0] data_cycle;
 reg [15:0] blk_done_cnt_within_boundary;
 reg [11:0] we_counter;
 reg init_we_ff;
@@ -65,8 +66,9 @@ reg addr_accepted;
 //reg init_dat_read_ready;
 //reg init_dat_read_ready2;
 reg we_counter_reset;
-reg fifo_read;
-(* mark_debug = "true" *) wire we_pulse;
+//reg fifo_read;
+wire we_pulse;
+//reg [3:0] burstsize;
 
 parameter IDLE               = 3'b000;
 parameter WRITE              = 3'b001;
@@ -127,13 +129,14 @@ parameter TRANSFER_COMPLETE  = 3'b110;
       if (reset == 1'b0) begin
         state <= IDLE;
         total_trans_blk <= 0;
-        total_trans_blk <= 0;
         addr_write_valid <= 0;
         data_write_valid <= 0;
         blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
         write_addr <= 0;
         data_read_ready <= 0;
+        addr_accepted <= 0;
+        w_last <= 0;
       end
       else begin
         case (state)
@@ -152,23 +155,25 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                     blk_done_cnt_within_boundary <= 0;
                     write_addr <= 0;
                     data_cycle <= 0;
+                    data_read_ready <= 0;
                   end
                 end
           READ_WAIT: begin
                   if (we_counter > data_cycle) begin
                     state <= READ_ACT;
-                    data_read_ready <= 1'b0;
                   end
-                  else if (data_cycle == 7'h7F) begin
+                  else if (data_cycle == 8'h80) begin
                     blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
                     total_trans_blk <= total_trans_blk + 1;
                     data_cycle <= 0;
                     we_counter_reset <= 0;
+                    data_read_ready <= 1'b0;
                     state <= READ_BLK_CNT_CHECK;
                   end
                   else begin
-                    state <= READ_WAIT;
                     data_read_ready <= 1'b0;
+                    w_last <= 1'b0;
+                    state <= READ_WAIT;
                   end 
                 end
           READ_ACT: begin
@@ -178,10 +183,10 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                             addr_write_valid <= 1'b0;
                             addr_accepted <= 1'b1;
                             data_write_valid <= 1'b1;
+                            w_last <= 1'b1;
                           end
                           else begin
                             addr_write_valid <= 1'b1;
-                            fifo_read <= 1'b0;
                           end
                         end
                         1'b1: begin
@@ -191,10 +196,11 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                             data_cycle <= data_cycle + 1;
                             write_addr <= write_addr + 4;
                             data_read_ready <= 1'b1;
+                            w_last <= 1'b0;
                             state <= READ_WAIT;
                           end
                           else begin
-                            data_write_valid <= 1'b1;
+                            data_write_valid <= data_write_valid;
                           end
                         end
                       endcase 

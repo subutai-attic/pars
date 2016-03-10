@@ -159,7 +159,8 @@
 	    output wire        wnext,
 	    input wire dat_wr_valid,
 	    input wire [31:0] addr_wr,
-	    input wire addr_wr_valid
+	    input wire addr_wr_valid,
+	    input wire m_axi_wlast
 	);
 
 
@@ -245,23 +246,23 @@
 	//The AXI address is a concatenation of the target base address + active offset range
 	assign M_AXI_AWADDR	= addr_wr;//axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_AWLEN	= M_AXI_BURST_LEN - 1;
+	assign M_AXI_AWLEN	= 8'h00; //M_AXI_BURST_LEN - 1;
 	//Size should be M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
-	assign M_AXI_AWSIZE	= clogb2((M_AXI_DATA_WIDTH/8)-1);
+	assign M_AXI_AWSIZE	= 3'b010; //clogb2((M_AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
 	assign M_AXI_AWBURST	= 2'b01;
 	assign M_AXI_AWLOCK	= 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
-	assign M_AXI_AWCACHE	= 4'b0010;
+	assign M_AXI_AWCACHE	= 4'b0011;
 	assign M_AXI_AWPROT	= 3'h0;
 	assign M_AXI_AWQOS	= 4'h0;
-	assign M_AXI_AWUSER	= 'b1;
+	assign M_AXI_AWUSER	= 'b0;
 	assign M_AXI_AWVALID	= addr_wr_valid; //axi_awvalid;
 	//Write Data(W)
 	assign M_AXI_WDATA	= data_read_fifo; //axi_wdata;
 	//All bursts are complete and aligned in this example
-	assign M_AXI_WSTRB	= {(M_AXI_DATA_WIDTH/8){1'b1}};
-	assign M_AXI_WLAST	= axi_wlast;
+	assign M_AXI_WSTRB	= 4'hf; //{(M_AXI_DATA_WIDTH/8){1'b1}};
+	assign M_AXI_WLAST	= m_axi_wlast; //axi_wlast;
 	assign M_AXI_WUSER	= 'b0;
 	assign M_AXI_WVALID	= dat_wr_valid; // axi_wvalid;
 	//Write Response (B)
@@ -270,17 +271,17 @@
 	assign M_AXI_ARID	= 'b0;
 	assign M_AXI_ARADDR	= axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_ARLEN	= M_AXI_BURST_LEN - 1;
+	assign M_AXI_ARLEN	= 8'h0f; //M_AXI_BURST_LEN - 1;
 	//Size should be M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
-	assign M_AXI_ARSIZE	= clogb2((M_AXI_DATA_WIDTH/8)-1);
+	assign M_AXI_ARSIZE	= 3'b010; //clogb2((M_AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
 	assign M_AXI_ARBURST	= 2'b01;
 	assign M_AXI_ARLOCK	= 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
-	assign M_AXI_ARCACHE	= 4'b0010;
+	assign M_AXI_ARCACHE	= 4'b0011;
 	assign M_AXI_ARPROT	= 3'h0;
 	assign M_AXI_ARQOS	= 4'h0;
-	assign M_AXI_ARUSER	= 'b1;
+	assign M_AXI_ARUSER	= 'b0;
 	assign M_AXI_ARVALID	= axi_arvalid;
 	//Read and Read Response (R)
 	assign M_AXI_RREADY	= axi_rready;

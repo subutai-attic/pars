@@ -235,6 +235,7 @@
     wire m_axi_wvalid;
     wire [31:0] m_axi_awaddr;
     wire m_axi_awvalid;
+    wire maxi_wlast;
 
 
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
@@ -254,7 +255,8 @@
             .write_addr(m_axi_awaddr),
             .addr_write_valid(m_axi_awvalid),
             .addr_write_ready(M_AXI_AWREADY),
-            .data_read_ready(fifo_data_read_ready)
+            .data_read_ready(fifo_data_read_ready),
+            .w_last(maxi_wlast)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -317,7 +319,8 @@
             .wnext(wordnext),
             .dat_wr_valid(m_axi_wvalid),
             .addr_wr(m_axi_awaddr),
-            .addr_wr_valid(m_axi_awvalid)
+            .addr_wr_valid(m_axi_awvalid),
+            .m_axi_wlast(maxi_wlast)
         );
 
         // Instantiation of Axi Bus Interface S00_AXI
