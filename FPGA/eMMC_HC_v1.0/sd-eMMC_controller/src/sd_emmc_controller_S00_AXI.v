@@ -30,12 +30,12 @@
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
-        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
-        input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
+        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        (* mark_debug = "true" *) input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
         output reg cmd_start,
         output reg cmd_int_rst,
-        output reg dat_int_rst,
+        (* mark_debug = "true" *) output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
         output wire fifo_reset,
@@ -123,7 +123,8 @@
 		output wire [2:0] bfr_bound,
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
-		output reg sys_addr_set
+		output reg sys_addr_set,
+		input wire dma_int
 	);
     
 	// AXI4LITE signals
@@ -535,7 +536,7 @@
 //             slv_reg11[26] <= 1'b0;
 //          end
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b0, (dat_int_st[`INT_DATA_CC] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b0, (dma_int | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;

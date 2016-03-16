@@ -236,8 +236,7 @@
     wire [31:0] m_axi_awaddr;
     wire m_axi_awvalid;
     wire maxi_wlast;
-    wire fifo_rd_ackn;
-
+    wire dma_int;
 
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
@@ -250,7 +249,7 @@
             .dir_dat_trans_mode(dat_trans_dir_axi_clk),
             .sys_addr_changed(sys_addr_set),
             .block_count(block_count_reg_axi_clk),
-            .xfer_compl(data_busy),
+            .xfer_compl(!data_busy),
             .next_data_word(wordnext),
             .data_write_valid(m_axi_wvalid),
             .write_addr(m_axi_awaddr),
@@ -258,7 +257,8 @@
             .addr_write_ready(M_AXI_AWREADY),
             .data_read_ready(fifo_data_read_ready),
             .w_last(maxi_wlast),
-            .fifo_rd_ack(fifo_rd_ackn)
+            .data_int_cc(dma_int),
+            .dat_int_rst(data_int_rst)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -394,7 +394,8 @@
             .bfr_bound(buff_bound),
             .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
-            .sys_addr_set(sys_addr_set)
+            .sys_addr_set(sys_addr_set),
+            .dma_int(dma_int)
         );
 
     // Clock divider
@@ -523,8 +524,7 @@
         .sd_full_o   (rx_fifo_full),
         .wb_full_o   (tx_fifo_full),
         .wb_empty_o  (rx_fifo_empty_sd_clk),
-        .fifo_reset(fifo_reset),
-        .fifo_rd_ack(fifo_rd_ackn)
+        .fifo_reset(fifo_reset)
         );
 
     sd_data_xfer_trig sd_data_xfer_trig0 (

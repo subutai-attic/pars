@@ -74,8 +74,7 @@ module sd_fifo_filler(
            output sd_full_o,
            output sd_empty_o,
            output wb_full_o,
-           output wb_empty_o,
-           output reg fifo_rd_ack
+           output wb_empty_o
        );
 
 `define FIFO_MEM_ADR_SIZE 12
@@ -83,7 +82,7 @@ module sd_fifo_filler(
 
 wire reset_fifo;
 (* mark_debug = "true" *) wire fifo_rd;
-//reg fifo_rd_ack;
+reg fifo_rd_ack;
 reg fifo_rd_reg;
 
 
