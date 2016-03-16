@@ -236,6 +236,7 @@
     wire [31:0] m_axi_awaddr;
     wire m_axi_awvalid;
     wire maxi_wlast;
+    wire fifo_rd_ackn;
 
 
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
@@ -256,7 +257,8 @@
             .addr_write_valid(m_axi_awvalid),
             .addr_write_ready(M_AXI_AWREADY),
             .data_read_ready(fifo_data_read_ready),
-            .w_last(maxi_wlast)
+            .w_last(maxi_wlast),
+            .fifo_rd_ack(fifo_rd_ackn)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -521,7 +523,8 @@
         .sd_full_o   (rx_fifo_full),
         .wb_full_o   (tx_fifo_full),
         .wb_empty_o  (rx_fifo_empty_sd_clk),
-        .fifo_reset(fifo_reset)
+        .fifo_reset(fifo_reset),
+        .fifo_rd_ack(fifo_rd_ackn)
         );
 
     sd_data_xfer_trig sd_data_xfer_trig0 (

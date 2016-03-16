@@ -66,7 +66,7 @@ module sd_fifo_filler(
            input  [31:0] adr_i,
            //Data Serial signals
            input  sd_clk,
-           input  [31:0] dat_i,
+           (* mark_debug = "true" *) input  [31:0] dat_i,
            output [31:0] dat_o,
            input  wr_i,
            input  rd_i,
@@ -74,7 +74,8 @@ module sd_fifo_filler(
            output sd_full_o,
            output sd_empty_o,
            output wb_full_o,
-           output wb_empty_o
+           output wb_empty_o,
+           output reg fifo_rd_ack
        );
 
 `define FIFO_MEM_ADR_SIZE 12
@@ -82,7 +83,7 @@ module sd_fifo_filler(
 
 wire reset_fifo;
 (* mark_debug = "true" *) wire fifo_rd;
-reg fifo_rd_ack;
+//reg fifo_rd_ack;
 reg fifo_rd_reg;
 
 

@@ -201,7 +201,7 @@
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
     assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
     assign bfr_bound           = slv_reg1[14:12];
-    assign sys_addr            = slv_reg0;    
+    assign sys_addr            = slv_reg0 + 4;
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;

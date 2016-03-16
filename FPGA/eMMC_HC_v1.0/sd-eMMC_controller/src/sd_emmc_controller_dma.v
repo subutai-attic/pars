@@ -42,7 +42,8 @@ module  sd_emmc_controller_dma (
             input  wire is_we_en,
             
             // FIFO Filler
-           output reg data_read_ready,
+            output reg data_read_ready,
+(* mark_debug = "true" *)            input wire fifo_rd_ack,
 
             // M_AXI
             input  wire next_data_word,
@@ -161,6 +162,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
           READ_WAIT: begin
                   if (we_counter > data_cycle) begin
                     state <= READ_ACT;
+//                    data_read_ready <= 1'b1;
                   end
                   else if (data_cycle == 8'h80) begin
                     blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
@@ -177,6 +179,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                   end 
                 end
           READ_ACT: begin
+//                      data_read_ready <= 1'b0;
                       case (addr_accepted)
                         1'b0: begin 
                           if (addr_write_valid && addr_write_ready) begin
