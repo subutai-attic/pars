@@ -28,13 +28,13 @@ module  sd_emmc_controller_dma (
             // S_AXI
             input  wire [31:0] init_dma_sys_addr,
             input  wire [2:0] buf_boundary,
-            input  wire [`BLKCNT_W -1:0] block_count,
+            (* mark_debug = "true" *) input  wire [`BLKCNT_W -1:0] block_count,
             input  wire sys_addr_changed,
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
             input wire blk_count_ena,
 //            input wire [11:0] blk_size,
-            (* mark_debug = "true" *) output reg data_int_cc,
+            output reg data_int_cc,
             input wire dat_int_rst,
 
             // Data serial
@@ -54,7 +54,7 @@ module  sd_emmc_controller_dma (
         );
 
 reg [15:0] block_count_bound;
-reg [15:0] total_trans_blk;
+(* mark_debug = "true" *) reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [2:0] state;
 (* mark_debug = "true" *) reg [7:0] data_cycle;
@@ -133,11 +133,12 @@ parameter TRANSFER_COMPLETE  = 3'b110;
         data_read_ready <= 0;
         addr_accepted <= 0;
         w_last <= 0;
+        data_int_cc <= 0;
       end
       else begin
         case (state)
           IDLE: begin
-                  if (dir_dat_trans_mode & dma_ena_trans_mode & xfer_compl) begin
+                  if (dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl) begin
                     write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
                     we_counter_reset <= 1;
@@ -152,7 +153,6 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                     write_addr <= 0;
                     data_cycle <= 0;
                     data_read_ready <= 0;
-                    data_int_cc <= 0;
                   end
                 end
           READ_WAIT: begin
@@ -236,9 +236,8 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                                 end
                               end
           TRANSFER_COMPLETE:begin
-                              if (xfer_compl && dat_int_rst) begin
+                              if (xfer_compl) begin
                                 state <= IDLE;
-                                data_int_cc <= 1'b0;
                               end
                               else begin
                                 state <= TRANSFER_COMPLETE;
@@ -247,6 +246,8 @@ parameter TRANSFER_COMPLETE  = 3'b110;
           WRITE:begin
                 end
         endcase
+        if (dat_int_rst)
+          data_int_cc <= 1'b0;
       end
     end
     
