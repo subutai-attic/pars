@@ -236,7 +236,7 @@
     wire [31:0] m_axi_awaddr;
     wire m_axi_awvalid;
     wire maxi_wlast;
-    wire dma_int;
+    wire [1:0] dma_int;
 
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
@@ -257,7 +257,7 @@
             .addr_write_ready(M_AXI_AWREADY),
             .data_read_ready(fifo_data_read_ready),
             .w_last(maxi_wlast),
-            .data_int_cc(dma_int),
+            .dma_interrupts(dma_int),
             .dat_int_rst(data_int_rst)
         );
         

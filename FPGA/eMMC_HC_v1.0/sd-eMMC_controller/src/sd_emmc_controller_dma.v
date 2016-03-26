@@ -34,7 +34,7 @@ module  sd_emmc_controller_dma (
             input wire dir_dat_trans_mode,
             input wire blk_count_ena,
 //            input wire [11:0] blk_size,
-            output reg data_int_cc,
+            output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
 
             // Data serial
@@ -133,7 +133,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
         data_read_ready <= 0;
         addr_accepted <= 0;
         w_last <= 0;
-        data_int_cc <= 0;
+        dma_interrupts <= 0;
       end
       else begin
         case (state)
@@ -217,6 +217,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                                 if (blk_count_ena) begin
                                   if (total_trans_blk < block_count) begin
                                     if (blk_done_cnt_within_boundary == block_count_bound) begin
+                                      dma_interrupts[1] <= 1'b1;
                                       state <= NEW_SYS_ADDR;
                                     end
                                     else begin
@@ -225,7 +226,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                                   end
                                   else begin
                                     state <= TRANSFER_COMPLETE;
-                                    data_int_cc <= 1'b1;
+                                    dma_interrupts[0] <= 1'b1;
                                   end
                                 end
                                 else if (blk_done_cnt_within_boundary == block_count_bound) begin
@@ -247,7 +248,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                 end
         endcase
         if (dat_int_rst)
-          data_int_cc <= 1'b0;
+          dma_interrupts <= 0;
       end
     end
     

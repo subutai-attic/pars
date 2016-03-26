@@ -124,7 +124,7 @@
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
 		output reg sys_addr_set,
-		input wire dma_int
+		(* mark_debug = "true" *) input wire [1:0] dma_int
 	);
     
 	// AXI4LITE signals
@@ -536,7 +536,7 @@
 //             slv_reg11[26] <= 1'b0;
 //          end
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b0, (dma_int | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, dma_int[1], 1'b0, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;

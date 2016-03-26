@@ -762,7 +762,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>baf86043</spirit:value>
+            <spirit:value>43fd0711</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -777,7 +777,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>e735609a</spirit:value>
+            <spirit:value>c34e886c</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -2124,7 +2124,7 @@
       <spirit:file>
         <spirit:name>src/sd_emmc_controller.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_7a67c93f</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_51a537c5</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -2307,8 +2307,8 @@
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>sd_emmc_controller_v1_0</xilinx:displayName>
-      <xilinx:coreRevision>61</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-03-16T04:45:37Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>75</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-03-25T13:34:28Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/azamat/Git/sd-eMMC_controller_sdma</xilinx:tag>
@@ -2319,7 +2319,7 @@
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="5d69a617"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="bb81e7fe"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="1caa5c2a"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="79d7fd42"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="172cd1aa"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="83bd4c51"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="71835b92"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="e62aeebc"/>
