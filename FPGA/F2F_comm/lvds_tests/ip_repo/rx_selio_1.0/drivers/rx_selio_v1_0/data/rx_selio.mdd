@@ -1,0 +1,10 @@
+
+
+OPTION psf_version = 2.1;
+
+BEGIN DRIVER rx_selio
+	OPTION supported_peripherals = (rx_selio);
+	OPTION copyfiles = all;
+	OPTION VERSION = 1.0;
+	OPTION NAME = rx_selio;
+END DRIVER
