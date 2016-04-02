@@ -16,7 +16,7 @@
 	(
 		// Users to add ports here
         output reg [0:0] bitslip,
-        
+        output wire reset,
         input wire clk_div,
         input wire [7:0] din,
 		// User ports ends
@@ -366,7 +366,7 @@
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 	        2'h0   : reg_data_out <= slv_reg0;
-	        2'h1   : reg_data_out <= rxdata;
+	        2'h1   : reg_data_out <= rdata;
 	        2'h2   : reg_data_out <= slv_reg2;
 	        2'h3   : reg_data_out <= slv_reg3;
 	        default : reg_data_out <= 0;
@@ -393,21 +393,73 @@
 	end    
 
 	// Add user logic here
-	reg [31:0] rxdata;
+	reg [7:0]  rxdata;
+	reg [31:0] rdata;
+	reg        flag;
+	reg        enable;
+	reg [3:0]  bstate; 
+	
+	assign reset = ~S_AXI_ARESETN;
+	
   always @( posedge clk_div )
     begin
       if ( S_AXI_ARESETN == 1'b0 | slv_reg0 )
         begin
           rxdata  <= 0;
-          bitslip <= 0;
+          rdata   <= 0;
         end 
-      else if (rxdata == 0)
-        begin    
+      else if ( !enable )begin    
             rxdata[7:0] <= din[7:0];
-            bitslip <= 1;  
         end
-        
+      if (rdata[31:24] == 0) begin
+            rdata[31:0] <= {rdata[23:0],rxdata[7:0]};
+            end  
     end    
-	// User logic ends
+	// bitslip operation
+    always @( posedge clk_div)
+        begin
+            if ( S_AXI_ARESETN == 1'b0 | slv_reg2 )
+                begin
+                    enable  <= 1'b1;                          // start bit slip
+                    flag    <= 1'b0;
+                    bitslip <= 1'b0;
+                    bstate  <= 4'h0;   
+                end
+            else if ( enable )
+                begin
+                    bitslip <= 1'b0;
+                    if (din[7:0] != 8'hA0) 
+                         begin flag <= 1'b1 ; end 
+                    else begin flag <= 1'b0 ; enable <= 1'b0; end 
+                    if ( flag ) begin
+                        case ( bstate )
+                            4'h0: begin 
+                                    bstate <= 4'h1;
+                                    bitslip <= 1'b1;
+                                  end
+                            4'h1: begin
+                                    bstate  <= 4'h2;
+                                    bitslip <= 1'b0;
+                                  end  
+                            4'h2: begin
+                                    bstate  <= 4'h3;
+                                    bitslip <= 1'b0;
+                                  end           
+                            4'h3: begin
+                                    bstate  <= 4'h4;
+                                    bitslip <= 1'b0;
+                                  end  
+                            4'h4: begin 
+                                    bstate  <= 4'h5;
+                                    bitslip <= 1'b0;
+                                  end
+                            default: begin
+                                    bstate  <= 4'h0;
+                                    flag    <= 1'b0;
+                                    end
+                        endcase                                         
+                    end
+                end
+        end
 
 	endmodule

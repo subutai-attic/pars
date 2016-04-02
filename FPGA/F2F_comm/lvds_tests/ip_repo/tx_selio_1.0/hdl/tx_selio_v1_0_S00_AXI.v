@@ -18,7 +18,6 @@
         output wire txclk,
         output wire txclk_div,
         output reg [7:0] dout,
-        output wire reset,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -397,40 +396,41 @@
 
 
     wire    CLKFBOUT;
-    reg [63:0] txd = 0; 
+    reg [31:0] txd = 0;
+    wire reset; 
     
     assign reset = ~S_AXI_ARESETN;
     always @ (posedge txclk_div) begin
         dout[7:0] <= txd[7:0];
         if (slv_reg0) begin
-            txd <= {32'b0,slv_reg1[31:0]};
+            txd <= slv_reg1;
         end else begin
-            txd <= {txd[55:0], txd[63:56]} ;
+            txd <= {txd[23:0], txd[31:24]} ;
         end 
     end       
 
     PLLE2_ADV #(
           .BANDWIDTH        ("OPTIMIZED"),          
-          .CLKFBOUT_MULT        (8),               
+          .CLKFBOUT_MULT        (9),               
           .CLKFBOUT_PHASE        (0.0),                 
           .CLKIN1_PERIOD        (10.000),          
           .CLKIN2_PERIOD        (10.000),          
-          .CLKOUT0_DIVIDE        (32),               
+          .CLKOUT0_DIVIDE        (3),               
           .CLKOUT0_DUTY_CYCLE    (0.5),                 
           .CLKOUT0_PHASE        (0.0),                 
-          .CLKOUT1_DIVIDE        (128),           
+          .CLKOUT1_DIVIDE        (12),           
           .CLKOUT1_DUTY_CYCLE    (0.5),                 
           .CLKOUT1_PHASE        (0.0),                 
-          .CLKOUT2_DIVIDE        (16),           
+          .CLKOUT2_DIVIDE        (0.0),           
           .CLKOUT2_DUTY_CYCLE    (0.5),                 
           .CLKOUT2_PHASE        (0.0),                 
-          .CLKOUT3_DIVIDE        (8),                   
+          .CLKOUT3_DIVIDE        (),                   
           .CLKOUT3_DUTY_CYCLE    (0.5),                 
           .CLKOUT3_PHASE        (0.0),                 
-          .CLKOUT4_DIVIDE        (8),                   
+          .CLKOUT4_DIVIDE        (),                   
           .CLKOUT4_DUTY_CYCLE    (0.5),                 
           .CLKOUT4_PHASE        (0.0),                  
-          .CLKOUT5_DIVIDE        (8),                   
+          .CLKOUT5_DIVIDE        (),                   
           .CLKOUT5_DUTY_CYCLE    (0.5),                 
           .CLKOUT5_PHASE        (0.0),                  
           .COMPENSATION        ("ZHOLD"),             

@@ -76,12 +76,11 @@
 		.S_AXI_RREADY(s00_axi_rready),
 		.txclk(txclk),
 		.txclk_div(txclk_div),
-		.dout(dout),
-		.reset(reset)
+		.dout(dout)
 	);
 
 	// Add user logic here
-
+    assign reset = ~s00_axi_aresetn;
 	// User logic ends
 
 	endmodule

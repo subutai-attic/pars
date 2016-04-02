@@ -75,11 +75,11 @@
 		.S_AXI_RREADY(s00_axi_rready),
 		.clk_div(clk_div),
 		.din(din),
-		.bitslip(bitslip)
+		.bitslip(bitslip),
+		.reset(reset)
 	);
 
 	// Add user logic here
-    assign reset = ~s00_axi_aresetn;
 	// User logic ends
 
 	endmodule
