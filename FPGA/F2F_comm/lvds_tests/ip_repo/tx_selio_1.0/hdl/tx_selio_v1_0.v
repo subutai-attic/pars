@@ -17,7 +17,7 @@
 		// Users to add ports here
         output wire txclk,
         output wire txclk_div,
-        output wire [7:0] dout,
+        output wire [19:0] dout,
         output wire reset,
         
         

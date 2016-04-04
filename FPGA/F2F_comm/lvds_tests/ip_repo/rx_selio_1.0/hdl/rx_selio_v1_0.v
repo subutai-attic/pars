@@ -19,10 +19,10 @@
 		// User ports ends
 		// Do not modify the ports beyond this line
         output wire reset,
-        output wire [0:0] bitslip,
+        output wire [1:0] bitslip,
         
         input wire clk_div,
-        input wire [7:0] din,
+        input wire [19:0] din,
 
 		// Ports of Axi Slave Bus Interface S00_AXI
 		input wire  s00_axi_aclk,

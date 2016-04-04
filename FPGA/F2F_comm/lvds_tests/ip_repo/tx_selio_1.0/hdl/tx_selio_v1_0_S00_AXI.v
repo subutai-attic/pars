@@ -17,7 +17,7 @@
 		// Users to add ports here
         output wire txclk,
         output wire txclk_div,
-        output reg [7:0] dout,
+        output reg [19:0] dout,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -401,24 +401,26 @@
     
     assign reset = ~S_AXI_ARESETN;
     always @ (posedge txclk_div) begin
-        dout[7:0] <= txd[7:0];
-        if (slv_reg0) begin
-            txd <= slv_reg1;
-        end else begin
-            txd <= {txd[23:0], txd[31:24]} ;
-        end 
+//        dout[9:0] <= txd[9:0];
+        dout[19:0] <= slv_reg1[19:0];
+        
+//        if (slv_reg0) begin
+//            txd <= slv_reg1;
+//        end else begin
+//            txd <= txd;
+//        end 
     end       
 
     PLLE2_ADV #(
           .BANDWIDTH        ("OPTIMIZED"),          
-          .CLKFBOUT_MULT        (9),               
+          .CLKFBOUT_MULT        (8),               
           .CLKFBOUT_PHASE        (0.0),                 
           .CLKIN1_PERIOD        (10.000),          
           .CLKIN2_PERIOD        (10.000),          
-          .CLKOUT0_DIVIDE        (3),               
+          .CLKOUT0_DIVIDE        (4),               
           .CLKOUT0_DUTY_CYCLE    (0.5),                 
           .CLKOUT0_PHASE        (0.0),                 
-          .CLKOUT1_DIVIDE        (12),           
+          .CLKOUT1_DIVIDE        (16),           
           .CLKOUT1_DUTY_CYCLE    (0.5),                 
           .CLKOUT1_PHASE        (0.0),                 
           .CLKOUT2_DIVIDE        (0.0),           
