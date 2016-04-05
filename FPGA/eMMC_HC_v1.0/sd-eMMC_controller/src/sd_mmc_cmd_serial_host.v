@@ -67,13 +67,13 @@ module sd_mmc_cmd_serial_host (
 //---------------Input ports---------------
 input sd_clk;                               // clock from clock divider
 input rst;                                  // system reset
-(* mark_debug = "true" *) input [1:0] setting_i;                      // response settings big/small wait for response or not
+input [1:0] setting_i;                      // response settings big/small wait for response or not
 input [39:0] cmd_i;                         // command taken from command master module
 input start_i;                              // flag for start to send command to the SD card
 input cmd_dat_i;                            // command which will come from SD card    
 //---------------Output ports---------------
 output reg [119:0] response_o;              // the output response which received from SD card
-(* mark_debug = "true" *) output reg finish_o;                        // The flag of finished to send the command
+output reg finish_o;                        // The flag of finished to send the command
 output reg crc_ok_o;                        // The CRC flag 
 output reg index_ok_o;                      // The index check flag
 output reg cmd_oe_o;                        // The command send enable
@@ -87,7 +87,7 @@ parameter CMD_SIZE = 40;
 parameter RESP_SIZE = 128;
 
 //---------------Internal variable-----------
-(* mark_debug = "true" *) reg cmd_dat_reg;
+reg cmd_dat_reg;
 integer resp_len;
 reg with_response;
 reg [CMD_SIZE-1:0] cmd_buff;
@@ -113,8 +113,8 @@ parameter
     READ = 7'h10,
     FINISH_WR = 7'h20,
     FINISH_WO = 7'h40;
-(* mark_debug = "true" *) reg [STATE_SIZE-1:0] state;
-(* mark_debug = "true" *) reg [STATE_SIZE-1:0] next_state;
+reg [STATE_SIZE-1:0] state;
+reg [STATE_SIZE-1:0] next_state;
 //Misc
 `define cmd_idx  (CMD_SIZE-1-counter) 
 

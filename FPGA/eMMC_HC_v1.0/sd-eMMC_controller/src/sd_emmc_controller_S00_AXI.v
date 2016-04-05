@@ -18,20 +18,20 @@
         output wire [7:0] clock_divisor,
 //        output wire internal_clock_en,
         input wire Internal_clk_stable,
-        (* mark_debug = "true" *) output wire [`CMD_REG_SIZE-1:0] command_reg,
+        output wire [`CMD_REG_SIZE-1:0] command_reg,
         output wire [31:0] argument_reg,
         input wire  [31:0] response_0_reg,
         input wire  [31:0] response_1_reg,
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
-        (* mark_debug = "true" *) input wire  [31:0] read_fifo_in,
+        input wire  [31:0] read_fifo_in,
         output wire [31:0] write_fifo_out,
         output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
-        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
-        (* mark_debug = "true" *) input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
+        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
         output reg cmd_start,
         output reg cmd_int_rst,
@@ -105,13 +105,12 @@
 		//Software reset completion
 		input wire rst_compl_cmd,
 		input wire rst_compl_dat,
-		(* mark_debug = "true" *) output wire [28:0] int_stat_reg,
+		output wire [28:0] int_stat_reg,
 		output wire [28:0] int_stat_en_reg,
 		output wire [28:0] int_sig_en_reg,
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
-		output wire sd_dat_bus_width_8bit,
-(* mark_debug = "true" *) input wire buff_read_en,
+		input wire buff_read_en,
 		input wire buff_writ_en,
 		input wire write_trans_active,
 		input wire read_trans_active,
@@ -175,7 +174,7 @@
     reg [11:0] blk_size_cnt = 0;
     reg [11:0] blk_size_cn  = 0;
     reg [15:0] blk_count_cnt = 0;
-	(* mark_debug = "true" *) wire     buff_read_en_int;
+	wire     buff_read_en_int;
 	wire     buff_write_en_int;
      
     //SD-eMMC host controller registers
@@ -192,7 +191,6 @@
     assign int_stat_en_reg     = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
     assign int_sig_en_reg      = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
     assign sd_dat_bus_width    = slv_reg10 [1];                            // Select sd data bus width 
-    assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
     assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
 	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
@@ -677,7 +675,7 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012432B2; //slv_reg16; Capabilities register
+	        5'h10   : reg_data_out <= 32'h012032B2; //slv_reg16; Capabilities register
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;

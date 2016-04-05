@@ -54,9 +54,9 @@ module sd_fifo_filler(
            //WB Signals
            output reg [31:0] wbm_adr_o,                      //
            output wbm_we_o,                                 //drived here
-           output [31:0] read_fifo_out,                     //wbm_dat_o,         
+           (* mark_debug = "true" *) output [31:0] read_fifo_out,                     //wbm_dat_o,         
            input  [31:0] write_fifo_in,                     //wbm_dat_i,
-           (* mark_debug = "true" *) output wbm_cyc_o,                                //drived here
+           output wbm_cyc_o,                                //drived here
            output wbm_stb_o,                                //drived here
            (* mark_debug = "true" *) input  fifo_data_read_ready,                     //wbm_ack_i,                //input from axi
            input  fifo_data_write_ready,
@@ -66,7 +66,7 @@ module sd_fifo_filler(
            input  [31:0] adr_i,
            //Data Serial signals
            input  sd_clk,
-           input  [31:0] dat_i,
+           (* mark_debug = "true" *) input  [31:0] dat_i,
            output [31:0] dat_o,
            input  wr_i,
            input  rd_i,
@@ -81,9 +81,9 @@ module sd_fifo_filler(
 `define MEM_OFFSET 4
 
 wire reset_fifo;
-(* mark_debug = "true" *) wire fifo_rd;
-(* mark_debug = "true" *) reg fifo_rd_ack;
-(* mark_debug = "true" *) reg fifo_rd_reg;
+wire fifo_rd;
+reg fifo_rd_ack;
+reg fifo_rd_reg;
 
 
 assign fifo_rd = !wb_empty_o & fifo_data_read_ready;

@@ -20,12 +20,12 @@
         output wire sd_cmd_o,
         input wire sd_cmd_i,
         output wire sd_cmd_t,
-        output wire [7:0] sd_dat_o,
-        input wire [7:0] sd_dat_i,
+        output wire [3:0] sd_dat_o,
+        input wire [3:0] sd_dat_i,
         output wire sd_dat_t,
         
         // Interupt pinout 
-        (* mark_debug = "true" *) output wire interrupt,
+        output wire interrupt,
 //        output wire int_data,
         
      // MAXIS
@@ -119,7 +119,6 @@
     wire [31:0] response_3_reg_wb_clk;
     wire [`BLKSIZE_W-1:0] block_size_reg_axi_clk;
     wire controll_setting_reg_wb_clk;
-    wire controll_setting_8bit_reg_wb_clk;
     wire [`INT_CMD_SIZE-1:0] cmd_int_status_reg_wb_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_status_reg_wb_clk;
     wire [`INT_CMD_SIZE-1:0] cmd_int_enable_reg_wb_clk;
@@ -139,7 +138,6 @@
     wire [31:0] response_3_reg_sd_clk;
     wire [`BLKSIZE_W-1:0] block_size_reg_sd_clk;
     wire controll_setting_reg_sd_clk;
-    wire controll_setting_8bit_reg_sd_clk;
     wire [`INT_CMD_SIZE-1:0] cmd_int_status_reg_sd_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_status_reg_sd_clk;
     wire [`BLKCNT_W-1:0] block_count_reg_sd_clk;
@@ -242,8 +240,7 @@
             .int_stat_en_reg(int_status_en_reg),
             .int_sig_en_reg(int_signal_en_reg),
             .timeout_contr_wire(data_timeout_reg_wb_clk),
-            .sd_dat_bus_width(controll_setting_reg_wb_clk),   
-            .sd_dat_bus_width_8bit(controll_setting_8bit_reg_wb_clk),   
+            .sd_dat_bus_width(controll_setting_reg_wb_clk),
             .buff_read_en(!rx_fifo_empty_axi_clk),
             .buff_writ_en(!tx_fifo_full_axi_clk),
             .write_trans_active(wr_trans_act_axi_clk),
@@ -345,7 +342,6 @@
         .DAT_dat_i      (sd_dat_i),
         .blksize        (block_size_reg_sd_clk),
         .bus_4bit       (controll_setting_reg_sd_clk),
-        .bus_8bit       (controll_setting_8bit_reg_sd_clk),
         .blkcnt         (block_count_reg_sd_clk),
         .start          ({d_read, d_write}),
         .byte_alignment (dma_addr_reg_sd_clk),
@@ -423,7 +419,6 @@
     bistable_domain_cross #(`DATA_TIMEOUT_W) data_timeout_reg_cross(!s00_axi_aresetn, s00_axi_aclk, data_timeout_reg_wb_clk, SD_CLK, data_timeout_reg_sd_clk);
     bistable_domain_cross #(`BLKSIZE_W) block_size_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_size_reg_axi_clk, SD_CLK, block_size_reg_sd_clk);
     bistable_domain_cross #(1) controll_setting_reg_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_reg_wb_clk, SD_CLK, controll_setting_reg_sd_clk);
-    bistable_domain_cross #(1) controll_setting_8bit_reg_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_8bit_reg_wb_clk, SD_CLK, controll_setting_8bit_reg_sd_clk);
     bistable_domain_cross #(`INT_CMD_SIZE) cmd_int_status_reg_cross(!s00_axi_aresetn, SD_CLK, cmd_int_status_reg_sd_clk, s00_axi_aclk, cmd_int_status_reg_wb_clk);
     
     bistable_domain_cross #(1) buffer_read_enable_cross(!s00_axi_aresetn, SD_CLK, rx_fifo_empty_sd_clk, s00_axi_aclk, rx_fifo_empty_axi_clk);
