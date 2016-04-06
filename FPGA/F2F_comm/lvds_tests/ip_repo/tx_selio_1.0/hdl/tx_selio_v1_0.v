@@ -20,7 +20,36 @@
         output wire [19:0] dout,
         output wire reset,
         
+        input 	  wire 		        eMMC_reset,
+        input     wire     [5:0]    eMMC_cmd,
+        input     wire     [2:0]    eMMC_responseType,
+        input     wire     [15:0]   eMMC_dataPhaseInfo,
+        input     wire     [31:0]   eMMC_cmdArgument,
+        input     wire              eMMC_writeCmd,
+        input     wire              eMMC_readResponse,
+        output    wire     [31:0]   eMMC_response,
+        input     wire     [3:0]    eMMC_clockFreq,
         
+        input     wire     [63:0]   eMMC_writeDataToEMMC,
+        input     wire              eMMC_writeEnableToWriteDataFIFO,
+        output     wire    [63:0]   eMMC_readDataFromEMMC,
+        input     wire              eMMC_readEnableToReadDataFIFO, 
+        output     wire             eMMC_readD0Value, 
+    
+        input     wire     [63:0]   eMMC_DMAWriteDataToEMMC,
+        input     wire              eMMC_DMAWriteEnableToWriteDataFIFO,
+        output     wire             eMMC_WriteDataFIFO_almostFull, 
+        
+        output     wire    [63:0]   eMMC_DMAReadDataFromEMMC,
+        input     wire              eMMC_DMAReadEnableToReadDataFIFO,
+        output     wire             eMMC_ReadDataFIFO_almostEmpty,
+        
+        output     wire             eMMC_transferTaskDone, 
+    
+        input     wire              eMMC_resetDataFIFOs,
+        input     wire              eMMC_highSpeedModeEnabled,
+        
+        output     wire     [31:0]  eMMC_dataWriteCRCResponse,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -82,5 +111,9 @@
 	// Add user logic here
     assign reset = ~s00_axi_aresetn;
 	// User logic ends
+
+
+ 
+
 
 	endmodule
