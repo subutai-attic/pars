@@ -60,7 +60,7 @@ module sd_data_serial_host(
            //tristate data
            output reg DAT_oe_o,
            output reg[3:0] DAT_dat_o,
-           input [3:0] DAT_dat_i,
+           (* mark_debug = "true" *) input [3:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,

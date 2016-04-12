@@ -50,7 +50,14 @@ module  sd_emmc_controller_dma (
             output reg [31:0] write_addr,
             output reg addr_write_valid,
             input wire addr_write_ready,
-            output reg w_last
+            output reg w_last,
+            output wire [31:0] axi_araddr,
+            output wire axi_arvalid,
+            input wire axi_arready,
+            input wire [31:0] axi_rdata,
+            input wire axi_rvalid,
+            output wire axi_rready,
+            input wire axi_rlast
         );
 
 reg [15:0] block_count_bound;
@@ -66,13 +73,14 @@ reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
 
-parameter IDLE               = 3'b000;
-parameter WRITE              = 3'b001;
-parameter READ_WAIT          = 3'b010;
-parameter READ_ACT           = 3'b011;
-parameter NEW_SYS_ADDR       = 3'b100;
-parameter READ_BLK_CNT_CHECK = 3'b101;
-parameter TRANSFER_COMPLETE  = 3'b110;
+parameter IDLE               = 3'b0000;
+parameter WRITE_WAIT         = 3'b0001;
+parameter READ_WAIT          = 3'b0010;
+parameter READ_ACT           = 3'b0011;
+parameter NEW_SYS_ADDR       = 3'b0100;
+parameter READ_BLK_CNT_CHECK = 3'b0101;
+parameter TRANSFER_COMPLETE  = 3'b0110;
+parameter WRITE_ACT          = 3'b0111;
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -144,7 +152,7 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                     we_counter_reset <= 1;
                   end
                   else if (~dir_dat_trans_mode & dma_ena_trans_mode & xfer_compl) begin
-                    state <= WRITE;
+                    state <= WRITE_WAIT;
                   end
                   else begin
                     state <= IDLE;
@@ -244,8 +252,9 @@ parameter TRANSFER_COMPLETE  = 3'b110;
                                 state <= TRANSFER_COMPLETE;
                               end
                             end
-          WRITE:begin
-                end
+          WRITE_WAIT:begin
+                       
+                     end
         endcase
         if (dat_int_rst)
           dma_interrupts <= 0;
