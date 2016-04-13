@@ -42,7 +42,8 @@ module  sd_emmc_controller_dma (
             input  wire is_we_en,
             
             // FIFO Filler
-            output reg data_read_ready,
+            output reg fifo_dat_rd_ready,
+            output reg fifo_dat_wr_ready,
 
             // M_AXI
             input  wire next_data_word,
@@ -51,10 +52,10 @@ module  sd_emmc_controller_dma (
             output reg addr_write_valid,
             input wire addr_write_ready,
             output reg w_last,
-            output wire [31:0] axi_araddr,
-            output wire axi_arvalid,
+            output reg [31:0] axi_araddr,
+            output reg axi_arvalid,
             input wire axi_arready,
-            input wire [31:0] axi_rdata,
+//            input wire [31:0] axi_rdata,
             input wire axi_rvalid,
             output wire axi_rready,
             input wire axi_rlast
@@ -69,12 +70,14 @@ reg [15:0] blk_done_cnt_within_boundary;
 reg [11:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
+reg init_rready;
+reg init_rready2;
 reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
 
 parameter IDLE               = 3'b0000;
-parameter WRITE_WAIT         = 3'b0001;
+parameter WRITE_TO_FIFO      = 3'b0001;
 parameter READ_WAIT          = 3'b0010;
 parameter READ_ACT           = 3'b0011;
 parameter NEW_SYS_ADDR       = 3'b0100;
@@ -138,10 +141,12 @@ parameter WRITE_ACT          = 3'b0111;
         blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
         write_addr <= 0;
-        data_read_ready <= 0;
+        fifo_dat_rd_ready <= 0;
+        fifo_dat_wr_ready <= 0;
         addr_accepted <= 0;
         w_last <= 0;
         dma_interrupts <= 0;
+        axi_arvalid <= 0;
       end
       else begin
         case (state)
@@ -151,8 +156,9 @@ parameter WRITE_ACT          = 3'b0111;
                     state <= READ_WAIT;
                     we_counter_reset <= 1;
                   end
-                  else if (~dir_dat_trans_mode & dma_ena_trans_mode & xfer_compl) begin
-                    state <= WRITE_WAIT;
+                  else if (!dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl) begin
+                    state <= WRITE_TO_FIFO;
+                    axi_araddr <= init_dma_sys_addr;
                   end
                   else begin
                     state <= IDLE;
@@ -160,7 +166,7 @@ parameter WRITE_ACT          = 3'b0111;
                     blk_done_cnt_within_boundary <= 0;
                     write_addr <= 0;
                     data_cycle <= 0;
-                    data_read_ready <= 0;
+                    fifo_dat_rd_ready <= 0;
                   end
                 end
           READ_WAIT: begin
@@ -172,11 +178,11 @@ parameter WRITE_ACT          = 3'b0111;
                     total_trans_blk <= total_trans_blk + 1;
                     data_cycle <= 0;
                     we_counter_reset <= 0;
-                    data_read_ready <= 1'b0;
+                    fifo_dat_rd_ready <= 1'b0;
                     state <= READ_BLK_CNT_CHECK;
                   end
                   else begin
-                    data_read_ready <= 1'b0;
+                    fifo_dat_rd_ready <= 1'b0;
                     w_last <= 1'b0;
                     state <= READ_WAIT;
                   end 
@@ -200,7 +206,7 @@ parameter WRITE_ACT          = 3'b0111;
                             addr_accepted <= 1'b0;
                             data_cycle <= data_cycle + 1;
                             write_addr <= write_addr + 4;
-                            data_read_ready <= 1'b1;
+                            fifo_dat_rd_ready <= 1'b1;
                             w_last <= 1'b0;
                             state <= READ_WAIT;
                           end
@@ -252,28 +258,48 @@ parameter WRITE_ACT          = 3'b0111;
                                 state <= TRANSFER_COMPLETE;
                               end
                             end
-          WRITE_WAIT:begin
-                       
-                     end
+          WRITE_TO_FIFO:begin
+                          case (addr_accepted)
+                            1'b0: begin
+                              if (axi_arvalid && axi_arready) begin
+                                axi_arvalid <= 1'b0;
+                                addr_accepted <= 1'b1;
+                                axi_araddr <= axi_araddr + 64;
+                              end
+                              else begin
+                                axi_arvalid <= 1'b1;
+                              end
+                            end
+                            1'b1: begin
+                              if (axi_rvalid) begin
+                                fifo_dat_wr_ready <= 1'b0;
+                                data_cycle <= data_cycle + 1;
+                              end
+                              else begin
+                                fifo_dat_wr_ready <= 1'b1;
+                              end
+                            end
+                          endcase
+                        end
         endcase
         if (dat_int_rst)
           dma_interrupts <= 0;
       end
     end
     
-//assign data_read_ready = (!init_dat_read_ready2) && init_dat_read_ready;
+    assign axi_rready = (!init_rready2) && init_rready;
 
-//    always @ (posedge clock)
-//        begin: DATA_READ_READY_PULSE_GENERATOR
-//          if (reset == 1'b0) begin
-//            init_dat_read_ready <= 1'b0;
-//            init_dat_read_ready2 <= 1'b0;
-//          end
-//          else begin
-//            init_dat_read_ready <= fifo_read; 
-//            init_dat_read_ready2 <= init_dat_read_ready; 
-//          end
-//        end
+    always @ (posedge clock)
+        begin: AXI_RREADY_PULSE_GENERATOR
+          if (reset == 1'b0) begin
+            init_rready <= 1'b0;
+            init_rready2 <= 1'b0;
+          end
+          else begin
+            init_rready <= axi_rvalid;
+            init_rready2 <= init_rready;
+          end
+        end
 
     always @ (posedge clock)
       begin: NUMBER_OF_FIFO_WRITING_COUNTER

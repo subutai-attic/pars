@@ -25,7 +25,7 @@
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
         input wire  [31:0] read_fifo_in,
-        output wire [31:0] write_fifo_out,
+        output wire [31:0] write_fifo_out,     //need to removed
         output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,

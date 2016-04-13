@@ -218,7 +218,7 @@
     wire dat_trans_dir_axi_clk;
     wire dat_trans_dir_sd_clk;
     wire [31:0] read_fifo_out;
-    wire [31:0] write_fifo_out;
+//    wire [31:0] write_fifo_out;
     wire        fifo_data_read_ready;
     wire        fifo_data_write_ready;
     
@@ -255,17 +255,18 @@
             .write_addr(m_axi_awaddr),
             .addr_write_valid(m_axi_awvalid),
             .addr_write_ready(M_AXI_AWREADY),
-            .data_read_ready(fifo_data_read_ready),
+            .fifo_dat_rd_ready(fifo_data_read_ready),
             .w_last(maxi_wlast),
             .dma_interrupts(dma_int),
             .dat_int_rst(data_int_rst),
             .axi_araddr(M_AXI_ARADDR),
             .axi_arvalid(M_AXI_ARVALID),
             .axi_arready(M_AXI_ARREADY),
-            .axi_rdata(M_AXI_RDATA),
+//            .axi_rdata(M_AXI_RDATA),
             .axi_rvalid(M_AXI_RVALID),
             .axi_rready(M_AXI_RREADY),
-            .axi_rlast(M_AXI_RLAST)
+            .axi_rlast(M_AXI_RLAST),
+            .fifo_dat_wr_ready(fifo_data_write_ready)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -359,9 +360,9 @@
             .S_AXI_RVALID(s00_axi_rvalid),
             .S_AXI_RREADY(s00_axi_rready),
             .read_fifo_in(read_fifo_out),
-            .write_fifo_out(write_fifo_out),
+//            .write_fifo_out(write_fifo_out),
 //            .fifo_data_read_ready(fifo_data_read_ready),
-            .fifo_data_write_ready(fifo_data_write_ready),
+//            .fifo_data_write_ready(fifo_data_write_ready),
             .clock_divisor(divisor),
 //            .internal_clock_en(int_clk_en),
             .Internal_clk_stable(int_clk_stbl),
@@ -514,7 +515,7 @@
         .wbm_adr_o (wbm_adr),
         .wbm_we_o  (m_wb_we_o),
         .read_fifo_out (read_fifo_out),
-        .write_fifo_in (write_fifo_out),
+        .write_fifo_in (M_AXI_RDATA),
         .wbm_cyc_o (m_wb_cyc_o),
         .wbm_stb_o (m_wb_stb_o),
         .fifo_data_read_ready (fifo_data_read_ready),
