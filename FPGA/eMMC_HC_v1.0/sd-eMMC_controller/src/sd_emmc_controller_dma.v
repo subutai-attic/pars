@@ -43,7 +43,8 @@ module  sd_emmc_controller_dma (
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
-            output reg fifo_dat_wr_ready,
+            (* mark_debug = "true" *) output wire fifo_dat_wr_ready,
+            output reg fifo_rst,
 
             // M_AXI
             input  wire next_data_word,
@@ -72,6 +73,7 @@ reg init_we_ff;
 reg init_we_ff2;
 reg init_rready;
 reg init_rready2;
+reg init_rvalid;
 reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
@@ -142,11 +144,11 @@ parameter WRITE_ACT          = 3'b0111;
         data_cycle <= 0;
         write_addr <= 0;
         fifo_dat_rd_ready <= 0;
-        fifo_dat_wr_ready <= 0;
         addr_accepted <= 0;
         w_last <= 0;
         dma_interrupts <= 0;
         axi_arvalid <= 0;
+        fifo_rst <= 0;
       end
       else begin
         case (state)
@@ -155,6 +157,7 @@ parameter WRITE_ACT          = 3'b0111;
                     write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
                     we_counter_reset <= 1;
+                    fifo_rst <= 1;
                   end
                   else if (!dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl) begin
                     state <= WRITE_TO_FIFO;
@@ -170,6 +173,7 @@ parameter WRITE_ACT          = 3'b0111;
                   end
                 end
           READ_WAIT: begin
+                  fifo_rst <= 0;
                   if (we_counter > data_cycle) begin
                     state <= READ_ACT;
                   end
@@ -261,22 +265,33 @@ parameter WRITE_ACT          = 3'b0111;
           WRITE_TO_FIFO:begin
                           case (addr_accepted)
                             1'b0: begin
-                              if (axi_arvalid && axi_arready) begin
-                                axi_arvalid <= 1'b0;
-                                addr_accepted <= 1'b1;
-                                axi_araddr <= axi_araddr + 64;
+                              if (total_trans_blk < block_count) begin
+                                if (axi_arvalid & axi_arready) begin
+                                  axi_arvalid <= 1'b0;
+                                  addr_accepted <= 1'b1;
+                                  axi_araddr <= axi_araddr + 64;
+                                end
+                                else begin
+                                  axi_arvalid <= 1'b1;
+                                end
                               end
                               else begin
-                                axi_arvalid <= 1'b1;
+                                state <= TRANSFER_COMPLETE;
+                                dma_interrupts[0] <= 1'b1;
                               end
                             end
                             1'b1: begin
-                              if (axi_rvalid) begin
-                                fifo_dat_wr_ready <= 1'b0;
+                              if (axi_rvalid & axi_rready & !axi_rlast) begin
                                 data_cycle <= data_cycle + 1;
                               end
-                              else begin
-                                fifo_dat_wr_ready <= 1'b1;
+                              else if (axi_rvalid & axi_rready & axi_rlast) begin
+                                data_cycle <= data_cycle + 1;
+                                addr_accepted <= 1'b0;
+                                if (data_cycle == 8'h80) begin
+                                  blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
+                                  total_trans_blk <= total_trans_blk + 1;
+                                  data_cycle <= 0;
+                                end
                               end
                             end
                           endcase
@@ -287,19 +302,32 @@ parameter WRITE_ACT          = 3'b0111;
       end
     end
     
+    
+    assign fifo_dat_wr_ready = axi_rvalid & ~init_rvalid;
+    
+    always @ (posedge clock)
+      begin: FIFO_DATA_WRITE_READY_PULSE_GENERATOR
+        if(reset == 1'b0) begin
+          init_rvalid <= 1'b0;
+        end
+        else begin
+          init_rvalid <= axi_rvalid;
+        end
+      end
+    
     assign axi_rready = (!init_rready2) && init_rready;
 
     always @ (posedge clock)
-        begin: AXI_RREADY_PULSE_GENERATOR
-          if (reset == 1'b0) begin
-            init_rready <= 1'b0;
-            init_rready2 <= 1'b0;
-          end
-          else begin
-            init_rready <= axi_rvalid;
-            init_rready2 <= init_rready;
-          end
+      begin: AXI_RREADY_PULSE_GENERATOR
+        if (reset == 1'b0) begin
+          init_rready <= 1'b0;
+          init_rready2 <= 1'b0;
         end
+        else begin
+          init_rready <= axi_rvalid;
+          init_rready2 <= init_rready;
+        end
+      end
 
     always @ (posedge clock)
       begin: NUMBER_OF_FIFO_WRITING_COUNTER

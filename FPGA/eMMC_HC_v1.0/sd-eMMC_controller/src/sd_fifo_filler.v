@@ -50,7 +50,7 @@
 module sd_fifo_filler(
            input wb_clk,
            input rst,
-           input fifo_reset,
+           (* mark_debug = "true" *) input fifo_reset,
            //WB Signals
            output reg [31:0] wbm_adr_o,                      //
            output wbm_we_o,                                 //drived here
@@ -59,7 +59,7 @@ module sd_fifo_filler(
            output wbm_cyc_o,                                //drived here
            output wbm_stb_o,                                //drived here
            (* mark_debug = "true" *) input  fifo_data_read_ready,                     //wbm_ack_i,                //input from axi
-           input  fifo_data_write_ready,
+           (* mark_debug = "true" *) input  fifo_data_write_ready,
            //Data Master Control signals
            input  en_rx_i,
            input  en_tx_i,

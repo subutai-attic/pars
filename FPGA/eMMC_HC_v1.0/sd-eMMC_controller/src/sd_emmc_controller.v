@@ -266,7 +266,8 @@
             .axi_rvalid(M_AXI_RVALID),
             .axi_rready(M_AXI_RREADY),
             .axi_rlast(M_AXI_RLAST),
-            .fifo_dat_wr_ready(fifo_data_write_ready)
+            .fifo_dat_wr_ready(fifo_data_write_ready),
+            .fifo_rst(fifo_reset)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -378,7 +379,7 @@
             .response_2_reg(response_2_reg_wb_clk),
             .response_3_reg(response_3_reg_wb_clk),
             .software_reset_reg(software_reset_reg_axi_clk),  
-            .fifo_reset(fifo_reset),          
+//            .fifo_reset(fifo_reset),          
             .timeout_reg(cmd_timeout_reg_wb_clk),
             .cmd_int_st(cmd_int_status_reg_wb_clk),
             .dat_int_st(data_int_status_reg_wb_clk),
