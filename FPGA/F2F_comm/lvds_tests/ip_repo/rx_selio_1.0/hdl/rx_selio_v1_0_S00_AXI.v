@@ -15,10 +15,10 @@
 	)
 	(
 		// Users to add ports here
-        output reg [1:0] bitslip,
+        output reg [2:0] bitslip,
         output wire reset,
         input wire clk_div,
-        input wire [19:0] din,
+        input wire [23:0] din,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -367,7 +367,7 @@
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 	        2'h0   : reg_data_out <= slv_reg0;
 	        2'h1   : reg_data_out <= rdata;
-	        2'h2   : reg_data_out <= slv_reg2;
+	        2'h2   : reg_data_out <= rxdata;
 	        2'h3   : reg_data_out <= slv_reg3;
 	        default : reg_data_out <= 0;
 	      endcase
@@ -393,7 +393,7 @@
 	end    
 
 	// Add user logic here
-	reg [9:0]  rxdata;
+	reg [31:0]  rxdata;
 	reg [31:0] rdata;
 	reg        flag;
 	reg        enable;
@@ -409,55 +409,49 @@
           rdata   <= 0;
         end 
       else if ( !enable )begin    
-//            rxdata[9:0] <= din[9:0];
-            rdata[19:0] <= din[19:0];
-
+          rdata[23:0] <= din[23:0];
         end
-//      if (rdata[31:24] == 0) begin
-//            rdata[31:0] <= {rdata[21:0],rxdata[9:0]};
-//            end  
+      else begin    
+          rxdata[23:0] <= din[23:0];
+          end          
     end    
 	// bitslip operation
-    always @( posedge clk_div)
+    always @( negedge clk_div)
         begin
             if ( S_AXI_ARESETN == 1'b0 | slv_reg2 )
                 begin
                     enable  <= 1'b1;                          // start bit slip
                     flag    <= 1'b0;
-                    bitslip <= 2'b0;
+                    bitslip <= 0;
                     bstate  <= 4'h0;   
                 end
             else if ( enable )
                 begin
-                    bitslip <= 2'b0;
-                    if (din[19:10] != 10'hA0) 
+                    bitslip <= 0;
+                    if (din[23:0] != 24'hA0A0A0) 
                          begin flag <= 1'b1 ; end 
                     else begin flag <= 1'b0 ; enable <= 1'b0; end 
                     if ( flag ) begin
                         case ( bstate )
                             4'h0: begin 
                                     bstate <= 4'h1;
-                                    bitslip <= 2'b10;
+                                    bitslip <= 7;
                                   end
                             4'h1: begin
                                     bstate  <= 4'h2;
-                                    bitslip <= 2'b0;
                                   end  
                             4'h2: begin
                                     bstate  <= 4'h3;
-                                    bitslip <= 2'b0;
                                   end           
                             4'h3: begin
                                     bstate  <= 4'h4;
-                                    bitslip <= 2'b0;
                                   end  
                             4'h4: begin 
                                     bstate  <= 4'h5;
-                                    bitslip <= 2'b0;
                                   end
                             default: begin
                                     bstate  <= 4'h0;
-                                    flag    <= 2'b0;
+//                                    flag    <= 0;
                                     end
                         endcase                                         
                     end

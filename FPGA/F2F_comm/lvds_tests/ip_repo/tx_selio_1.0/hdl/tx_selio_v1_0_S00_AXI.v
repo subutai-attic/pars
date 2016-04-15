@@ -17,7 +17,7 @@
 		// Users to add ports here
         output wire txclk,
         output wire txclk_div,
-        output reg [19:0] dout,
+        output reg [23:0] dout,
 
         input 	  wire 		        eMMC_reset,
         input     wire     [5:0]    eMMC_cmd,
@@ -434,7 +434,7 @@
     assign reset = ~S_AXI_ARESETN;
     always @ (posedge txclk_div) begin
 //        dout[9:0] <= txd[9:0];
-        dout[19:0] <= slv_reg1[19:0];
+        dout[23:0] <= slv_reg1[23:0];
         
 //        if (slv_reg0) begin
 //            txd <= slv_reg1;
@@ -449,10 +449,10 @@
           .CLKFBOUT_PHASE        (0.0),                 
           .CLKIN1_PERIOD        (10.000),          
           .CLKIN2_PERIOD        (10.000),          
-          .CLKOUT0_DIVIDE        (4),               
+          .CLKOUT0_DIVIDE        (32),               
           .CLKOUT0_DUTY_CYCLE    (0.5),                 
           .CLKOUT0_PHASE        (0.0),                 
-          .CLKOUT1_DIVIDE        (16),           
+          .CLKOUT1_DIVIDE        (128),           
           .CLKOUT1_DUTY_CYCLE    (0.5),                 
           .CLKOUT1_PHASE        (0.0),                 
           .CLKOUT2_DIVIDE        (0.0),           
