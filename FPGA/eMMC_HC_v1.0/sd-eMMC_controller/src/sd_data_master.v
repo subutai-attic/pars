@@ -65,8 +65,8 @@ module sd_data_master (
            input rx_fifo_full_i,
            //TODO: should be dependent on rx_fifo_empty_i signal (wishbone read all data case)
            //SD-DATA_Host
-           input xfr_complete_i,
-           input crc_ok_i,
+           (* mark_debug = "true" *) input xfr_complete_i,
+           (* mark_debug = "true" *) input crc_ok_i,
            //status output
            output reg [`INT_DATA_SIZE-1:0] int_status_o,
            input int_status_rst_i,
@@ -79,7 +79,7 @@ reg [`DATA_TIMEOUT_W-1:0] timeout_reg;
 reg [`DATA_TIMEOUT_W-1:0] watchdog;
 reg tx_cycle;
 parameter SIZE = 3;
-(* mark_debug = "true" *) reg [SIZE-1:0] state;
+reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE          = 3'b000;
 parameter START_TX_FIFO = 3'b001;
