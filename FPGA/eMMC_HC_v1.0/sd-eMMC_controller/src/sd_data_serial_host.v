@@ -60,7 +60,7 @@ module sd_data_serial_host(
            //tristate data
            output reg DAT_oe_o,
            output reg[3:0] DAT_dat_o,
-           (* mark_debug = "true" *) input [3:0] DAT_dat_i,
+           input [3:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
@@ -78,7 +78,7 @@ module sd_data_serial_host(
        );
        
 //reg [31:0] data_out;
-(* mark_debug = "true" *) reg [3:0] DAT_dat_reg;
+reg [3:0] DAT_dat_reg;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 //CRC16
@@ -86,7 +86,7 @@ reg [3:0] crc_in;
 reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [3:0];
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
+reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
 reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;

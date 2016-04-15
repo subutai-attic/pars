@@ -267,7 +267,8 @@
             .axi_rready(M_AXI_RREADY),
             .axi_rlast(M_AXI_RLAST),
             .fifo_dat_wr_ready(fifo_data_write_ready),
-            .fifo_rst(fifo_reset)
+            .fifo_rst(fifo_reset),
+            .cmd_int_rst_pulse(cmd_int_rst_wb_clk)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI

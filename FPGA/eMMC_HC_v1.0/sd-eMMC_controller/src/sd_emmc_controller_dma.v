@@ -36,6 +36,7 @@ module  sd_emmc_controller_dma (
 //            input wire [11:0] blk_size,
             output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
+            input wire cmd_int_rst_pulse,
 
             // Data serial
             input wire xfer_compl,
@@ -43,7 +44,7 @@ module  sd_emmc_controller_dma (
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
-            (* mark_debug = "true" *) output wire fifo_dat_wr_ready,
+            (* mark_debug = "true" *) output reg fifo_dat_wr_ready,
             output reg fifo_rst,
 
             // M_AXI
@@ -65,7 +66,7 @@ module  sd_emmc_controller_dma (
 reg [15:0] block_count_bound;
 (* mark_debug = "true" *) reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
-(* mark_debug = "true" *) reg [2:0] state;
+(* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [7:0] data_cycle;
 reg [15:0] blk_done_cnt_within_boundary;
 reg [11:0] we_counter;
@@ -78,14 +79,15 @@ reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
 
-parameter IDLE               = 3'b0000;
-parameter WRITE_TO_FIFO      = 3'b0001;
-parameter READ_WAIT          = 3'b0010;
-parameter READ_ACT           = 3'b0011;
-parameter NEW_SYS_ADDR       = 3'b0100;
-parameter READ_BLK_CNT_CHECK = 3'b0101;
-parameter TRANSFER_COMPLETE  = 3'b0110;
-parameter WRITE_ACT          = 3'b0111;
+parameter IDLE                = 4'b0000;
+parameter WRITE_TO_FIFO       = 4'b0001;
+parameter READ_WAIT           = 4'b0010;
+parameter READ_ACT            = 4'b0011;
+parameter NEW_SYS_ADDR        = 4'b0100;
+parameter READ_BLK_CNT_CHECK  = 4'b0101;
+parameter TRANSFER_COMPLETE   = 4'b0110;
+parameter WRITE_ACT           = 4'b0111;
+parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -144,6 +146,7 @@ parameter WRITE_ACT          = 3'b0111;
         data_cycle <= 0;
         write_addr <= 0;
         fifo_dat_rd_ready <= 0;
+        fifo_dat_wr_ready <= 0;
         addr_accepted <= 0;
         w_last <= 0;
         dma_interrupts <= 0;
@@ -159,8 +162,9 @@ parameter WRITE_ACT          = 3'b0111;
                     we_counter_reset <= 1;
                     fifo_rst <= 1;
                   end
-                  else if (!dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl) begin
+                  else if (!dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl & cmd_int_rst_pulse) begin
                     state <= WRITE_TO_FIFO;
+                    fifo_rst <= 1;
                     axi_araddr <= init_dma_sys_addr;
                   end
                   else begin
@@ -170,6 +174,7 @@ parameter WRITE_ACT          = 3'b0111;
                     write_addr <= 0;
                     data_cycle <= 0;
                     fifo_dat_rd_ready <= 0;
+                    fifo_dat_wr_ready <= 0;
                   end
                 end
           READ_WAIT: begin
@@ -244,7 +249,6 @@ parameter WRITE_ACT          = 3'b0111;
                                   end
                                   else begin
                                     state <= TRANSFER_COMPLETE;
-                                    dma_interrupts[0] <= 1'b1;
                                   end
                                 end
                                 else if (blk_done_cnt_within_boundary == block_count_bound) begin
@@ -254,18 +258,26 @@ parameter WRITE_ACT          = 3'b0111;
                                   state <= READ_WAIT;
                                 end
                               end
-          TRANSFER_COMPLETE:begin
+          TRANSFER_COMPLETE: begin
                               if (xfer_compl) begin
                                 state <= IDLE;
+                                dma_interrupts[0] <= 1'b1;
                               end
                               else begin
                                 state <= TRANSFER_COMPLETE;
                               end
                             end
-          WRITE_TO_FIFO:begin
+          WRITE_TO_FIFO: begin
+                          fifo_rst <= 0;
                           case (addr_accepted)
                             1'b0: begin
-                              if (total_trans_blk < block_count) begin
+                              if (data_cycle == 8'h80) begin
+                                blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
+                                total_trans_blk <= total_trans_blk + 1;
+                                data_cycle <= 0;
+                                state <= WRITE_CNT_BLK_CHECK;
+                              end
+                              else begin
                                 if (axi_arvalid & axi_arready) begin
                                   axi_arvalid <= 1'b0;
                                   addr_accepted <= 1'b1;
@@ -275,45 +287,33 @@ parameter WRITE_ACT          = 3'b0111;
                                   axi_arvalid <= 1'b1;
                                 end
                               end
-                              else begin
-                                state <= TRANSFER_COMPLETE;
-                                dma_interrupts[0] <= 1'b1;
-                              end
                             end
-                            1'b1: begin
-                              if (axi_rvalid & axi_rready & !axi_rlast) begin
+                            1'b1: begin  //The burst read active
+                              if (axi_rvalid && ~fifo_dat_wr_ready) begin
+                                fifo_dat_wr_ready <= 1'b1;
                                 data_cycle <= data_cycle + 1;
                               end
-                              else if (axi_rvalid & axi_rready & axi_rlast) begin
-                                data_cycle <= data_cycle + 1;
-                                addr_accepted <= 1'b0;
-                                if (data_cycle == 8'h80) begin
-                                  blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
-                                  total_trans_blk <= total_trans_blk + 1;
-                                  data_cycle <= 0;
-                                end
+                              else if (fifo_dat_wr_ready) begin
+                                fifo_dat_wr_ready <= 1'b0;
+                                if (axi_rlast)
+                                 addr_accepted <= 1'b0;  //The burst read stopped
                               end
                             end
                           endcase
                         end
+          WRITE_CNT_BLK_CHECK: begin
+                                 if (total_trans_blk < block_count) begin
+                                   state <=  WRITE_TO_FIFO;
+                                 end
+                                 else begin
+                                   state <= TRANSFER_COMPLETE;
+                                 end
+                               end
         endcase
         if (dat_int_rst)
           dma_interrupts <= 0;
       end
     end
-    
-    
-    assign fifo_dat_wr_ready = axi_rvalid & ~init_rvalid;
-    
-    always @ (posedge clock)
-      begin: FIFO_DATA_WRITE_READY_PULSE_GENERATOR
-        if(reset == 1'b0) begin
-          init_rvalid <= 1'b0;
-        end
-        else begin
-          init_rvalid <= axi_rvalid;
-        end
-      end
     
     assign axi_rready = (!init_rready2) && init_rready;
 
@@ -324,7 +324,7 @@ parameter WRITE_ACT          = 3'b0111;
           init_rready2 <= 1'b0;
         end
         else begin
-          init_rready <= axi_rvalid;
+          init_rready <= fifo_dat_wr_ready;
           init_rready2 <= init_rready;
         end
       end

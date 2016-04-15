@@ -80,8 +80,8 @@ module sd_fifo_filler(
 `define FIFO_MEM_ADR_SIZE 12
 `define MEM_OFFSET 4
 
-wire reset_fifo;
-(* mark_debug = "true" *) wire fifo_rd;
+(* mark_debug = "true" *) wire reset_fifo;
+wire fifo_rd;
 reg fifo_rd_ack;
 reg fifo_rd_reg;
 

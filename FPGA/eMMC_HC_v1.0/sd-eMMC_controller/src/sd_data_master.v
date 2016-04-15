@@ -75,8 +75,8 @@ module sd_data_master (
            input start_write
        );
 
-(* mark_debug = "true" *) reg [`DATA_TIMEOUT_W-1:0] timeout_reg;
-(* mark_debug = "true" *) reg [`DATA_TIMEOUT_W-1:0] watchdog;
+reg [`DATA_TIMEOUT_W-1:0] timeout_reg;
+reg [`DATA_TIMEOUT_W-1:0] watchdog;
 reg tx_cycle;
 parameter SIZE = 3;
 reg [SIZE-1:0] state;
