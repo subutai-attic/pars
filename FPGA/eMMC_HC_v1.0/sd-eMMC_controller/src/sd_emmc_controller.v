@@ -238,6 +238,7 @@
     wire m_axi_awvalid;
     wire maxi_wlast;
     wire [1:0] dma_int;
+    wire trans_blk_compl;
 
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
@@ -271,7 +272,7 @@
             .fifo_rst(fifo_reset),
             .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
             .start_write(start_tx),
-            .trans_block_compl(next_block_st)
+            .trans_block_compl(trans_blk_compl)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -510,7 +511,8 @@
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
         .next_block(next_block_st),
-        .start_write(start_write_sd_clk)
+        .start_write(start_write_sd_clk),
+        .write_next_block(trans_blk_compl)
         );
 
     sd_fifo_filler sd_fifo_filler0(

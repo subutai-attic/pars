@@ -58,7 +58,7 @@ module sd_fifo_filler(
            (* mark_debug = "true" *) input  [31:0] write_fifo_in,                     //wbm_dat_i,
            output wbm_cyc_o,                                //drived here
            output wbm_stb_o,                                //drived here
-           (* mark_debug = "true" *) input  fifo_data_read_ready,                     //wbm_ack_i,                //input from axi
+           input  fifo_data_read_ready,                     //wbm_ack_i,                //input from axi
            (* mark_debug = "true" *) input  fifo_data_write_ready,
            //Data Master Control signals
            (* mark_debug = "true" *) input  en_rx_i,
