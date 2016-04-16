@@ -41,6 +41,8 @@ module  sd_emmc_controller_dma (
             // Data serial
             input wire xfer_compl,
             input  wire is_we_en,
+            output reg start_write,
+            input wire trans_block_compl,
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
@@ -276,6 +278,7 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                                 total_trans_blk <= total_trans_blk + 1;
                                 data_cycle <= 0;
                                 state <= WRITE_CNT_BLK_CHECK;
+                                start_write <= 1;
                               end
                               else begin
                                 if (axi_arvalid & axi_arready) begin
@@ -302,11 +305,13 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                           endcase
                         end
           WRITE_CNT_BLK_CHECK: begin
-                                 if (total_trans_blk < block_count) begin
+                                 start_write <= 0;
+                                 if ((total_trans_blk < block_count) && trans_block_compl) begin
                                    state <=  WRITE_TO_FIFO;
                                  end
-                                 else begin
+                                 else if (total_trans_blk == block_count) begin
                                    state <= TRANSFER_COMPLETE;
+                                   start_write <= 0;
                                  end
                                end
         endcase

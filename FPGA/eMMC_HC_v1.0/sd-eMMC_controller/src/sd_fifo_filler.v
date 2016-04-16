@@ -61,15 +61,15 @@ module sd_fifo_filler(
            (* mark_debug = "true" *) input  fifo_data_read_ready,                     //wbm_ack_i,                //input from axi
            (* mark_debug = "true" *) input  fifo_data_write_ready,
            //Data Master Control signals
-           input  en_rx_i,
-           input  en_tx_i,
+           (* mark_debug = "true" *) input  en_rx_i,
+           (* mark_debug = "true" *) input  en_tx_i,
            input  [31:0] adr_i,
            //Data Serial signals
            input  sd_clk,
            input  [31:0] dat_i,
            (* mark_debug = "true" *) output [31:0] dat_o,
            input  wr_i,
-           input  rd_i,
+           (* mark_debug = "true" *) input  rd_i,
            //Signals for Data Master Control
            output sd_full_o,
            output sd_empty_o,

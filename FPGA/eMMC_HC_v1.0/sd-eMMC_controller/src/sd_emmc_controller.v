@@ -224,6 +224,7 @@
     
     // data write to SD card
     wire start_tx;
+    wire start_tx_pulse;
     wire start_write_sd_clk;
 
     // dma
@@ -268,7 +269,9 @@
             .axi_rlast(M_AXI_RLAST),
             .fifo_dat_wr_ready(fifo_data_write_ready),
             .fifo_rst(fifo_reset),
-            .cmd_int_rst_pulse(cmd_int_rst_wb_clk)
+            .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
+            .start_write(start_tx),
+            .trans_block_compl(next_block_st)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -400,7 +403,7 @@
             .com_inh_cmd(command_inhibit_cmd_axi_clk),
             .data_transfer_direction(dat_trans_dir_axi_clk),
             .start_tx_fifo_i(start_tx_fifo),
-            .start_tx_o(start_tx),
+//            .start_tx_o(start_tx),
             .bfr_bound(buff_bound),
             .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
@@ -550,19 +553,18 @@
 
     edge_detect soft_reset_edge_cmd(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_reg_axi_clk[0]), .rise(soft_rst_cmd_axi_clk), .fall());
     edge_detect sotf_reset_edge_dat(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_reg_axi_clk[1]), .rise(soft_rst_dat_axi_clk), .fall());
-    
     edge_detect cmd_start_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_start), .rise(cmd_start_wb_clk), .fall());
     edge_detect dat_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(data_int_rst), .rise(data_int_rst_wb_clk), .fall());
     edge_detect cmd_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_rst), .rise(cmd_int_rst_wb_clk), .fall());
-    
+    edge_detect start_write(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(start_tx), .rise(start_tx_pulse), .fall());
+        
     monostable_domain_cross soft_reset_cross_cmd(!s00_axi_aresetn, s00_axi_aclk, soft_rst_cmd_axi_clk, SD_CLK, soft_rst_cmd_sd_clk);
     monostable_domain_cross soft_reset_cross_dat(!s00_axi_aresetn, s00_axi_aclk, soft_rst_dat_axi_clk, SD_CLK, soft_rst_dat_sd_clk);
-
     monostable_domain_cross cmd_start_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_start_wb_clk, SD_CLK, cmd_start_sd_clk);
     monostable_domain_cross data_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, data_int_rst_wb_clk, SD_CLK, data_int_rst_sd_clk);
     monostable_domain_cross cmd_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_int_rst_wb_clk, SD_CLK, cmd_int_rst_sd_clk);
-
-    bistable_domain_cross #(1) data_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx, SD_CLK, start_write_sd_clk);
+    monostable_domain_cross start_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx_pulse, SD_CLK, start_write_sd_clk);
+//    bistable_domain_cross #(1) data_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx, SD_CLK, start_write_sd_clk);
 
     bistable_domain_cross #(32) argument_reg_cross(!s00_axi_aresetn, s00_axi_aclk, argument_reg_wb_clk, SD_CLK, argument_reg_sd_clk);
     bistable_domain_cross #(`CMD_REG_SIZE) command_reg_cross(!s00_axi_aresetn, s00_axi_aclk, command_reg_wb_clk, SD_CLK, command_reg_sd_clk);
