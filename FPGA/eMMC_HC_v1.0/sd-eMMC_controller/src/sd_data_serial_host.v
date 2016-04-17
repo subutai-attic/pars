@@ -98,7 +98,7 @@ parameter WRITE_CRC  = 6'b000100;
 parameter WRITE_BUSY = 6'b001000;
 parameter READ_WAIT  = 6'b010000;
 parameter READ_DAT   = 6'b100000;
-reg [2:0] crc_status;
+reg [3:0] crc_status;
 reg busy_int;
 reg [`BLKCNT_W-1:0] blkcnt_reg;
 reg [1:0] byte_alignment_reg;
@@ -107,7 +107,7 @@ reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
 reg [3:0] last_din;
-reg [2:0] crc_s ;
+(* mark_debug = "true" *) reg [3:0] crc_s ;
 reg [4:0] data_index;
 reg [31:0] data_out;
 
@@ -129,7 +129,7 @@ assign start_bit = !DAT_dat_reg[0];
 assign sd_data_busy = !DAT_dat_reg[0];
 assign read_trans_active = ((state == READ_DAT) || (state == READ_WAIT));
 assign write_trans_active = ((state == WRITE_DAT) || (state == WRITE_BUSY) || (state == WRITE_CRC) || (state == WRITE_WAIT));
-assign write_next_block = ((state == WRITE_WAIT)&&DAT_dat_reg[0]);
+assign write_next_block = (((state == WRITE_WAIT) && DAT_dat_reg[0] && next_block) || ((state == IDLE) && DAT_dat_reg[0]));
 
 always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block)
 begin: FSM_COMBO
@@ -155,7 +155,7 @@ begin: FSM_COMBO
                 next_state <= WRITE_DAT;
         end
         WRITE_CRC: begin
-            if (crc_status == 2)
+            if (crc_status == 3)
                 next_state <= WRITE_BUSY;
             else
                 next_state <= WRITE_CRC;
@@ -239,8 +239,8 @@ begin: FSM_OUT
                 bus_4bit_reg <= bus_4bit;
             end
             WRITE_WAIT: begin
-                next_block <= 0;
                 data_index <= 0;
+                next_block <= 0;
             end
             WRITE_DAT: begin
                 crc_ok <= 0;
@@ -326,13 +326,13 @@ begin: FSM_OUT
             end
             WRITE_CRC: begin
                 DAT_oe_o <= 1;
-                if (crc_status < 3)
+                if (crc_status < 4)
                     crc_s[crc_status] <= DAT_dat_reg[0];
-                crc_status <= crc_status + 3'h1;
+                crc_status <= crc_status + 4'h1;
                 busy_int <= 1;
             end
             WRITE_BUSY: begin
-                if (crc_s == 3'b010)
+                if (crc_s == 4'b1010)
                     crc_ok <= 1;
                 else
                     crc_ok <= 0;
