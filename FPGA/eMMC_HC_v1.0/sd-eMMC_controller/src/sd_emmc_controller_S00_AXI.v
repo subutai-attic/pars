@@ -185,7 +185,7 @@
     //SD-eMMC host controller registers
 	assign software_reset_reg  = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
-	assign clock_divisor       = slv_reg11[15:8];                          // Clock_divisor  shift >>1 will decrease it
+	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
 //	assign internal_clock_en   = slv_reg11[0];                             // Enable internal clock  
 	assign command_reg         = slv_reg3 [29:16];                         // CMD_INDEX
 	assign argument_reg        = slv_reg2;                                 // CMD_Argument 
