@@ -277,7 +277,8 @@
             .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
             .start_write(start_tx),
             .trans_block_compl(trans_blk_compl),
-            .ser_next_blk(next_block_st)
+            .ser_next_blk(next_block_st),
+            .write_timeout({d_read, d_write})
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI

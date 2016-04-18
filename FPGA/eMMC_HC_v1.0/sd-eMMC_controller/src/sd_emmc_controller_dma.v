@@ -44,6 +44,7 @@ module  sd_emmc_controller_dma (
             output reg start_write,
             input wire trans_block_compl,
             input wire ser_next_blk,
+            (* mark_debug = "true" *) input wire [1:0] write_timeout,
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
@@ -78,7 +79,7 @@ reg init_we_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
-reg addr_accepted;
+(* mark_debug = "true" *) reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
 
@@ -274,7 +275,7 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                           fifo_rst <= 0;
                           case (addr_accepted)
                             1'b0: begin
-                              if (data_cycle == 8'h80) begin
+                              if (data_cycle == 8'h7F) begin
                                 blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
                                 total_trans_blk <= total_trans_blk + 1;
                                 data_cycle <= 0;
@@ -295,7 +296,9 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                             1'b1: begin  //The burst read active
                               if (axi_rvalid && ~fifo_dat_wr_ready) begin
                                 fifo_dat_wr_ready <= 1'b1;
-                                data_cycle <= data_cycle + 1;
+                                if(axi_rready) begin
+                                    data_cycle <= data_cycle + 1;
+                                end
                               end
                               else if (fifo_dat_wr_ready) begin
                                 fifo_dat_wr_ready <= 1'b0;
@@ -313,12 +316,19 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                                    state <=  WRITE_TO_FIFO;
                                    start_write <= 0;                                   
                                  end
-                                 else if ((total_trans_blk == block_count)  && trans_block_compl) begin
-                                   state <= TRANSFER_COMPLETE;
+                                 else if ((total_trans_blk == block_count)  && xfer_compl) begin
+                                   state <= IDLE;
                                    start_write <= 0;
+                                   dma_interrupts[0] <= 1'b1;
                                  end
                                end
+                               
         endcase
+        // abort the state when timeout on data serializer
+        if (write_timeout == 2'b11) begin
+          state <= IDLE;
+          start_write <= 0;
+        end
         if (dat_int_rst)
           dma_interrupts <= 0;
       end
