@@ -17,8 +17,7 @@
 		// Users to add ports here
         output wire txclk,
         output wire txclk_div,
-        output reg [39:0] dout,
-        input wire [9:0] ein,
+        output reg [7:0] dout,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -399,32 +398,27 @@
     wire    CLKFBOUT;
     reg [31:0] txd = 0;
     wire reset; 
-    reg trigger = 0;
     
     assign reset = ~S_AXI_ARESETN;
     always @ (posedge txclk_div) begin
-        dout[31:0] <= slv_reg1[19:0];
-        dout[39:32] <= 0;
-//        txd[9:0] <= slv_reg1[9:0];
-        
-//            if (!trigger) begin txd[9:0] <= {2'b00, slv_reg1[7:0]}; end
-//            else if (trigger) begin txd[9:0] <= {2'b00, 8'hF8}; trigger <= 1'b0; end
-//        end else begin
-//            txd <= {txd[23:0], txd[31:24]} ;
-            //txd <= {txd[7:0], txd[31:16], txd[15:8]} ;
-//        end 
+        dout[7:0] <= txd[7:0];
+        if (slv_reg0) begin
+            txd <= slv_reg1;
+        end else begin
+            txd <= {txd[23:0], txd[31:24]} ;
+        end 
     end       
 
     PLLE2_ADV #(
           .BANDWIDTH        ("OPTIMIZED"),          
-          .CLKFBOUT_MULT        (8),   //8            
+          .CLKFBOUT_MULT        (9),               
           .CLKFBOUT_PHASE        (0.0),                 
-          .CLKIN1_PERIOD        (10.000), //10         
-          .CLKIN2_PERIOD        (10.000),     //10     
-          .CLKOUT0_DIVIDE        (4),         //4
+          .CLKIN1_PERIOD        (10.000),          
+          .CLKIN2_PERIOD        (10.000),          
+          .CLKOUT0_DIVIDE        (3),               
           .CLKOUT0_DUTY_CYCLE    (0.5),                 
           .CLKOUT0_PHASE        (0.0),                 
-          .CLKOUT1_DIVIDE        (20),   //20        
+          .CLKOUT1_DIVIDE        (12),           
           .CLKOUT1_DUTY_CYCLE    (0.5),                 
           .CLKOUT1_PHASE        (0.0),                 
           .CLKOUT2_DIVIDE        (0.0),           
