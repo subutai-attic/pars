@@ -230,8 +230,13 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                       endcase 
                     end
           NEW_SYS_ADDR: begin
-                          if (sys_addr_changed) begin
+                          if (sys_addr_changed & dir_dat_trans_mode) begin
                             state <= READ_WAIT;
+                            blk_done_cnt_within_boundary <= 0;
+                            write_addr <= init_dma_sys_addr;
+                          end
+                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
+                            state <= WRITE_TO_FIFO;
                             blk_done_cnt_within_boundary <= 0;
                             write_addr <= init_dma_sys_addr;
                           end
@@ -313,8 +318,15 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                                     start_write <= 0;
                                  end
                                  if ((total_trans_blk < block_count) && trans_block_compl) begin
-                                   state <=  WRITE_TO_FIFO;
-                                   start_write <= 0;                                   
+                                   if (blk_done_cnt_within_boundary == block_count_bound) begin
+                                     dma_interrupts[1] <= 1'b1;
+                                     state <= NEW_SYS_ADDR;
+                                     start_write <= 0;
+                                   end
+                                   else begin
+                                     state <=  WRITE_TO_FIFO;
+                                     start_write <= 0;
+                                   end
                                  end
                                  else if ((total_trans_blk == block_count)  && xfer_compl) begin
                                    state <= IDLE;
