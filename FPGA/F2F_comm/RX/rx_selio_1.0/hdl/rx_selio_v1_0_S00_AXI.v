@@ -15,10 +15,10 @@
 	)
 	(
 		// Users to add ports here
-        output reg [0:0] bitslip,
+        output reg [3:0] bitslip,
         output wire reset,
         input wire clk_div,
-        input wire [31:0] din,
+        input wire [29:0] din,
         output wire clk_out,
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -367,9 +367,9 @@
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 	        2'h0   : reg_data_out <= slv_reg0;
-	        2'h1   : reg_data_out <= rdata[19:0];
-	        2'h2   : reg_data_out <= slv_reg2;
-	        2'h3   : reg_data_out <= slv_reg3;
+	        2'h1   : reg_data_out <= rdata[7:0];
+	        2'h2   : reg_data_out <= enable;
+	        2'h3   : reg_data_out <= rxdata[7:0];
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -406,29 +406,162 @@
 	
 	assign reset = ~S_AXI_ARESETN;
 	
+	
+
   always @( posedge clk_div )
     begin
       if ( S_AXI_ARESETN == 1'b0 | slv_reg0 )
-        begin
+      begin
           rxdata  <= 0;
           rdata   <= 0;
-        end 
+      end 
       else begin
-          rdata[19:0] <= din[19:0];
-//        rdata[23:0] <= din[23:0];
+          if ( !enable ) begin
+               rdata <= din[7:0];
+          end
           
-//        rdata[19:10] <= din[19:10];
-//        rdata[26:20] <= din[26:20];
-      end  
-//      if (rdata[23:16] != 0) tmp_chk <= 1'b1;        
+          rxdata <= din[7:0];
+
+
+// --------------for testing        
+//          if ( din[7:0] == 8'hA0 ) begin    
+//              rxdata[7:0] <= 8'hEF;
+//              rdata[7:0] <= din[7:0];
+//          end       
+//          else begin
+//              rxdata[7:0] <= din[7:0];
+//              rdata[7:0] <= din[7:0];
+//          end              
+      end   
+    end    
+    
+    always @( negedge clk_div )
+    begin       
+            if ( S_AXI_ARESETN == 1'b0 | slv_reg0) begin
+                enable  <= 1'b1;                          
+                flag    <= 0;
+                bitslip <= 0;
+                bstate  <= 4'h0;        
+            end
+            else if ( enable ) begin
+            
+                if ( din[7:0] != 8'hA0 ) 
+                    flag <= 1'b1;
+                else if ( bstate[3] ) begin
+                    enable <= 0;
+                    flag   <= 0;
+                end                      
+                
+                if ( flag ) begin
+                case ( bstate ) 
+                    4'h0: begin
+                        bstate <= 4'h1;
+                        bitslip <= 4'hF;
+                    end
+                    4'h1: begin
+                        bstate <= 4'h2;
+                        bitslip <= 0;
+                    end
+                    4'h2: begin
+                        bstate <= 4'h3;
+                    end
+                    4'h3: begin
+                        bstate <= 4'h4;
+                    end   
+                    4'h4: begin
+                        bstate <= 4'h8;
+                    end 
+                    4'h8: begin
+                        bstate <= 0;
+                    end
+                endcase                                                         
+                end                    
+                
+
+// --------------for testing                
+//                if ( !flag ) begin
+//                    bitslip <= 1'h1;
+//                    flag <= 1'h1;
+//                end
+                
+//                else if ( flag ) begin
+//                    bitslip <= 1'h0;
+//                    enable <= 0; 
+//                    flag <= 0;                   
+//                end
+                
+                
                             
-//      else if ( !enable )begin    
-//            rxdata[7:0] <= din[7:0];
-//        end
-//      if (rdata[31:24] == 0) begin
-//            rdata[31:0] <= {rdata[23:0],rxdata[7:0]};
-//            end  
+            end                
     end
+    
+    
+	// bitslip operation	
+//    always @( negedge clk_div)
+//        begin
+//            if ( S_AXI_ARESETN == 1'b0 | slv_reg2 )
+//                begin
+//                    enable  <= 1'b1;                          // start bit slip
+//                    flag    <= 1'b0;
+//                    bitslip <= 0;
+//                    bstate  <= 4'h0;   
+//                end
+//            else if ( enable )
+//                begin
+//                    bitslip <= 0;
+//                    if (din[23:0] != 24'hA0A0A0) 
+//                         begin flag <= 1'b1 ; end 
+//                    else begin flag <= 1'b0 ; enable <= 1'b0; end 
+//                    if ( flag ) begin
+//                        case ( bstate )
+//                            4'h0: begin 
+//                                    bstate <= 4'h1;
+//                                    bitslip <= 7;
+//                                  end
+//                            4'h1: begin
+//                                    bstate  <= 4'h2;
+//                                  end  
+//                            4'h2: begin
+//                                    bstate  <= 4'h3;
+//                                  end           
+//                            4'h3: begin
+//                                    bstate  <= 4'h4;
+//                                  end  
+//                            4'h4: begin 
+//                                    bstate  <= 4'h5;
+//                                  end
+//                            default: begin
+//                                    bstate  <= 4'h0;
+////                                    flag    <= 0;
+//                                    end
+//                        endcase                                         
+//                    end
+//                end
+//        end	
+	
+//  always @( negedge clk_div )
+//    begin
+//      if ( S_AXI_ARESETN == 1'b0 | slv_reg0 )
+//        begin
+//          rxdata  <= 0;
+//          rdata   <= 0;
+//        end 
+//      else begin
+//          rdata[7:0] <= din[7:0];
+////        rdata[23:0] <= din[23:0];
+          
+////        rdata[19:10] <= din[19:10];
+////        rdata[26:20] <= din[26:20];
+//      end  
+////      if (rdata[23:16] != 0) tmp_chk <= 1'b1;        
+                            
+////      else if ( !enable )begin    
+////            rxdata[7:0] <= din[7:0];
+////        end
+////      if (rdata[31:24] == 0) begin
+////            rdata[31:0] <= {rdata[23:0],rxdata[7:0]};
+////            end  
+//    end
     
 //    always @( posedge clk_out )
 //    begin
@@ -451,101 +584,126 @@
 //    end
         
 	// bitslip operation
-    always @( posedge clk_div)
-        begin
-            if ( S_AXI_ARESETN == 1'b0 | slv_reg2 )
-                begin
-                    enable  <= 1'b1;                          // start bit slip
-                    flag    <= 1'b0;
-                    bitslip <= 1'b0;
-                    bstate  <= 4'h0;   
-                end
-            else if ( enable )
-                begin
-                    bitslip <= 1'b0;
-                    if (din[7:0] != 8'hA0) 
-                         begin flag <= 1'b1 ; end 
-                    else begin flag <= 1'b0 ; enable <= 1'b0; end 
-                    if ( flag ) begin
-                        case ( bstate )
-                            4'h0: begin 
-                                    bstate <= 4'h1;
-                                    bitslip <= 1'b1;
-                                  end
-                            4'h1: begin
-                                    bstate  <= 4'h2;
-                                    bitslip <= 1'b0;
-                                  end  
-                            4'h2: begin
-                                    bstate  <= 4'h3;
-                                    bitslip <= 1'b0;
-                                  end           
-                            4'h3: begin
-                                    bstate  <= 4'h4;
-                                    bitslip <= 1'b0;
-                                  end  
-                            4'h4: begin 
-                                    bstate  <= 4'h5;
-                                    bitslip <= 1'b0;
-                                  end
-                            default: begin
-                                    bstate  <= 4'h0;
-                                    flag    <= 1'b0;
-                                    end
-                        endcase                                         
-                    end
-                end
-        end
+//	  reg en_flag;
+//	  always @( clk_div )
+//	  begin
+//	      if ( S_AXI_ARESETN == 1'b0)
+//	      begin
+//	          flag <= 1'b0;
+//	          enable <= 1'b1;
+//	          en_flag <= 1'b0;
+//	          bitslip <= 4'h0;
+//	          bstate <= 4'h0;
+//	      end
+//	      else if ( enable )	         
+//	      begin
+//	          if ( din[7:0] == 8'hA0 )
+//	          begin
+//	              enable <= 0;
+//	              bitslip <= 0;
+//	          end
+//	          else begin
+//	              bitslip <= 4'hF;
+//	          end
+//	      end
+//	  end
 
-    wire CLKFBOUT;         
-    PLLE2_ADV #(
-          .BANDWIDTH        ("OPTIMIZED"),          
-          .CLKFBOUT_MULT        (20),               
-          .CLKFBOUT_PHASE        (0.0),                 
-          .CLKIN1_PERIOD        (25.000),          
-          .CLKIN2_PERIOD        (25.000),          
-          .CLKOUT0_DIVIDE        (4),               
-          .CLKOUT0_DUTY_CYCLE    (0.5),                 
-          .CLKOUT0_PHASE        (0.0),                 
-          .CLKOUT1_DIVIDE        (20),           
-          .CLKOUT1_DUTY_CYCLE    (0.5),                 
-          .CLKOUT1_PHASE        (0.0),                 
-          .CLKOUT2_DIVIDE        (0.0),           
-          .CLKOUT2_DUTY_CYCLE    (0.5),                 
-          .CLKOUT2_PHASE        (0.0),                 
-          .CLKOUT3_DIVIDE        (),                   
-          .CLKOUT3_DUTY_CYCLE    (0.5),                 
-          .CLKOUT3_PHASE        (0.0),                 
-          .CLKOUT4_DIVIDE        (),                   
-          .CLKOUT4_DUTY_CYCLE    (0.5),                 
-          .CLKOUT4_PHASE        (0.0),                  
-          .CLKOUT5_DIVIDE        (),                   
-          .CLKOUT5_DUTY_CYCLE    (0.5),                 
-          .CLKOUT5_PHASE        (0.0),                  
-          .COMPENSATION        ("ZHOLD"),             
-          .DIVCLK_DIVIDE        (1),                    
-          .REF_JITTER1        (0.100))                   
-    tx_mmcme2_adv_inst (
-          .CLKFBOUT            (CLKFBOUT),                  
-          .CLKOUT0            (clk_out),              
-          .CLKOUT1            (),              
-          .CLKOUT2            (),                 
-          .CLKOUT3            (),                      
-          .CLKOUT4            (),                      
-          .CLKOUT5            (),                      
-          .DO            (),                            
-          .DRDY            (),                          
-          .PWRDWN            (1'b0),  
-          .LOCKED            (),                
-          .CLKFBIN            (CLKFBOUT),            
-          .CLKIN1            (clk_div),                 
-          .CLKIN2            (1'b0),                     
-          .CLKINSEL            (1'b1),                     
-          .DADDR            (7'h00),                    
-          .DCLK            (1'b0),                       
-          .DEN            (1'b0),                        
-          .DI            (16'h0000),                
-          .DWE            (1'b0),                        
-          .RST            (reset)) ;          
+//    always @( negedge clk_div)
+//        begin
+//            if ( S_AXI_ARESETN == 1'b0 | slv_reg2 )
+//                begin
+//                    enable  <= 1'b1;                          // start bit slip
+//                    flag    <= 1'b0;
+//                    bitslip <= 0;
+//                    bstate  <= 4'h0;   
+//                end
+//            else if ( enable )
+//                begin
+//                    bitslip <= 0;
+//                    if (din[7:0] != 8'hA0) 
+//                         begin flag <= 1'b1 ; end 
+//                    else begin flag <= 1'b0 ; enable <= 1'b0; end 
+//                    if ( flag ) begin
+//                        case ( bstate )
+//                            4'h0: begin 
+//                                    bstate <= 4'h1;
+////                                    bitslip <= 2'b00;                                    
+//                                    bitslip <= 2'b11;
+//                                  end
+//                            4'h1: begin
+//                                    bstate  <= 4'h2;
+////                                    bitslip <= 2'b0;
+//                                  end  
+//                            4'h2: begin
+//                                    bstate  <= 4'h3;
+////                                    bitslip <= 2'b0;
+//                                  end           
+//                            4'h3: begin
+//                                    bstate  <= 4'h4;
+////                                    bitslip <= 2'b0;
+//                                  end  
+//                            4'h4: begin 
+//                                    bstate  <= 4'h5;
+////                                    bitslip <= 2'b0;
+//                                  end
+//                            default: begin
+//                                    bstate  <= 4'h0;
+////                                    flag    <= 1'b0;
+//                                    end
+//                        endcase                                         
+//                    end
+//                end
+//        end
+
+//    wire CLKFBOUT;         
+//    PLLE2_ADV #(
+//          .BANDWIDTH        ("OPTIMIZED"),          
+//          .CLKFBOUT_MULT        (20),               
+//          .CLKFBOUT_PHASE        (0.0),                 
+//          .CLKIN1_PERIOD        (25.000),          
+//          .CLKIN2_PERIOD        (25.000),          
+//          .CLKOUT0_DIVIDE        (4),               
+//          .CLKOUT0_DUTY_CYCLE    (0.5),                 
+//          .CLKOUT0_PHASE        (0.0),                 
+//          .CLKOUT1_DIVIDE        (20),           
+//          .CLKOUT1_DUTY_CYCLE    (0.5),                 
+//          .CLKOUT1_PHASE        (0.0),                 
+//          .CLKOUT2_DIVIDE        (0.0),           
+//          .CLKOUT2_DUTY_CYCLE    (0.5),                 
+//          .CLKOUT2_PHASE        (0.0),                 
+//          .CLKOUT3_DIVIDE        (),                   
+//          .CLKOUT3_DUTY_CYCLE    (0.5),                 
+//          .CLKOUT3_PHASE        (0.0),                 
+//          .CLKOUT4_DIVIDE        (),                   
+//          .CLKOUT4_DUTY_CYCLE    (0.5),                 
+//          .CLKOUT4_PHASE        (0.0),                  
+//          .CLKOUT5_DIVIDE        (),                   
+//          .CLKOUT5_DUTY_CYCLE    (0.5),                 
+//          .CLKOUT5_PHASE        (0.0),                  
+//          .COMPENSATION        ("ZHOLD"),             
+//          .DIVCLK_DIVIDE        (1),                    
+//          .REF_JITTER1        (0.100))                   
+//    tx_mmcme2_adv_inst (
+//          .CLKFBOUT            (CLKFBOUT),                  
+//          .CLKOUT0            (clk_out),              
+//          .CLKOUT1            (),              
+//          .CLKOUT2            (),                 
+//          .CLKOUT3            (),                      
+//          .CLKOUT4            (),                      
+//          .CLKOUT5            (),                      
+//          .DO            (),                            
+//          .DRDY            (),                          
+//          .PWRDWN            (1'b0),  
+//          .LOCKED            (),                
+//          .CLKFBIN            (CLKFBOUT),            
+//          .CLKIN1            (clk_div),                 
+//          .CLKIN2            (1'b0),                     
+//          .CLKINSEL            (1'b1),                     
+//          .DADDR            (7'h00),                    
+//          .DCLK            (1'b0),                       
+//          .DEN            (1'b0),                        
+//          .DI            (16'h0000),                
+//          .DWE            (1'b0),                        
+//          .RST            (reset)) ;          
 
 	endmodule

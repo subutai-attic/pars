@@ -19,10 +19,10 @@
 		// User ports ends
 		// Do not modify the ports beyond this line
         output wire reset,
-        output wire [0:0] bitslip,
+        output wire [3:0] bitslip,
         
         input wire clk_div,
-        input wire [31:0] din,
+        input wire [29:0] din,
         
         output wire clk_out,
 
