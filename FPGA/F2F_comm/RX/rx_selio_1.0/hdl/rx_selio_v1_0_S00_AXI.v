@@ -18,7 +18,7 @@
         output reg [3:0] bitslip,
         output wire reset,
         input wire clk_div,
-        input wire [29:0] din,
+        input wire [31:0] din,
         output wire clk_out,
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -367,9 +367,9 @@
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 	        2'h0   : reg_data_out <= slv_reg0;
-	        2'h1   : reg_data_out <= rdata[7:0];
-	        2'h2   : reg_data_out <= enable;
-	        2'h3   : reg_data_out <= rxdata[7:0];
+	        2'h1   : reg_data_out <= rdata[31:0];
+	        2'h2   : reg_data_out <= flags;
+	        2'h3   : reg_data_out <= rxdata[31:0];
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -394,13 +394,14 @@
 	end    
 
 	// Add user logic here
-	reg [7:0]  rxdata;
+	reg [31:0] flags = 0;
+	reg [31:0]  rxdata;
 	reg [31:0] rdata;
 	reg [31:0] rdata2;
 	reg [31:0] rdata3;
 	reg        flag;
 	reg        enable;
-	reg [3:0]  bstate; 
+	reg [4:0]  bstate; 
 	
 	reg tmp_chk = 0;
 	
@@ -412,15 +413,15 @@
     begin
       if ( S_AXI_ARESETN == 1'b0 | slv_reg0 )
       begin
-          rxdata  <= 0;
+          
           rdata   <= 0;
       end 
       else begin
           if ( !enable ) begin
-               rdata <= din[7:0];
+               rdata <= din[31:0];
           end
           
-          rxdata <= din[7:0];
+          
 
 
 // --------------for testing        
@@ -441,13 +442,23 @@
                 enable  <= 1'b1;                          
                 flag    <= 0;
                 bitslip <= 0;
-                bstate  <= 4'h0;        
+                bstate  <= 5'h0;   
+                rxdata  <= 0;     
             end
             else if ( enable ) begin
-            
-                if ( din[7:0] != 8'hA0 ) 
+                flags[0] <= enable;
+                flags[1] <= flag;
+                flags[2] <= bitslip[0];
+                flags[4] <= bstate[0];
+                flags[5] <= bstate[1];
+                flags[6] <= bstate[2];
+                flags[7] <= bstate[3];
+                flags[8] <= bstate[4];
+                rxdata <= din[31:0];
+                
+                if ( din[31:0] != 32'h3E1E0E06 ) 
                     flag <= 1'b1;
-                else if ( bstate[3] ) begin
+                else if ( bstate[3] ) begin //&& din[31:0] == 32'h3E1E0E06 
                     enable <= 0;
                     flag   <= 0;
                 end                      
@@ -455,25 +466,28 @@
                 if ( flag ) begin
                 case ( bstate ) 
                     4'h0: begin
-                        bstate <= 4'h1;
+                        bstate <= 5'h1;
                         bitslip <= 4'hF;
                     end
                     4'h1: begin
-                        bstate <= 4'h2;
+                        bstate <= 5'h2;
                         bitslip <= 0;
                     end
                     4'h2: begin
-                        bstate <= 4'h3;
+                        bstate <= 5'h3;
                     end
                     4'h3: begin
-                        bstate <= 4'h4;
+                        bstate <= 5'h4;
                     end   
                     4'h4: begin
-                        bstate <= 4'h8;
+                        bstate <= 5'h8;
                     end 
                     4'h8: begin
-                        bstate <= 0;
+                        bstate <= 5'h0;
                     end
+//                    4'h10: begin
+//                        bstate <= 0;
+//                    end                    
                 endcase                                                         
                 end                    
                 
