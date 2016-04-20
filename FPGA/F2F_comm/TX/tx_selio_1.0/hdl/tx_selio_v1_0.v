@@ -17,9 +17,9 @@
 		// Users to add ports here
         output wire txclk,
         output wire txclk_div,
-        output wire [7:0] dout,
+        output wire [31:0] dout,
         output wire reset,
-        
+//        input wire [9:0] ein,        
         
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -76,7 +76,8 @@
 		.S_AXI_RREADY(s00_axi_rready),
 		.txclk(txclk),
 		.txclk_div(txclk_div),
-		.dout(dout)
+		.dout(dout),
+		.ein(ein)
 	);
 
 	// Add user logic here
