@@ -52,18 +52,19 @@ module sd_data_serial_host(
            input sd_clk,
            input rst,
            //Tx Fifo
-           input [31:0] data_in,
-           output reg rd,
+           (* mark_debug = "true" *) input [31:0] data_in,
+           (* mark_debug = "true" *) output reg rd,
            //Rx Fifo
-           output wire [31:0] data_out_o,
-           output reg we,
+           (* mark_debug = "true" *) output wire [31:0] data_out_o,
+           (* mark_debug = "true" *) output reg we,
            //tristate data
            output reg DAT_oe_o,
-           output reg[3:0] DAT_dat_o,
-           input [3:0] DAT_dat_i,
+           output reg[7:0] DAT_dat_o,
+           input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
+           input bus_8bit,
            input [`BLKCNT_W-1:0] blkcnt,
            input [1:0] start,
            input [1:0] byte_alignment,
@@ -73,21 +74,22 @@ module sd_data_serial_host(
            output reg TLAST,
            output read_trans_active,
            output write_trans_active,
-           (* mark_debug = "true" *) output next_block,
-           (* mark_debug = "true" *) input start_write,
+           output next_block,
+           input start_write,
            output wire write_next_block
        );
        
 //reg [31:0] data_out;
-(* mark_debug = "true" *) reg [3:0] DAT_dat_reg;
-reg [`BLKSIZE_W-1+3:0] data_cycles;
-reg bus_4bit_reg;
+(* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
+(* mark_debug = "true" *) reg [`BLKSIZE_W-1+3:0] data_cycles;
+(* mark_debug = "true" *) reg bus_4bit_reg;
+(* mark_debug = "true" *) reg bus_8bit_reg;
 //CRC16
-reg [3:0] crc_in;
+reg [7:0] crc_in;
 reg crc_en;
 reg crc_rst;
-wire [15:0] crc_out [3:0];
-reg [`BLKSIZE_W-1+4:0] transf_cnt;
+wire [15:0] crc_out [7:0];
+(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
 (* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
@@ -100,15 +102,15 @@ parameter READ_WAIT  = 6'b010000;
 parameter READ_DAT   = 6'b100000;
 reg [3:0] crc_status;
 reg busy_int;
-reg [`BLKCNT_W-1:0] blkcnt_reg;
+(* mark_debug = "true" *) reg [`BLKCNT_W-1:0] blkcnt_reg;
 reg [1:0] byte_alignment_reg;
 reg [`BLKSIZE_W-1:0] blksize_reg;
 reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
-reg [3:0] last_din;
+reg [7:0] last_din;
 (* mark_debug = "true" *) reg [3:0] crc_s ;
-reg [4:0] data_index;
+(* mark_debug = "true" *) reg [4:0] data_index;
 reg [31:0] data_out;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
@@ -119,7 +121,7 @@ always @(posedge sd_clk)
 
 genvar i;
 generate
-    for(i=0; i<4; i=i+1) begin: CRC_16_gen
+    for(i=0; i<7; i=i+1) begin: CRC_16_gen
         sd_crc_16 CRC_16_i (crc_in[i],crc_en, sd_clk, crc_rst, crc_out[i]);
     end
 endgenerate
@@ -215,13 +217,14 @@ begin: FSM_OUT
         byte_alignment_reg <= 0;
         data_cycles <= 0;
         bus_4bit_reg <= 0;
+        bus_8bit_reg <= 0;
     end
     else begin
         state <= next_state;
         case(state)
             IDLE: begin
                 DAT_oe_o <= 1;
-                DAT_dat_o <= 4'b1111;
+                DAT_dat_o <= 8'b11111111;
                 crc_en <= 0;
                 crc_rst <= 1;
                 transf_cnt <= 0;
@@ -235,8 +238,10 @@ begin: FSM_OUT
                 blkcnt_reg <= blkcnt;
                 byte_alignment_reg <= byte_alignment;
                 blksize_reg <= blksize;
-                data_cycles <= (bus_4bit ? (blksize << 1)/* + `BLKSIZE_W'd2 */: (blksize << 3))/*+ `BLKSIZE_W'd8)*/;
+//                data_cycles <= (bus_4bit ? (blksize << 1)/* + `BLKSIZE_W'd2 */: (blksize << 3))/*+ `BLKSIZE_W'd8)*/;
+                data_cycles <= (bus_8bit ? blksize/* + `BLKSIZE_W'd2 */:(bus_4bit ? (blksize << 1) : (blksize << 3))/*+ `BLKSIZE_W'd8)*/);
                 bus_4bit_reg <= bus_4bit;
+                bus_8bit_reg <= bus_8bit;
             end
             WRITE_WAIT: begin
                 data_index <= 0;
@@ -253,14 +258,36 @@ begin: FSM_OUT
                 else if (transf_cnt == 1) begin
                     crc_rst <= 0;
                     crc_en <= 1;
-                    if (bus_4bit_reg) begin
+                    if (bus_8bit_reg) begin
                         last_din <= {
+                            data_in[31-(byte_alignment_reg << 3)], 
+                            data_in[30-(byte_alignment_reg << 3)], 
+                            data_in[29-(byte_alignment_reg << 3)], 
+                            data_in[28-(byte_alignment_reg << 3)],
+                            data_in[27-(byte_alignment_reg << 3)], 
+                            data_in[26-(byte_alignment_reg << 3)], 
+                            data_in[25-(byte_alignment_reg << 3)], 
+                            data_in[24-(byte_alignment_reg << 3)]
+                            };
+                        crc_in <= {
+                            data_in[31-(byte_alignment_reg << 3)], 
+                            data_in[30-(byte_alignment_reg << 3)], 
+                            data_in[29-(byte_alignment_reg << 3)], 
+                            data_in[28-(byte_alignment_reg << 3)],
+                            data_in[27-(byte_alignment_reg << 3)], 
+                            data_in[26-(byte_alignment_reg << 3)], 
+                            data_in[25-(byte_alignment_reg << 3)], 
+                            data_in[24-(byte_alignment_reg << 3)]
+                            };
+                    end                    
+                    else if (bus_4bit_reg) begin
+                        last_din <= {4'hF,
                             data_in[31-(byte_alignment_reg << 3)], 
                             data_in[30-(byte_alignment_reg << 3)], 
                             data_in[29-(byte_alignment_reg << 3)], 
                             data_in[28-(byte_alignment_reg << 3)]
                             };
-                        crc_in <= {
+                        crc_in <= {4'hF,
                             data_in[31-(byte_alignment_reg << 3)], 
                             data_in[30-(byte_alignment_reg << 3)], 
                             data_in[29-(byte_alignment_reg << 3)], 
@@ -268,23 +295,49 @@ begin: FSM_OUT
                             };
                     end
                     else begin
-                        last_din <= {3'h7, data_in[31-(byte_alignment_reg << 3)]};
-                        crc_in <= {3'h7, data_in[31-(byte_alignment_reg << 3)]};
+                        last_din <= {7'h7F, data_in[31-(byte_alignment_reg << 3)]};
+                        crc_in <= {7'h7F, data_in[31-(byte_alignment_reg << 3)]};
                     end
                     DAT_oe_o <= 0;
-                    DAT_dat_o <= bus_4bit_reg ? 4'h0 : 4'he;
-                    data_index <= bus_4bit_reg ? {2'b00, byte_alignment_reg, 1'b1} : {byte_alignment_reg, 3'b001};
+//                    DAT_dat_o <= bus_4bit_reg ? 4'h0 : 4'he;
+                    DAT_dat_o <= bus_8bit_reg ? 8'h0 :(bus_4bit_reg ? 8'hF0 : 8'hFE);
+                    data_index <= bus_8bit_reg ? {2'b0, byte_alignment_reg, 1'b1} :(bus_4bit_reg ? {2'b00, byte_alignment_reg, 1'b1} : {byte_alignment_reg, 3'b001});
                 end
                 else if ((transf_cnt >= 2) && (transf_cnt <= data_cycles+1)) begin
                     DAT_oe_o<= 0;
-                    if (bus_4bit_reg) begin
+                    if (bus_8bit_reg) begin
                         last_din <= {
+                            data_in[31-(data_index[1:0]<<3)], 
+                            data_in[30-(data_index[1:0]<<3)], 
+                            data_in[29-(data_index[1:0]<<3)], 
+                            data_in[28-(data_index[1:0]<<3)],
+                            data_in[27-(data_index[1:0]<<3)], 
+                            data_in[26-(data_index[1:0]<<3)], 
+                            data_in[25-(data_index[1:0]<<3)], 
+                            data_in[24-(data_index[1:0]<<3)]
+                            };
+                        crc_in <= {
+                            data_in[31-(data_index[1:0]<<3)], 
+                            data_in[30-(data_index[1:0]<<3)], 
+                            data_in[29-(data_index[1:0]<<3)], 
+                            data_in[28-(data_index[1:0]<<3)],
+                            data_in[27-(data_index[1:0]<<3)], 
+                            data_in[26-(data_index[1:0]<<3)], 
+                            data_in[25-(data_index[1:0]<<3)], 
+                            data_in[24-(data_index[1:0]<<3)]
+                            };
+                        if (data_index[1:0] == 2'h1/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
+                            rd <= 1;
+                        end
+                    end
+                    else if (bus_4bit_reg) begin
+                        last_din <= {4'hF,
                             data_in[31-(data_index[2:0]<<2)], 
                             data_in[30-(data_index[2:0]<<2)], 
                             data_in[29-(data_index[2:0]<<2)], 
-                            data_in[28-(data_index[2:0]<<2)]
+                            data_in[28-(data_index[2:0]<<2)]  
                             };
-                        crc_in <= {
+                        crc_in <= {4'hF,
                             data_in[31-(data_index[2:0]<<2)], 
                             data_in[30-(data_index[2:0]<<2)], 
                             data_in[29-(data_index[2:0]<<2)], 
@@ -295,8 +348,8 @@ begin: FSM_OUT
                         end
                     end
                     else begin
-                        last_din <= {3'h7, data_in[31-data_index]};
-                        crc_in <= {3'h7, data_in[31-data_index]};
+                        last_din <= {7'h7F, data_in[31-data_index]};
+                        crc_in <= {7'h7F, data_in[31-data_index]};
                         if (data_index == 29/*not 31 - read delay !!!*/) begin
                             rd <= 1;
                         end
@@ -311,14 +364,16 @@ begin: FSM_OUT
                     crc_c <= crc_c - 5'h1;
                     DAT_oe_o <= 0;
                     DAT_dat_o[0] <= crc_out[0][crc_c-1];
-                    if (bus_4bit_reg)
-                        DAT_dat_o[3:1] <= {crc_out[3][crc_c-1], crc_out[2][crc_c-1], crc_out[1][crc_c-1]};
+                    if (bus_8bit_reg)
+                        DAT_dat_o[7:1] <= {crc_out[7][crc_c-1], crc_out[6][crc_c-1], crc_out[5][crc_c-1], crc_out[4][crc_c-1], crc_out[3][crc_c-1], crc_out[2][crc_c-1], crc_out[1][crc_c-1]};                   
+                    else if (bus_4bit_reg)
+                        DAT_dat_o[7:1] <= {4'hF,crc_out[3][crc_c-1], crc_out[2][crc_c-1], crc_out[1][crc_c-1]};
                     else
-                        DAT_dat_o[3:1] <= {3'h7};
+                        DAT_dat_o[7:1] <= {7'h7F};
                 end
                 else if (transf_cnt == data_cycles+18) begin
                     DAT_oe_o <= 0;
-                    DAT_dat_o <= 4'hf;
+                    DAT_dat_o <= 8'hFF;
                 end
                 else if (transf_cnt >= data_cycles+19) begin
                     DAT_oe_o <= 1;
@@ -359,7 +414,18 @@ begin: FSM_OUT
             end
             READ_DAT: begin
                 if (transf_cnt < data_cycles) begin
-                    if (bus_4bit_reg) begin
+                    if (bus_8bit_reg) begin
+                        we <= (data_index[1:0] == 3 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
+                        data_out[31-(data_index[1:0]<<3)] <= DAT_dat_reg[7];
+                        data_out[30-(data_index[1:0]<<3)] <= DAT_dat_reg[6];
+                        data_out[29-(data_index[1:0]<<3)] <= DAT_dat_reg[5];
+                        data_out[28-(data_index[1:0]<<3)] <= DAT_dat_reg[4];
+                        data_out[27-(data_index[1:0]<<3)] <= DAT_dat_reg[3];
+                        data_out[26-(data_index[1:0]<<3)] <= DAT_dat_reg[2];
+                        data_out[25-(data_index[1:0]<<3)] <= DAT_dat_reg[1];
+                        data_out[24-(data_index[1:0]<<3)] <= DAT_dat_reg[0];
+                    end
+                    else if (bus_4bit_reg) begin
                         we <= (data_index[2:0] == 7 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
                         data_out[31-(data_index[2:0]<<2)] <= DAT_dat_reg[3];
                         data_out[30-(data_index[2:0]<<2)] <= DAT_dat_reg[2];
@@ -384,11 +450,19 @@ begin: FSM_OUT
                         crc_c <= crc_c - 5'h1;
                         if  (crc_out[0][crc_c] != last_din[0])
                             crc_ok <= 0;
-                        if  (crc_out[1][crc_c] != last_din[1] && bus_4bit_reg)
+                        if  (crc_out[1][crc_c] != last_din[1] && (bus_4bit_reg || bus_8bit_reg))
                             crc_ok<=0;
-                        if  (crc_out[2][crc_c] != last_din[2] && bus_4bit_reg)
+                        if  (crc_out[2][crc_c] != last_din[2] && (bus_4bit_reg || bus_8bit_reg))
                             crc_ok <= 0;
-                        if  (crc_out[3][crc_c] != last_din[3] && bus_4bit_reg)
+                        if  (crc_out[3][crc_c] != last_din[3] && (bus_4bit_reg || bus_8bit_reg))
+                            crc_ok <= 0;
+                        if  (crc_out[4][crc_c] != last_din[4] && bus_8bit_reg)
+                            crc_ok <= 0;
+                        if  (crc_out[5][crc_c] != last_din[5] && bus_8bit_reg)
+                            crc_ok <= 0;
+                        if  (crc_out[6][crc_c] != last_din[6] && bus_8bit_reg)
+                            crc_ok <= 0;
+                        if  (crc_out[7][crc_c] != last_din[7] && bus_8bit_reg)
                             crc_ok <= 0;
                         if (crc_c == 0) begin
                             next_block <= ((blkcnt_reg - `BLKCNT_W'h1) != 0);
