@@ -687,7 +687,7 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h16432B2; //slv_reg16; Capabilities register // 32'h416032B2; 8 bit support
+	        5'h10   : reg_data_out <= 32'h016032B2; //slv_reg16; Capabilities register // 32'h416032B2; 8 bit support
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
