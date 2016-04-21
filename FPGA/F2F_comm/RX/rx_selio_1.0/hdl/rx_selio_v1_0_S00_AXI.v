@@ -404,6 +404,15 @@
 	reg [4:0]  bstate; 
 	
 	reg tmp_chk = 0;
+	wire [31:0] din2;
+//	assign din2 = {0,8 ,16,24,
+//	               1,9 ,17,25,
+//	               2,10,18,26,
+//	               3,11,19,27,
+//	               4,12,20,28,
+//	               5,13,21,29,
+//	               6,14,22,30,
+//	               7,15,23,31};
 	
 	assign reset = ~S_AXI_ARESETN;
 	
@@ -418,7 +427,17 @@
       end 
       else begin
           if ( !enable ) begin
+//               rdata <= din[31:0];
                rdata <= din[31:0];
+
+//	           rdata <= {din[31],din[23],din[15],din[7],
+//	                     din[30],din[22],din[14],din[6],
+//	                     din[29],din[21],din[13],din[5],
+//	                     din[28],din[20],din[12],din[4],
+//	                     din[27],din[19],din[11],din[3],
+//	                     din[26],din[18],din[10],din[2],
+//	                     din[25],din[17],din[9] ,din[1],
+//	                     din[24],din[16],din[8] ,din[0]};             
           end
           
           
@@ -455,10 +474,19 @@
                 flags[7] <= bstate[3];
                 flags[8] <= bstate[4];
                 rxdata <= din[31:0];
+
+//	            rxdata <=   {din[0],din[8] ,din[16],din[24],
+//                             din[1],din[9] ,din[17],din[25],
+//                             din[2],din[10],din[18],din[26],
+//                             din[3],din[11],din[19],din[27],
+//                             din[4],din[12],din[20],din[28],
+//                             din[5],din[13],din[21],din[29],
+//                             din[6],din[14],din[22],din[30],
+//                             din[7],din[15],din[23],din[31]};                
                 
-                if ( din[31:0] != 32'h3E1E0E06 ) 
+                if ( rxdata[7:0] != 8'hA0 ) 
                     flag <= 1'b1;
-                else if ( bstate[3] ) begin //&& din[31:0] == 32'h3E1E0E06 
+                else if ( bstate[3] && rxdata[7:0] == 8'hA0) begin //&& din[31:0] == 32'h3E1E0E06 
                     enable <= 0;
                     flag   <= 0;
                 end                      
