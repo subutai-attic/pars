@@ -121,7 +121,7 @@ always @(posedge sd_clk)
 
 genvar i;
 generate
-    for(i=0; i<7; i=i+1) begin: CRC_16_gen
+    for(i=0; i<8; i=i+1) begin: CRC_16_gen
         sd_crc_16 CRC_16_i (crc_in[i],crc_en, sd_clk, crc_rst, crc_out[i]);
     end
 endgenerate
@@ -239,7 +239,7 @@ begin: FSM_OUT
                 byte_alignment_reg <= byte_alignment;
                 blksize_reg <= blksize;
 //                data_cycles <= (bus_4bit ? (blksize << 1)/* + `BLKSIZE_W'd2 */: (blksize << 3))/*+ `BLKSIZE_W'd8)*/;
-                data_cycles <= (bus_8bit ? blksize/* + `BLKSIZE_W'd2 */:(bus_4bit ? (blksize << 1) : (blksize << 3))/*+ `BLKSIZE_W'd8)*/);
+                data_cycles <= (bus_8bit ? blksize : (bus_4bit ? (blksize << 1) : (blksize << 3)));
                 bus_4bit_reg <= bus_4bit;
                 bus_8bit_reg <= bus_8bit;
             end

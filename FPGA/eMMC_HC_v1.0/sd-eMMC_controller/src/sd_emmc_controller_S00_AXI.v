@@ -687,11 +687,11 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h416432B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
+	        5'h10   : reg_data_out <= 32'h016432B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00000002;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00010000;  //Host Controller Version
 	        default : reg_data_out <= 0;
 	      endcase
 	end
