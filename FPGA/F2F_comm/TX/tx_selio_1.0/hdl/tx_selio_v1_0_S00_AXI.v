@@ -400,10 +400,27 @@
     reg [31:0] txd = 0;
     wire reset; 
     reg trigger = 0;
+    wire [31:0] dout2;
+    assign dout2 = {slv_reg1[31] ,slv_reg1[23],slv_reg1[15],slv_reg1[7],
+                    slv_reg1[30] ,slv_reg1[22],slv_reg1[14],slv_reg1[6], 
+                    slv_reg1[29] ,slv_reg1[21],slv_reg1[13],slv_reg1[5],
+                    slv_reg1[28] ,slv_reg1[20],slv_reg1[12],slv_reg1[4],
+                    slv_reg1[27] ,slv_reg1[19],slv_reg1[11],slv_reg1[3],
+                    slv_reg1[26] ,slv_reg1[18],slv_reg1[10],slv_reg1[2],
+                    slv_reg1[25] ,slv_reg1[17],slv_reg1[9] ,slv_reg1[1],
+                    slv_reg1[24] ,slv_reg1[16],slv_reg1[8] ,slv_reg1[0]};
+                    
+                    
+                    
+                    
+                    
+                    
+                    
     
     assign reset = ~S_AXI_ARESETN;
     always @ (posedge txclk_div) begin
-        dout[31:0] <= slv_reg1[31:0];
+//        dout[31:0] <= slv_reg1[31:0];
+        dout[31:0] <= dout2[31:0];
     end       
 
     PLLE2_ADV #(
