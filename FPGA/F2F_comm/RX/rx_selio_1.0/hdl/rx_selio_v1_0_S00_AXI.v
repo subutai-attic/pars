@@ -473,20 +473,20 @@
                 flags[6] <= bstate[2];
                 flags[7] <= bstate[3];
                 flags[8] <= bstate[4];
-                rxdata <= din[31:0];
+//                rxdata <= din[31:0];
 
-//	            rxdata <=   {din[0],din[8] ,din[16],din[24],
-//                             din[1],din[9] ,din[17],din[25],
-//                             din[2],din[10],din[18],din[26],
-//                             din[3],din[11],din[19],din[27],
-//                             din[4],din[12],din[20],din[28],
-//                             din[5],din[13],din[21],din[29],
-//                             din[6],din[14],din[22],din[30],
-//                             din[7],din[15],din[23],din[31]};                
+	            rxdata <=   {din[31],din[27] ,din[23],din[19],
+                             din[15],din[11] ,din[7] ,din[3],
+                             din[30],din[26] ,din[22],din[18],
+                             din[14],din[10] ,din[6] ,din[2],
+                             din[29],din[25] ,din[21],din[17],
+                             din[13],din[9]  ,din[5] ,din[1],
+                             din[28],din[24] ,din[20],din[16],
+                             din[12],din[8]  ,din[4] ,din[0]};                
                 
                 if ( rxdata[7:0] != 8'hA0 ) 
                     flag <= 1'b1;
-                else if ( bstate[3] && rxdata[7:0] == 8'hA0) begin //&& din[31:0] == 32'h3E1E0E06 
+                else if ( bstate[3] && din[31:0] == 32'h3E1E0E06 ) begin //&& rxdata[7:0] == 8'hA0) begin //&& din[31:0] == 32'h3E1E0E06 
                     enable <= 0;
                     flag   <= 0;
                 end                      
