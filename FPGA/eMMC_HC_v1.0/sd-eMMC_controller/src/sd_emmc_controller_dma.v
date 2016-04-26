@@ -61,7 +61,6 @@ module  sd_emmc_controller_dma (
             output reg [31:0] axi_araddr,
             output reg axi_arvalid,
             input wire axi_arready,
-//            input wire [31:0] axi_rdata,
             input wire axi_rvalid,
             output wire axi_rready,
             input wire axi_rlast
