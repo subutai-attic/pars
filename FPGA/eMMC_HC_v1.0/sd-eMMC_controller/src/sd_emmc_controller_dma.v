@@ -47,9 +47,9 @@ module  sd_emmc_controller_dma (
             (* mark_debug = "true" *) input wire [1:0] write_timeout,
             
             // FIFO Filler
-            output reg fifo_dat_rd_ready,
+            (* mark_debug = "true" *) output reg fifo_dat_rd_ready,
             (* mark_debug = "true" *) output reg fifo_dat_wr_ready,
-            output reg fifo_rst,
+            (* mark_debug = "true" *) output reg fifo_rst,
 
             // M_AXI
             input  wire next_data_word,
@@ -160,6 +160,12 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
       else begin
         case (state)
           IDLE: begin
+                   total_trans_blk <= 0;
+                   blk_done_cnt_within_boundary <= 0;
+                   write_addr <= 0;
+                   data_cycle <= 0;
+                   fifo_dat_rd_ready <= 0;
+                   fifo_dat_wr_ready <= 0;                    
                   if (dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl) begin
                     write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
@@ -173,16 +179,11 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                   end
                   else begin
                     state <= IDLE;
-                    total_trans_blk <= 0;
-                    blk_done_cnt_within_boundary <= 0;
-                    write_addr <= 0;
-                    data_cycle <= 0;
-                    fifo_dat_rd_ready <= 0;
-                    fifo_dat_wr_ready <= 0;
                   end
                 end
           READ_WAIT: begin
                   fifo_rst <= 0;
+                  fifo_dat_rd_ready <= 1'b0;
                   if (we_counter > data_cycle) begin
                     state <= READ_ACT;
                   end
@@ -191,11 +192,9 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                     total_trans_blk <= total_trans_blk + 1;
                     data_cycle <= 0;
                     we_counter_reset <= 0;
-                    fifo_dat_rd_ready <= 1'b0;
                     state <= READ_BLK_CNT_CHECK;
                   end
                   else begin
-                    fifo_dat_rd_ready <= 1'b0;
                     w_last <= 1'b0;
                     state <= READ_WAIT;
                   end 
