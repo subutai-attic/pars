@@ -25,17 +25,17 @@
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
         input wire  [31:0] read_fifo_in,
-        output wire [31:0] write_fifo_out,
+        output wire [31:0] write_fifo_out,     //need to removed
         output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
-        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
-        input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
+        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        (* mark_debug = "true" *) input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
         output reg cmd_start,
         output reg cmd_int_rst,
-        output reg dat_int_rst,
+        (* mark_debug = "true" *) output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
         output wire fifo_reset,
@@ -110,6 +110,7 @@
 		output wire [28:0] int_sig_en_reg,
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
+		output wire sd_dat_bus_width_8bit,
 		input wire buff_read_en,
 		input wire buff_writ_en,
 		input wire write_trans_active,
@@ -119,7 +120,12 @@
 		input wire com_inh_cmd,
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
-		output wire start_tx_o
+		output wire start_tx_o,
+		output wire [2:0] bfr_bound,
+		output wire [31:0] sys_addr,
+		output wire [1:0] dma_en_and_blk_c_en,
+		output reg sys_addr_set,
+		(* mark_debug = "true" *) input wire [1:0] dma_int
 	);
     
 	// AXI4LITE signals
@@ -180,7 +186,7 @@
     //SD-eMMC host controller registers
 	assign software_reset_reg  = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
-	assign clock_divisor       = slv_reg11[15:8];                          // Clock_divisor  shift >>1 will decrease it
+	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
 //	assign internal_clock_en   = slv_reg11[0];                             // Enable internal clock  
 	assign command_reg         = slv_reg3 [29:16];                         // CMD_INDEX
 	assign argument_reg        = slv_reg2;                                 // CMD_Argument 
@@ -191,10 +197,14 @@
     assign int_stat_en_reg     = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
     assign int_sig_en_reg      = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
     assign sd_dat_bus_width    = slv_reg10 [1];                            // Select sd data bus width 
+    assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
     assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
+    assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
 	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
-    assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};        
+    assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
+    assign bfr_bound           = slv_reg1[14:12];
+    assign sys_addr            = slv_reg0;
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -326,11 +336,11 @@
           blk_count_cnt <= 0;
 	    end
 	  else begin
-	    
 	    cmd_start <= 1'b0;
 	    cmd_int_rst <= 1'b0;
 	    dat_int_rst <= 1'b0;
 	    slv_reg11[26:24] <= 3'b000;
+	    sys_addr_set <= 1'b0;
 	    if (dat_int_st || cmd_int_st) begin
 	       slv_reg12_1 <= slv_reg12_1;
 	    end
@@ -340,13 +350,15 @@
 	    if (slv_reg_wren)
 	      begin
 	        case ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	          5'h00:
+	          5'h00: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
+	              end
+	              sys_addr_set <= 1'b1;
+	            end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -526,7 +538,7 @@
 //             slv_reg11[26] <= 1'b0;
 //          end
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b0, (dat_int_st[`INT_DATA_CC] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, dma_int[1], 1'b0, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;
@@ -675,11 +687,11 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012032B2; //slv_reg16; Capabilities register
+	        5'h10   : reg_data_out <= 32'h016432B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00000001;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
 	        default : reg_data_out <= 0;
 	      endcase
 	end

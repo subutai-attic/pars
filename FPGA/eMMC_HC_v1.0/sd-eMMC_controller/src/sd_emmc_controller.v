@@ -8,11 +8,21 @@
                 // Do not modify the parameters beyond this line
 
 
- 		// Parameters of Axi Slave Bus Interface S00_AXI
+ 		        // Parameters of Axi Slave Bus Interface S00_AXI
                 parameter integer C_S00_AXI_DATA_WIDTH    = 32,
-                parameter integer C_S00_AXI_ADDR_WIDTH    = 7
-              //  parameter integer C_M_AXIS_TDATA_WIDTH  = 32, 
-              //  parameter integer C_M_AXIS_START_COUNT  = 32
+                parameter integer C_S00_AXI_ADDR_WIDTH    = 7,
+
+                //Parameters of Axi Master Bus Interface
+                parameter integer C_M_AXI_BURST_LEN	= 16,
+                parameter integer C_M_AXI_ID_WIDTH    = 1,
+                parameter integer C_M_AXI_ADDR_WIDTH    = 32,
+                parameter integer C_M_AXI_DATA_WIDTH    = 32,
+                parameter integer C_M_AXI_AWUSER_WIDTH    = 0,
+                parameter integer C_M_AXI_ARUSER_WIDTH    = 0,
+                parameter integer C_M_AXI_WUSER_WIDTH    = 0,
+                parameter integer C_M_AXI_RUSER_WIDTH    = 0,
+                parameter integer C_M_AXI_BUSER_WIDTH    = 0
+
       )
         (
         //SD interface
@@ -27,45 +37,77 @@
         // Interupt pinout 
         output wire interrupt,
 //        output wire int_data,
+
+        // Ports of Axi Slave Bus Interface S00_AXI
+        input wire  s00_axi_aclk,
+        input wire  s00_axi_aresetn,
+        input wire [C_S00_AXI_ADDR_WIDTH-1 : 0] s00_axi_awaddr,
+        input wire [2 : 0] s00_axi_awprot,
+        input wire  s00_axi_awvalid,
+        output wire  s00_axi_awready,
+        input wire [C_S00_AXI_DATA_WIDTH-1 : 0] s00_axi_wdata,
+        input wire [(C_S00_AXI_DATA_WIDTH/8)-1 : 0] s00_axi_wstrb,
+        input wire  s00_axi_wvalid,
+        output wire  s00_axi_wready,
+        output wire [1 : 0] s00_axi_bresp,
+        output wire  s00_axi_bvalid,
+        input wire  s00_axi_bready,
+        input wire [C_S00_AXI_ADDR_WIDTH-1 : 0] s00_axi_araddr,
+        input wire [2 : 0] s00_axi_arprot,
+        input wire  s00_axi_arvalid,
+        output wire  s00_axi_arready,
+        output wire [C_S00_AXI_DATA_WIDTH-1 : 0] s00_axi_rdata,
+        output wire [1 : 0] s00_axi_rresp,
+        output wire  s00_axi_rvalid,
+        input wire  s00_axi_rready,
         
-     // MAXIS
-     //   input wire  m_axis_aclk,
-     //   input wire  m_axis_aresetn,
-     //   output wire  m_axis_tvalid,
-     //   output wire [C_M_AXIS_TDATA_WIDTH-1 : 0] m_axis_tdata,
-     //   output wire [(C_M_AXIS_TDATA_WIDTH/8)-1 : 0] m_axis_tstrb,
-     //   output wire  m_axis_tlast,
-     //   input wire  m_axis_tready,
-
-        //input wire sd_card_detect,
-
-                // User ports ends
-                // Do not modify the ports beyond this line
-
-
-                // Ports of Axi Slave Bus Interface S00_AXI
-                input wire  s00_axi_aclk,
-                input wire  s00_axi_aresetn,
-                input wire [C_S00_AXI_ADDR_WIDTH-1 : 0] s00_axi_awaddr,
-                input wire [2 : 0] s00_axi_awprot,
-                input wire  s00_axi_awvalid,
-                output wire  s00_axi_awready,
-                input wire [C_S00_AXI_DATA_WIDTH-1 : 0] s00_axi_wdata,
-                input wire [(C_S00_AXI_DATA_WIDTH/8)-1 : 0] s00_axi_wstrb,
-                input wire  s00_axi_wvalid,
-                output wire  s00_axi_wready,
-                output wire [1 : 0] s00_axi_bresp,
-                output wire  s00_axi_bvalid,
-                input wire  s00_axi_bready,
-                input wire [C_S00_AXI_ADDR_WIDTH-1 : 0] s00_axi_araddr,
-                input wire [2 : 0] s00_axi_arprot,
-                input wire  s00_axi_arvalid,
-                output wire  s00_axi_arready,
-                output wire [C_S00_AXI_DATA_WIDTH-1 : 0] s00_axi_rdata,
-                output wire [1 : 0] s00_axi_rresp,
-                output wire  s00_axi_rvalid,
-                input wire  s00_axi_rready
+        // Ports of Axi Master Bus Interface
+        input wire  M_AXI_ACLK,
+        input wire  M_AXI_ARESETN,
+        output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_AWID,
+        output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR,
+        output wire [7 : 0] M_AXI_AWLEN,
+        output wire [2 : 0] M_AXI_AWSIZE,
+        output wire [1 : 0] M_AXI_AWBURST,
+        output wire  M_AXI_AWLOCK,
+        output wire [3 : 0] M_AXI_AWCACHE,
+        output wire [2 : 0] M_AXI_AWPROT,
+        output wire [3 : 0] M_AXI_AWQOS,
+        output wire [C_M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER,
+        output wire  M_AXI_AWVALID,
+        input wire  M_AXI_AWREADY,
+        output wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA,
+        output wire [C_M_AXI_DATA_WIDTH/8-1 : 0] M_AXI_WSTRB,
+        output wire  M_AXI_WLAST,
+        output wire [C_M_AXI_WUSER_WIDTH-1 : 0] M_AXI_WUSER,
+        output wire  M_AXI_WVALID,
+        input wire  M_AXI_WREADY,
+        input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_BID,
+        input wire [1 : 0] M_AXI_BRESP,
+        input wire [C_M_AXI_BUSER_WIDTH-1 : 0] M_AXI_BUSER,
+        input wire  M_AXI_BVALID,
+        output wire  M_AXI_BREADY,
+        output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_ARID,
+        output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_ARADDR,
+        output wire [7 : 0] M_AXI_ARLEN,
+        output wire [2 : 0] M_AXI_ARSIZE,
+        output wire [1 : 0] M_AXI_ARBURST,
+        output wire  M_AXI_ARLOCK,
+        output wire [3 : 0] M_AXI_ARCACHE,
+        output wire [2 : 0] M_AXI_ARPROT,
+        output wire [3 : 0] M_AXI_ARQOS,
+        output wire [C_M_AXI_ARUSER_WIDTH-1 : 0] M_AXI_ARUSER,
+        output wire  M_AXI_ARVALID,
+        input wire  M_AXI_ARREADY,
+        input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_RID,
+        input wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_RDATA,
+        input wire [1 : 0] M_AXI_RRESP,
+        input wire  M_AXI_RLAST,
+        input wire [C_M_AXI_RUSER_WIDTH-1 : 0] M_AXI_RUSER,
+        input wire  M_AXI_RVALID,
+        output wire  M_AXI_RREADY
         );
+
 //SD clock
     wire [7:0]  divisor;
 //    wire int_clk_en;
@@ -176,16 +218,129 @@
     wire dat_trans_dir_axi_clk;
     wire dat_trans_dir_sd_clk;
     wire [31:0] read_fifo_out;
-    wire [31:0] write_fifo_out;
+//    wire [31:0] write_fifo_out;
     wire        fifo_data_read_ready;
     wire        fifo_data_write_ready;
     
     // data write to SD card
     wire start_tx;
+    wire start_tx_pulse;
     wire start_write_sd_clk;
 
+    // dma
+    wire [2:0] buff_bound;
+    wire [31:0] system_addr;
+    wire [1:0] dma_and_blkcnt_en;
+    wire sys_addr_set;
+    wire wordnext;
+    wire m_axi_wvalid;
+    wire [31:0] m_axi_awaddr;
+    wire m_axi_awvalid;
+    wire maxi_wlast;
+    wire [1:0] dma_int;
+    wire trans_blk_compl;
+    
+    // data aligning
+    wire [31:0] write_dat_fifo;
+    assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
 
-// Instantiation of Axi Bus Interface S00_AXI
+        sd_emmc_controller_dma sd_emmc_controller_dma_inst(
+            .clock(s00_axi_aclk),
+            .reset(s00_axi_aresetn),
+            .is_we_en(we_fifo),
+            .buf_boundary(buff_bound),
+            .init_dma_sys_addr(system_addr),
+            .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
+            .blk_count_ena (dma_and_blkcnt_en [1]),
+            .dir_dat_trans_mode(dat_trans_dir_axi_clk),
+            .sys_addr_changed(sys_addr_set),
+            .block_count(block_count_reg_axi_clk),
+            .xfer_compl(!data_busy),
+            .next_data_word(wordnext),
+            .data_write_valid(m_axi_wvalid),
+            .write_addr(m_axi_awaddr),
+            .addr_write_valid(m_axi_awvalid),
+            .addr_write_ready(M_AXI_AWREADY),
+            .fifo_dat_rd_ready(fifo_data_read_ready),
+            .w_last(maxi_wlast),
+            .dma_interrupts(dma_int),
+            .dat_int_rst(data_int_rst),
+            .axi_araddr(M_AXI_ARADDR),
+            .axi_arvalid(M_AXI_ARVALID),
+            .axi_arready(M_AXI_ARREADY),
+            .axi_rvalid(M_AXI_RVALID),
+            .axi_rready(M_AXI_RREADY),
+            .axi_rlast(M_AXI_RLAST),
+            .fifo_dat_wr_ready(fifo_data_write_ready),
+            .fifo_rst(fifo_reset),
+            .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
+            .start_write(start_tx),
+            .trans_block_compl(trans_blk_compl),
+            .ser_next_blk(next_block_st),
+            .write_timeout({d_read, d_write})
+        );
+        
+        // Instantiation of Master Axi Bus Interface M_AXI
+        sd_emmc_controller_m_axi # (
+            .M_AXI_BURST_LEN(C_M_AXI_BURST_LEN),
+            .M_AXI_ID_WIDTH(C_M_AXI_ID_WIDTH),
+            .M_AXI_ADDR_WIDTH(C_M_AXI_ADDR_WIDTH),
+            .M_AXI_DATA_WIDTH(C_M_AXI_DATA_WIDTH),
+            .M_AXI_AWUSER_WIDTH(C_M_AXI_AWUSER_WIDTH),
+            .M_AXI_ARUSER_WIDTH(C_M_AXI_ARUSER_WIDTH),
+            .M_AXI_WUSER_WIDTH(C_M_AXI_WUSER_WIDTH),
+            .M_AXI_RUSER_WIDTH(C_M_AXI_RUSER_WIDTH),
+            .M_AXI_BUSER_WIDTH(C_M_AXI_BUSER_WIDTH) 
+        ) sd_emmc_controller_m_axi_inst (
+            .M_AXI_ACLK(M_AXI_ACLK),
+            .M_AXI_ARESETN(M_AXI_ARESETN),
+            .M_AXI_AWID(M_AXI_AWID),
+            .M_AXI_AWADDR(M_AXI_AWADDR),
+            .M_AXI_AWLEN(M_AXI_AWLEN),
+            .M_AXI_AWSIZE(M_AXI_AWSIZE),
+            .M_AXI_AWBURST(M_AXI_AWBURST),
+            .M_AXI_AWLOCK(M_AXI_AWLOCK),
+            .M_AXI_AWCACHE(M_AXI_AWCACHE),
+            .M_AXI_AWPROT(M_AXI_AWPROT),
+            .M_AXI_AWQOS(M_AXI_AWQOS),
+            .M_AXI_AWUSER(M_AXI_AWUSER),
+            .M_AXI_AWVALID(M_AXI_AWVALID),
+            .M_AXI_AWREADY(M_AXI_AWREADY),
+            .M_AXI_WDATA(M_AXI_WDATA),
+            .M_AXI_WSTRB(M_AXI_WSTRB),
+            .M_AXI_WLAST(M_AXI_WLAST),
+            .M_AXI_WUSER(M_AXI_WUSER),
+            .M_AXI_WVALID(M_AXI_WVALID),
+            .M_AXI_WREADY(M_AXI_WREADY),
+            .M_AXI_BID(M_AXI_BID),
+            .M_AXI_BRESP(M_AXI_BRESP),
+            .M_AXI_BUSER(M_AXI_BUSER),
+            .M_AXI_BVALID(M_AXI_BVALID),
+            .M_AXI_BREADY(M_AXI_BREADY),
+            .M_AXI_ARID(M_AXI_ARID),
+            .M_AXI_ARLEN(M_AXI_ARLEN),
+            .M_AXI_ARSIZE(M_AXI_ARSIZE),
+            .M_AXI_ARBURST(M_AXI_ARBURST),
+            .M_AXI_ARLOCK(M_AXI_ARLOCK),
+            .M_AXI_ARCACHE(M_AXI_ARCACHE),
+            .M_AXI_ARPROT(M_AXI_ARPROT),
+            .M_AXI_ARQOS(M_AXI_ARQOS),
+            .M_AXI_ARUSER(M_AXI_ARUSER),
+            .M_AXI_RID(M_AXI_RID),
+            .M_AXI_RRESP(M_AXI_RRESP),
+//            .M_AXI_RLAST(M_AXI_RLAST),
+            .M_AXI_RUSER(M_AXI_RUSER),
+//            .M_AXI_RVALID(M_AXI_RVALID),
+//            .M_AXI_RREADY(M_AXI_RREADY),
+            .data_read_fifo(read_fifo_out),
+            .wnext(wordnext),
+            .dat_wr_valid(m_axi_wvalid),
+            .addr_wr(m_axi_awaddr),
+            .addr_wr_valid(m_axi_awvalid),
+            .m_axi_wlast(maxi_wlast)
+        );
+
+        // Instantiation of Axi Bus Interface S00_AXI
         sd_emmc_controller_S00_AXI # ( 
             .C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
             .C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
@@ -212,9 +367,9 @@
             .S_AXI_RVALID(s00_axi_rvalid),
             .S_AXI_RREADY(s00_axi_rready),
             .read_fifo_in(read_fifo_out),
-            .write_fifo_out(write_fifo_out),
-            .fifo_data_read_ready(fifo_data_read_ready),
-            .fifo_data_write_ready(fifo_data_write_ready),
+//            .write_fifo_out(write_fifo_out),
+//            .fifo_data_read_ready(fifo_data_read_ready),
+//            .fifo_data_write_ready(fifo_data_write_ready),
             .clock_divisor(divisor),
 //            .internal_clock_en(int_clk_en),
             .Internal_clk_stable(int_clk_stbl),
@@ -230,7 +385,7 @@
             .response_2_reg(response_2_reg_wb_clk),
             .response_3_reg(response_3_reg_wb_clk),
             .software_reset_reg(software_reset_reg_axi_clk),  
-            .fifo_reset(fifo_reset),          
+//            .fifo_reset(fifo_reset),          
             .timeout_reg(cmd_timeout_reg_wb_clk),
             .cmd_int_st(cmd_int_status_reg_wb_clk),
             .dat_int_st(data_int_status_reg_wb_clk),
@@ -250,7 +405,12 @@
             .com_inh_cmd(command_inhibit_cmd_axi_clk),
             .data_transfer_direction(dat_trans_dir_axi_clk),
             .start_tx_fifo_i(start_tx_fifo),
-            .start_tx_o(start_tx)
+//            .start_tx_o(start_tx),
+            .bfr_bound(buff_bound),
+            .sys_addr(system_addr),
+            .dma_en_and_blk_c_en(dma_and_blkcnt_en),
+            .sys_addr_set(sys_addr_set),
+            .dma_int(dma_int)
         );
 
     // Clock divider
@@ -325,7 +485,7 @@
         .int_status_o     (data_int_status_reg_sd_clk),
         .int_status_rst_i (data_int_rst_sd_clk),
         .rst_ack_dat_master (data_master_rst_ack),
-        .next_block(next_block_st),
+//        .next_block(next_block_st),
         .start_write(start_write_sd_clk)
         );
 
@@ -352,7 +512,8 @@
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
         .next_block(next_block_st),
-        .start_write(start_write_sd_clk)
+        .start_write(start_write_sd_clk),
+        .write_next_block(trans_blk_compl)
         );
 
     sd_fifo_filler sd_fifo_filler0(
@@ -362,7 +523,7 @@
         .wbm_adr_o (wbm_adr),
         .wbm_we_o  (m_wb_we_o),
         .read_fifo_out (read_fifo_out),
-        .write_fifo_in (write_fifo_out),
+        .write_fifo_in (write_dat_fifo),
         .wbm_cyc_o (m_wb_cyc_o),
         .wbm_stb_o (m_wb_stb_o),
         .fifo_data_read_ready (fifo_data_read_ready),
@@ -395,18 +556,17 @@
 
     edge_detect soft_reset_edge_cmd(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_reg_axi_clk[0]), .rise(soft_rst_cmd_axi_clk), .fall());
     edge_detect sotf_reset_edge_dat(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_reg_axi_clk[1]), .rise(soft_rst_dat_axi_clk), .fall());
-    
     edge_detect cmd_start_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_start), .rise(cmd_start_wb_clk), .fall());
     edge_detect dat_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(data_int_rst), .rise(data_int_rst_wb_clk), .fall());
     edge_detect cmd_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_rst), .rise(cmd_int_rst_wb_clk), .fall());
-    
+//    edge_detect start_write(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(start_tx), .rise(start_tx_pulse), .fall());
+        
     monostable_domain_cross soft_reset_cross_cmd(!s00_axi_aresetn, s00_axi_aclk, soft_rst_cmd_axi_clk, SD_CLK, soft_rst_cmd_sd_clk);
     monostable_domain_cross soft_reset_cross_dat(!s00_axi_aresetn, s00_axi_aclk, soft_rst_dat_axi_clk, SD_CLK, soft_rst_dat_sd_clk);
-
     monostable_domain_cross cmd_start_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_start_wb_clk, SD_CLK, cmd_start_sd_clk);
     monostable_domain_cross data_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, data_int_rst_wb_clk, SD_CLK, data_int_rst_sd_clk);
     monostable_domain_cross cmd_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_int_rst_wb_clk, SD_CLK, cmd_int_rst_sd_clk);
-
+//    monostable_domain_cross start_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx_pulse, SD_CLK, start_write_sd_clk);
     bistable_domain_cross #(1) data_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx, SD_CLK, start_write_sd_clk);
 
     bistable_domain_cross #(32) argument_reg_cross(!s00_axi_aresetn, s00_axi_aclk, argument_reg_wb_clk, SD_CLK, argument_reg_sd_clk);

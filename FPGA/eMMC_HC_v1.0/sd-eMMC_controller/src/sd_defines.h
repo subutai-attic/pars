@@ -46,6 +46,18 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
+
+//sdma boubdaries
+
+`define A11 8
+`define A12 16
+`define A13 32
+`define A14 64
+`define A15 128 
+`define A16 256 
+`define A17 512 
+`define A18 1024
+
 //global defines
 `define BLKSIZE_W 12
 `define BLKCNT_W 16
