@@ -2,12 +2,6 @@
 `include "sd_defines.h"
         module sd_emmc_controller #
         (
-                // Users to add parameters here
-
-                // User parameters ends
-                // Do not modify the parameters beyond this line
-
-
  		        // Parameters of Axi Slave Bus Interface S00_AXI
                 parameter integer C_S00_AXI_DATA_WIDTH    = 32,
                 parameter integer C_S00_AXI_ADDR_WIDTH    = 7,
@@ -22,8 +16,7 @@
                 parameter integer C_M_AXI_WUSER_WIDTH    = 0,
                 parameter integer C_M_AXI_RUSER_WIDTH    = 0,
                 parameter integer C_M_AXI_BUSER_WIDTH    = 0
-
-      )
+        )
         (
         //SD interface
         output wire SD_CLK,
@@ -36,7 +29,6 @@
         
         // Interupt pinout 
         output wire interrupt,
-//        output wire int_data,
 
         // Ports of Axi Slave Bus Interface S00_AXI
         input wire  s00_axi_aclk,
@@ -108,9 +100,8 @@
         output wire  M_AXI_RREADY
         );
 
-//SD clock
+    //SD clock
     wire [7:0]  divisor;
-//    wire int_clk_en;
     wire int_clk_stbl;
 
     wire go_idle;
@@ -220,7 +211,6 @@
     wire dat_trans_dir_axi_clk;
     wire dat_trans_dir_sd_clk;
     wire [31:0] read_fifo_out;
-//    wire [31:0] write_fifo_out;
     wire        fifo_data_read_ready;
     wire        fifo_data_write_ready;
     
@@ -488,7 +478,6 @@
         .int_status_o     (data_int_status_reg_sd_clk),
         .int_status_rst_i (data_int_rst_sd_clk),
         .rst_ack_dat_master (data_master_rst_ack),
-//        .next_block(next_block_st),
         .start_write(start_write_sd_clk)
         );
 

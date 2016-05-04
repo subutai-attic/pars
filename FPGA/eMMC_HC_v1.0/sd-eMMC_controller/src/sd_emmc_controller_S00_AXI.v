@@ -30,12 +30,12 @@
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
-        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
-        (* mark_debug = "true" *) input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
+        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
         output reg cmd_start,
         output reg cmd_int_rst,
-        (* mark_debug = "true" *) output reg dat_int_rst,
+        output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
         output wire fifo_reset,
@@ -692,6 +692,7 @@
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
 	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
+	        
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -709,7 +710,7 @@
 	    begin    
 	      // When there is a valid read address (S_AXI_ARVALID) with 
 	      // acceptance of read address by the slave (axi_arready), 
-	      // output the read dada 
+	      // output the read data 
 	      if (slv_reg_rden)
 	        begin
 	          axi_rdata <= reg_data_out;     // register read data
