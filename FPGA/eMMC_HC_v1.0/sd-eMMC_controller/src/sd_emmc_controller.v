@@ -245,7 +245,7 @@
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
-
+    assign maxi_wlast = M_AXI_WLAST;
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
             .reset(s00_axi_aresetn),
@@ -338,8 +338,8 @@
             .wnext(wordnext),
             .dat_wr_valid(m_axi_wvalid),
             .addr_wr(m_axi_awaddr),
-            .addr_wr_valid(m_axi_awvalid),
-            .m_axi_wlast(maxi_wlast)
+            .addr_wr_valid(m_axi_awvalid)
+//            .m_axi_wlast(maxi_wlast)
         );
 
         // Instantiation of Axi Bus Interface S00_AXI

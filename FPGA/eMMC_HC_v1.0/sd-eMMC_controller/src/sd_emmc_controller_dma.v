@@ -57,7 +57,7 @@ module  sd_emmc_controller_dma (
             output reg [31:0] write_addr,
             output reg addr_write_valid,
             input wire addr_write_ready,
-            output reg w_last,
+            input  wire w_last,
             output reg [31:0] axi_araddr,
             output reg axi_arvalid,
             input wire axi_arready,
@@ -72,7 +72,7 @@ reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [7:0] data_cycle;
 reg [15:0] blk_done_cnt_within_boundary;
-reg [11:0] we_counter;
+(* mark_debug = "true" *) reg [11:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
 reg init_rready;
@@ -151,7 +151,7 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
         fifo_dat_rd_ready <= 0;
         fifo_dat_wr_ready <= 0;
         addr_accepted <= 0;
-        w_last <= 0;
+//        w_last <= 0;
         dma_interrupts <= 0;
         axi_arvalid <= 0;
         fifo_rst <= 0;
@@ -183,48 +183,50 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
           READ_WAIT: begin
                   fifo_rst <= 0;
                   fifo_dat_rd_ready <= 1'b0;
-                  if (we_counter > data_cycle) begin
+                  if (((we_counter-16) >= data_cycle) | !xfer_compl) begin
                     state <= READ_ACT;
+                    we_counter_reset <= 1'b1;
                   end
-                  else if (data_cycle == 8'h80) begin
+                  if (data_cycle == 8'h80) begin
                     blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
                     total_trans_blk <= total_trans_blk + 1;
                     data_cycle <= 0;
-                    we_counter_reset <= 0;
+//                    we_counter_reset <= 0;
                     state <= READ_BLK_CNT_CHECK;
                   end
                   else begin
-                    w_last <= 1'b0;
+//                    w_last <= 1'b0;
                     state <= READ_WAIT;
                   end 
                 end
           READ_ACT: begin
                       case (addr_accepted)
-                        1'b0: begin 
-                          if (addr_write_valid && addr_write_ready) begin
-                            addr_write_valid <= 1'b0;
-                            addr_accepted <= 1'b1;
-                            data_write_valid <= 1'b1;
-                            w_last <= 1'b1;
-                          end
-                          else begin
-                            addr_write_valid <= 1'b1;
-                          end
-                        end
-                        1'b1: begin
-                          if (next_data_word) begin
-                            data_write_valid <= 1'b0;
-                            addr_accepted <= 1'b0;
-                            data_cycle <= data_cycle + 1;
-                            write_addr <= write_addr + 4;
-                            fifo_dat_rd_ready <= 1'b1;
-                            w_last <= 1'b0;
-                            state <= READ_WAIT;
-                          end
-                          else begin
-                            data_write_valid <= data_write_valid;
-                          end
-                        end
+                          1'b0: begin 
+                                 if (addr_write_valid && addr_write_ready) begin
+                                   addr_write_valid <= 1'b0;
+                                   addr_accepted <= 1'b1;
+                                   write_addr <= write_addr + 64;
+                                   data_write_valid <= 1'b1;
+                                 end
+                                 else begin
+                                   addr_write_valid <= 1'b1;
+                                end
+                                end
+                          1'b1: begin
+                                if (next_data_word) begin
+                                    data_cycle <= data_cycle + 1;
+                                    fifo_dat_rd_ready <= 1'b1;
+                                end
+                                else begin
+                                    data_write_valid <= data_write_valid;
+                                    fifo_dat_rd_ready <= 1'b0;
+                                end
+                                if (w_last) begin
+                                    state <= READ_WAIT;
+                                    data_write_valid <= 1'b0;
+                                    addr_accepted <= 1'b0;
+                                end
+                                end
                       endcase 
                     end
           NEW_SYS_ADDR: begin
@@ -243,7 +245,7 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                           end 
                         end
           READ_BLK_CNT_CHECK: begin
-                                we_counter_reset <= 1'b1;
+//                                we_counter_reset <= 1'b1;
                                 if (blk_count_ena) begin
                                   if (total_trans_blk < block_count) begin
                                     if (blk_done_cnt_within_boundary == block_count_bound) begin
