@@ -241,6 +241,7 @@
     wire maxi_wlast;
     wire [1:0] dma_int;
     wire trans_blk_compl;
+    wire burst_tx;
     
     // data aligning
     wire [31:0] write_dat_fifo;
@@ -279,7 +280,8 @@
             .start_write(start_tx),
             .trans_block_compl(trans_blk_compl),
             .ser_next_blk(next_block_st),
-            .write_timeout({d_read, d_write})
+            .write_timeout({d_read, d_write}),
+            .burst_tx(burst_tx)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -338,6 +340,7 @@
             .wnext(wordnext),
             .dat_wr_valid(m_axi_wvalid),
             .addr_wr(m_axi_awaddr),
+            .INIT_AXI_TXN(burst_tx),
             .addr_wr_valid(m_axi_awvalid)
 //            .m_axi_wlast(maxi_wlast)
         );

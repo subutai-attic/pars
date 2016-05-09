@@ -63,7 +63,8 @@ module  sd_emmc_controller_dma (
             input wire axi_arready,
             input wire axi_rvalid,
             output wire axi_rready,
-            input wire axi_rlast
+            input wire axi_rlast,
+            output reg burst_tx
         );
 
 reg [15:0] block_count_bound;
@@ -81,6 +82,7 @@ reg init_rvalid;
 (* mark_debug = "true" *) reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
+reg data_write_disable;
 
 parameter IDLE                = 4'b0000;
 parameter WRITE_TO_FIFO       = 4'b0001;
@@ -164,7 +166,8 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                    write_addr <= 0;
                    data_cycle <= 0;
                    fifo_dat_rd_ready <= 0;
-                   fifo_dat_wr_ready <= 0;                    
+                   fifo_dat_wr_ready <= 0; 
+                   data_write_disable <= 1'b0;                   
                   if (dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl) begin
                     write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
@@ -183,23 +186,23 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
           READ_WAIT: begin
                   fifo_rst <= 0;
                   fifo_dat_rd_ready <= 1'b0;
-                  if (((we_counter-16) >= data_cycle) | !xfer_compl) begin
+                  burst_tx <= 1'b0;
+                  if (we_counter >= (data_cycle+16)) begin
                     state <= READ_ACT;
-                    we_counter_reset <= 1'b1;
                   end
+                  else begin
+                    state <= READ_WAIT;
+                  end 
                   if (data_cycle == 8'h80) begin
                     blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
                     total_trans_blk <= total_trans_blk + 1;
                     data_cycle <= 0;
-//                    we_counter_reset <= 0;
+                    we_counter_reset <= 1'b0;
                     state <= READ_BLK_CNT_CHECK;
                   end
-                  else begin
-//                    w_last <= 1'b0;
-                    state <= READ_WAIT;
-                  end 
                 end
           READ_ACT: begin
+                      we_counter_reset <= 1'b1;
                       case (addr_accepted)
                           1'b0: begin 
                                  if (addr_write_valid && addr_write_ready) begin
@@ -216,36 +219,30 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                                 if (next_data_word) begin
                                     data_cycle <= data_cycle + 1;
                                     fifo_dat_rd_ready <= 1'b1;
+                                    data_write_valid <= 1'b0;
+                                    data_write_disable <= 1'b1;
+                                end
+                                else if (data_write_disable) begin
+                                    fifo_dat_rd_ready <= 1'b0;
+                                    data_write_valid <= 1'b0;
+                                    data_write_disable <= 1'b0;
                                 end
                                 else begin
-                                    data_write_valid <= data_write_valid;
-                                    fifo_dat_rd_ready <= 1'b0;
+                                    data_write_valid <= 1'b1;
                                 end
-                                if (w_last) begin
+                                if (w_last & data_write_valid) begin
                                     state <= READ_WAIT;
                                     data_write_valid <= 1'b0;
                                     addr_accepted <= 1'b0;
+                                    fifo_dat_rd_ready <= 1'b1;
+                                    data_write_disable <= 1'b0;
+                                    burst_tx <= 1'b1;
                                 end
                                 end
                       endcase 
                     end
-          NEW_SYS_ADDR: begin
-                          if (sys_addr_changed & dir_dat_trans_mode) begin
-                            state <= READ_WAIT;
-                            blk_done_cnt_within_boundary <= 0;
-                            write_addr <= init_dma_sys_addr;
-                          end
-                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
-                            state <= WRITE_TO_FIFO;
-                            blk_done_cnt_within_boundary <= 0;
-                            write_addr <= init_dma_sys_addr;
-                          end
-                          else begin
-                            state <= NEW_SYS_ADDR;
-                          end 
-                        end
           READ_BLK_CNT_CHECK: begin
-//                                we_counter_reset <= 1'b1;
+                                we_counter_reset <= 1'b1;
                                 if (blk_count_ena) begin
                                   if (total_trans_blk < block_count) begin
                                     if (blk_done_cnt_within_boundary == block_count_bound) begin
@@ -267,6 +264,21 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                                   state <= READ_WAIT;
                                 end
                               end
+          NEW_SYS_ADDR: begin
+                          if (sys_addr_changed & dir_dat_trans_mode) begin
+                            state <= READ_WAIT;
+                            blk_done_cnt_within_boundary <= 0;
+                            write_addr <= init_dma_sys_addr;
+                          end
+                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
+                            state <= WRITE_TO_FIFO;
+                            blk_done_cnt_within_boundary <= 0;
+                            write_addr <= init_dma_sys_addr;
+                          end
+                          else begin
+                            state <= NEW_SYS_ADDR;
+                          end 
+                        end                              
           TRANSFER_COMPLETE: begin
                               if (xfer_compl) begin
                                 state <= IDLE;
