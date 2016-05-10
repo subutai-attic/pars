@@ -292,7 +292,7 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                           fifo_rst <= 0;
                           case (addr_accepted)
                             1'b0: begin
-                              if (data_cycle == 8'h7F) begin
+                              if (data_cycle == 8'h80) begin
                                 blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
                                 total_trans_blk <= total_trans_blk + 1;
                                 data_cycle <= 0;
@@ -319,8 +319,10 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
                               end
                               else if (fifo_dat_wr_ready) begin
                                 fifo_dat_wr_ready <= 1'b0;
-                                if (axi_rlast)
+                                if (axi_rlast) begin
                                  addr_accepted <= 1'b0;  //The burst read stopped
+                                 data_cycle <= data_cycle + 1;
+                                 end
                               end
                             end
                           endcase
