@@ -19,10 +19,11 @@
 		// User ports ends
 		// Do not modify the ports beyond this line
         output wire reset,
-        output wire [3:0] bitslip,
+        output wire [4:0] bitslip,
         
         input wire clk_div,
-        input wire [31:0] din,
+        input wire [31:0] din1,
+        input wire [31:0] din2,        
         
         output wire clk_out,
 
@@ -76,7 +77,8 @@
 		.S_AXI_RVALID(s00_axi_rvalid),
 		.S_AXI_RREADY(s00_axi_rready),
 		.clk_div(clk_div),
-		.din(din),
+		.din1(din1),
+		.din2(din2),		
 		.bitslip(bitslip),
 		.reset(reset),
 		.clk_out(clk_out)

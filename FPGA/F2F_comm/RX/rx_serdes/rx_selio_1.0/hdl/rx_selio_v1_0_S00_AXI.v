@@ -15,10 +15,11 @@
 	)
 	(
 		// Users to add ports here
-        output reg [3:0] bitslip,
+        output reg [4:0] bitslip,
         output wire reset,
         input wire clk_div,
-        input wire [31:0] din,
+        input wire [31:0] din1,
+        input wire [31:0] din2,        
         output wire clk_out,
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -367,9 +368,9 @@
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 	        2'h0   : reg_data_out <= slv_reg0;
-	        2'h1   : reg_data_out <= rdata[31:0];
-	        2'h2   : reg_data_out <= flags;
-	        2'h3   : reg_data_out <= rxdata[31:0];
+	        2'h1   : reg_data_out <= rxdata1[31:0];
+	        2'h2   : reg_data_out <= rxdata2[31:0];
+	        2'h3   : reg_data_out <= 0;
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -395,16 +396,16 @@
 
 	// Add user logic here
 	reg [31:0] flags = 0;
-	reg [31:0]  rxdata;
-	reg [31:0] rdata;
-	reg [31:0] rdata2;
-	reg [31:0] rdata3;
-	reg        flag;
+	reg [31:0] rxdata1;
+	reg [31:0] rxdata2;
+	reg [39:0] rdata;
+	reg [4:0]  flag;
 	reg        enable;
-	reg [4:0]  bstate; 
+	reg [4:0]  bstate;
+	reg        lock; 
 	
 	reg tmp_chk = 0;
-	wire [31:0] din2;
+	wire [39:0] din2;
 //	assign din2 = {0,8 ,16,24,
 //	               1,9 ,17,25,
 //	               2,10,18,26,
@@ -426,32 +427,24 @@
           rdata   <= 0;
       end 
       else begin
-          if ( !enable ) begin
-//               rdata <= din[31:0];
-               rdata <= din[31:0];
+//          if ( !enable ) begin
+//               rdata <= din;
 
-//	           rdata <= {din[31],din[23],din[15],din[7],
-//	                     din[30],din[22],din[14],din[6],
-//	                     din[29],din[21],din[13],din[5],
-//	                     din[28],din[20],din[12],din[4],
-//	                     din[27],din[19],din[11],din[3],
-//	                     din[26],din[18],din[10],din[2],
-//	                     din[25],din[17],din[9] ,din[1],
-//	                     din[24],din[16],din[8] ,din[0]};             
-          end
-          
-          
+//	            rdata <=    {din[31],din[27] ,din[23],din[19],
+//                             din[15],din[11] ,din[7] ,din[3],
+//                             din[30],din[26] ,din[22],din[18],
+//                             din[14],din[10] ,din[6] ,din[2],
+//                             din[29],din[25] ,din[21],din[17],
+//                             din[13],din[9]  ,din[5] ,din[1],
+//                             din[28],din[24] ,din[20],din[16],
+//                             din[12],din[8]  ,din[4] ,din[0]};    
 
-
-// --------------for testing        
-//          if ( din[7:0] == 8'hA0 ) begin    
-//              rxdata[7:0] <= 8'hEF;
-//              rdata[7:0] <= din[7:0];
-//          end       
-//          else begin
-//              rxdata[7:0] <= din[7:0];
-//              rdata[7:0] <= din[7:0];
-//          end              
+//	            rdata <=    {din[39] ,din[34] ,din[29], din[24], din[19], din[14] ,din[9]  ,din[4],
+//                             din[38] ,din[33] ,din[28], din[23], din[18], din[13] ,din[8]  ,din[3],
+//                             din[37] ,din[32] ,din[27], din[22], din[17], din[12] ,din[7]  ,din[2],
+//                             din[36] ,din[31] ,din[26], din[21], din[16], din[11] ,din[6]  ,din[1],                                                                                       	            
+//                             din[35] ,din[30] ,din[25], din[20], din[15], din[10] ,din[5]  ,din[0]};                                       
+//          end
       end   
     end    
     
@@ -462,80 +455,95 @@
                 flag    <= 0;
                 bitslip <= 0;
                 bstate  <= 5'h0;   
-                rxdata  <= 0;     
+                rxdata1  <= 0;
+                rxdata2  <= 0;                
+                lock <= 1;     
             end
             else if ( enable ) begin
                 flags[0] <= enable;
-                flags[1] <= flag;
+                flags[1] <= flag[0];
                 flags[2] <= bitslip[0];
                 flags[4] <= bstate[0];
                 flags[5] <= bstate[1];
                 flags[6] <= bstate[2];
                 flags[7] <= bstate[3];
                 flags[8] <= bstate[4];
-//                rxdata <= din[31:0];
+                rxdata1 <= din1;
+                rxdata2 <= din2;                
 
-	            rxdata <=   {din[31],din[27] ,din[23],din[19],
-                             din[15],din[11] ,din[7] ,din[3],
-                             din[30],din[26] ,din[22],din[18],
-                             din[14],din[10] ,din[6] ,din[2],
-                             din[29],din[25] ,din[21],din[17],
-                             din[13],din[9]  ,din[5] ,din[1],
-                             din[28],din[24] ,din[20],din[16],
-                             din[12],din[8]  ,din[4] ,din[0]};                
-                
-                if ( rxdata[7:0] != 8'hA0 ) 
-                    flag <= 1'b1;
-                else if ( bstate[3] && din[31:0] == 32'h3E1E0E06 ) begin //&& rxdata[7:0] == 8'hA0) begin //&& din[31:0] == 32'h3E1E0E06 
-                    enable <= 0;
-                    flag   <= 0;
-                end                      
-                
-                if ( flag ) begin
-                case ( bstate ) 
-                    4'h0: begin
-                        bstate <= 5'h1;
-                        bitslip <= 4'hF;
-                    end
-                    4'h1: begin
-                        bstate <= 5'h2;
-                        bitslip <= 0;
-                    end
-                    4'h2: begin
-                        bstate <= 5'h3;
-                    end
-                    4'h3: begin
-                        bstate <= 5'h4;
-                    end   
-                    4'h4: begin
-                        bstate <= 5'h8;
-                    end 
-                    4'h8: begin
-                        bstate <= 5'h0;
-                    end
-//                    4'h10: begin
-//                        bstate <= 0;
-//                    end                    
-                endcase                                                         
-                end                    
-                
+//	            rxdata <=   {din[39] ,din[34] ,din[29], din[24], din[19], din[14] ,din[9]  ,din[4],
+//                             din[38] ,din[33] ,din[28], din[23], din[18], din[13] ,din[8]  ,din[3],
+//                             din[37] ,din[32] ,din[27], din[22], din[17], din[12] ,din[7]  ,din[2],
+//                             din[36] ,din[31] ,din[26], din[21], din[16], din[11] ,din[6]  ,din[1],                                                                                       	            
+//                             din[35] ,din[30] ,din[25], din[20], din[15], din[10] ,din[5]  ,din[0]};           
+                             
 
-// --------------for testing                
-//                if ( !flag ) begin
-//                    bitslip <= 1'h1;
-//                    flag <= 1'h1;
+//                if ( rxdata[39:32] != 8'h7E ) 
+//                    flag[4] <= 1'b1;
+//                else if ( bstate[3] && rxdata[39:32] == 8'h7E) 
+//                begin
+//                    flag[4]   <= 0;
+//                end                                  
+//                if ( rxdata[31:24] != 8'h7E ) 
+//                    flag[3] <= 1'b1;
+//                else if ( bstate[3] && rxdata[31:24] == 8'h7E) 
+//                begin
+//                    flag[3]   <= 0;
+//                end
+//                if ( rxdata[23:16] != 8'h7E ) 
+//                    flag[2] <= 1'b1;
+//                else if ( bstate[3] && rxdata[23:16] == 8'h7E) 
+//                begin
+//                    flag[2]   <= 0;
+//                end
+//                if ( rxdata[15:8] != 8'h7E ) 
+//                    flag[1] <= 1'b1;
+//                else if ( bstate[3] && rxdata[15:8] == 8'h7E) 
+//                begin
+//                    flag[1]   <= 0;
+//                end
+//                if ( rxdata[7:0] != 8'h7E ) 
+//                    flag[0] <= 1'b1;
+//                else if ( bstate[3] && rxdata[7:0] == 8'h7E) 
+//                begin
+//                    flag[0]   <= 0; 
 //                end
                 
-//                else if ( flag ) begin
-//                    bitslip <= 1'h0;
-//                    enable <= 0; 
-//                    flag <= 0;                   
-//                end
-                
-                
-                            
+//                lock <= 0;
+//                if (!lock && flag[4:0] == 0)
+//                begin
+//                    enable <= 0;
+//                end                                                
+
+                                      
+//                if ( flag != 0 ) begin
+//                case ( bstate ) 
+//                    4'h0: begin
+//                        bstate <= 5'h1;
+//                        bitslip <= {flag[4],flag[3],flag[2],flag[1],flag[0]};
+//                    end
+//                    4'h1: begin
+//                        bstate <= 5'h2;
+//                        bitslip <= 0;
+//                    end
+//                    4'h2: begin
+//                        bstate <= 5'h3;
+//                    end
+//                    4'h3: begin
+//                        bstate <= 5'h4;
+//                    end   
+//                    4'h4: begin
+//                        bstate <= 5'h8;
+//                    end 
+//                    4'h8: begin
+//                        bstate <= 5'h0;
+//                    end                   
+//                endcase                                                         
+//                end                    
             end                
     end
+    
+    
     
     
 	// bitslip operation	
@@ -697,17 +705,69 @@
 //                end
 //        end
 
+    wire CLKFBOUT;         
+    PLLE2_ADV #(
+          .BANDWIDTH        ("OPTIMIZED"),          
+          .CLKFBOUT_MULT        (32),               
+          .CLKFBOUT_PHASE        (0.0),                 
+          .CLKIN1_PERIOD        (40.000),          
+          .CLKIN2_PERIOD        (40.000),          
+          .CLKOUT0_DIVIDE        (8),               
+          .CLKOUT0_DUTY_CYCLE    (0.5),                 
+          .CLKOUT0_PHASE        (0.0),                 
+          .CLKOUT1_DIVIDE        (20),           
+          .CLKOUT1_DUTY_CYCLE    (0.5),                 
+          .CLKOUT1_PHASE        (0.0),                 
+          .CLKOUT2_DIVIDE        (0.0),           
+          .CLKOUT2_DUTY_CYCLE    (0.5),                 
+          .CLKOUT2_PHASE        (0.0),                 
+          .CLKOUT3_DIVIDE        (),                   
+          .CLKOUT3_DUTY_CYCLE    (0.5),                 
+          .CLKOUT3_PHASE        (0.0),                 
+          .CLKOUT4_DIVIDE        (),                   
+          .CLKOUT4_DUTY_CYCLE    (0.5),                 
+          .CLKOUT4_PHASE        (0.0),                  
+          .CLKOUT5_DIVIDE        (),                   
+          .CLKOUT5_DUTY_CYCLE    (0.5),                 
+          .CLKOUT5_PHASE        (0.0),                  
+          .COMPENSATION        ("ZHOLD"),             
+          .DIVCLK_DIVIDE        (1),                    
+          .REF_JITTER1        (0.100))                   
+    tx_mmcme2_adv_inst (
+          .CLKFBOUT            (CLKFBOUT),                  
+          .CLKOUT0            (clk_out),              
+          .CLKOUT1            (),              
+          .CLKOUT2            (),                 
+          .CLKOUT3            (),                      
+          .CLKOUT4            (),                      
+          .CLKOUT5            (),                      
+          .DO            (),                            
+          .DRDY            (),                          
+          .PWRDWN            (1'b0),  
+          .LOCKED            (),                
+          .CLKFBIN            (CLKFBOUT),            
+          .CLKIN1            (clk_div),                 
+          .CLKIN2            (1'b0),                     
+          .CLKINSEL            (1'b1),                     
+          .DADDR            (7'h00),                    
+          .DCLK            (1'b0),                       
+          .DEN            (1'b0),                        
+          .DI            (16'h0000),                
+          .DWE            (1'b0),                        
+          .RST            (reset)) ;   
+          
+
 //    wire CLKFBOUT;         
 //    PLLE2_ADV #(
 //          .BANDWIDTH        ("OPTIMIZED"),          
-//          .CLKFBOUT_MULT        (20),               
+//          .CLKFBOUT_MULT        (8),               
 //          .CLKFBOUT_PHASE        (0.0),                 
-//          .CLKIN1_PERIOD        (25.000),          
-//          .CLKIN2_PERIOD        (25.000),          
-//          .CLKOUT0_DIVIDE        (4),               
+//          .CLKIN1_PERIOD        (10.000),          
+//          .CLKIN2_PERIOD        (10.000),          
+//          .CLKOUT0_DIVIDE        (8),               
 //          .CLKOUT0_DUTY_CYCLE    (0.5),                 
 //          .CLKOUT0_PHASE        (0.0),                 
-//          .CLKOUT1_DIVIDE        (20),           
+//          .CLKOUT1_DIVIDE        (32),           
 //          .CLKOUT1_DUTY_CYCLE    (0.5),                 
 //          .CLKOUT1_PHASE        (0.0),                 
 //          .CLKOUT2_DIVIDE        (0.0),           
@@ -746,6 +806,6 @@
 //          .DEN            (1'b0),                        
 //          .DI            (16'h0000),                
 //          .DWE            (1'b0),                        
-//          .RST            (reset)) ;          
+//          .RST            (reset)) ;                 
 
 	endmodule
