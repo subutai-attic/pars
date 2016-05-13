@@ -171,6 +171,9 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg19;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg20;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg21;
+	
 	wire	 slv_reg_rden;
 	wire	 slv_reg_wren;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	 reg_data_out;
@@ -503,7 +506,22 @@
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 19
 	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
+	              end
+	          5'h16:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+                  // Respective byte enables are asserted as per write strobes 
+                  // Slave register 19
+                  slv_reg20[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                end
+	          5'h17:
+                for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+                  // Respective byte enables are asserted as per write strobes 
+                  // Slave register 19
+                  slv_reg21[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                end
+  
 	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      slv_reg1 <= slv_reg1;
@@ -525,6 +543,8 @@
 	                      slv_reg17 <= slv_reg17;
 	                      slv_reg18 <= slv_reg18;
 	                      slv_reg19 <= slv_reg19;
+	                      slv_reg20 <= slv_reg20;
+	                      slv_reg21 <= slv_reg21; 
 	                    end
 	        endcase
 	        
@@ -687,7 +707,7 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h016432B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
+	        5'h10   : reg_data_out <= 32'h012C32B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
