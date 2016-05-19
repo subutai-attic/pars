@@ -30,12 +30,12 @@
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
-        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
-        (* mark_debug = "true" *) input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
+        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
         output reg cmd_start,
         output reg cmd_int_rst,
-        (* mark_debug = "true" *) output reg dat_int_rst,
+        output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
         output wire fifo_reset,
@@ -125,7 +125,7 @@
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
 		output reg sys_addr_set,
-		(* mark_debug = "true" *) input wire [1:0] dma_int
+		input wire [1:0] dma_int
 	);
     
 	// AXI4LITE signals
@@ -171,6 +171,9 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg19;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg20;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg21;
+	
 	wire	 slv_reg_rden;
 	wire	 slv_reg_wren;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	 reg_data_out;
@@ -503,7 +506,18 @@
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 19
 	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
+	              end
+	          5'h16:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+                  slv_reg20[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                end
+	          5'h17:
+                for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+                  slv_reg21[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                end
+  
 	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      slv_reg1 <= slv_reg1;
@@ -525,6 +539,8 @@
 	                      slv_reg17 <= slv_reg17;
 	                      slv_reg18 <= slv_reg18;
 	                      slv_reg19 <= slv_reg19;
+	                      slv_reg20 <= slv_reg20;
+	                      slv_reg21 <= slv_reg21; 
 	                    end
 	        endcase
 	        
@@ -687,11 +703,12 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h016432B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
+	        5'h10   : reg_data_out <= 32'h012C32B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
 	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
+	        
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -709,7 +726,7 @@
 	    begin    
 	      // When there is a valid read address (S_AXI_ARVALID) with 
 	      // acceptance of read address by the slave (axi_arready), 
-	      // output the read dada 
+	      // output the read data 
 	      if (slv_reg_rden)
 	        begin
 	          axi_rdata <= reg_data_out;     // register read data

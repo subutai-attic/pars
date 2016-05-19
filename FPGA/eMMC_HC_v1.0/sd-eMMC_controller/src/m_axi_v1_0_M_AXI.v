@@ -327,69 +327,7 @@
 	    end                                                                
 	                                                                       
 	                                                                       
-//	// Next address after AWREADY indicates previous address acceptance    
-//	  always @(posedge M_AXI_ACLK)                                         
-//	  begin                                                                
-//	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                            
-//	      begin                                                            
-//	        axi_awaddr <= 'b0;                                             
-//	      end                                                              
-//	    else if (M_AXI_AWREADY && axi_awvalid)                             
-//	      begin                                                            
-//	        axi_awaddr <= axi_awaddr + burst_size_bytes;                   
-//	      end                                                              
-//	    else                                                               
-//	      axi_awaddr <= axi_awaddr;                                        
-//	    end                                                                
-
-
-	//--------------------
-	//Write Data Channel
-	//--------------------
-
-	//The write data will continually try to push write data across the interface.
-
-	//The amount of data accepted will depend on the AXI slave and the AXI
-	//Interconnect settings, such as if there are FIFOs enabled in interconnect.
-
-	//Note that there is no explicit timing relationship to the write address channel.
-	//The write channel has its own throttling flag, separate from the AW channel.
-
-	//Synchronization between the channels must be determined by the user.
-
-	//The simpliest but lowest performance would be to only issue one address write
-	//and write data burst at a time.
-
-	//In this example they are kept in sync by using the same address increment
-	//and burst sizes. Then the AW and W channels have their transactions measured
-	//with threshold counters as part of the user logic, to make sure neither 
-	//channel gets too far ahead of each other.
-
-	//Forward movement occurs when the write channel is valid and ready
-
 	  assign wnext = M_AXI_WREADY & dat_wr_valid; //axi_wvalid;                                   
-	                                                                                    
-	// WVALID logic, similar to the axi_awvalid always block above                      
-//	  always @(posedge M_AXI_ACLK)                                                      
-//	  begin                                                                             
-//	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 )                                                        
-//	      begin                                                                         
-//	        axi_wvalid <= 1'b0;                                                         
-//	      end                                                                           
-//	    // If previously not valid, start next transaction                              
-//	    else if (~axi_wvalid && start_single_burst_write)                               
-//	      begin                                                                         
-//	        axi_wvalid <= 1'b1;                                                         
-//	      end                                                                           
-//	    /* If WREADY and too many writes, throttle WVALID                               
-//	    Once asserted, VALIDs cannot be deasserted, so WVALID                           
-//	    must wait until burst is complete with WLAST */                                 
-//	    else if (wnext && axi_wlast)                                                    
-//	      axi_wvalid <= 1'b0;                                                           
-//	    else                                                                            
-//	      axi_wvalid <= axi_wvalid;                                                     
-//	  end                                                                               
-	                                                                                    
 	                                                                                    
 	//WLAST generation on the MSB of a counter underflow                                
 	// WVALID logic, similar to the axi_awvalid always block above                      
@@ -435,21 +373,6 @@
 	  end                                                                               
 	                                                                                    
 	                                                                                    
-//	/* Write Data Generator                                                             
-//	 Data pattern is only a simple incrementing count from 0 for each burst  */         
-//	  always @(posedge M_AXI_ACLK)                                                      
-//	  begin                                                                             
-//	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                         
-//	      axi_wdata <= 'b1;                                                             
-//	    //else if (wnext && axi_wlast)                                                  
-//	    //  axi_wdata <= 'b0;                                                           
-//	    else if (wnext)                                                                 
-//	      axi_wdata <= data_read_fifo;                                                   
-//	    else                                                                            
-//	      axi_wdata <= axi_wdata;                                                       
-//	    end                                                                             
-
-
 	//----------------------------
 	//Write Response (B) Channel
 	//----------------------------

@@ -28,7 +28,7 @@ module  sd_emmc_controller_dma (
             // S_AXI
             input  wire [31:0] init_dma_sys_addr,
             input  wire [2:0] buf_boundary,
-            (* mark_debug = "true" *) input  wire [`BLKCNT_W -1:0] block_count,
+            input  wire [`BLKCNT_W -1:0] block_count,
             input  wire sys_addr_changed,
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
@@ -44,12 +44,12 @@ module  sd_emmc_controller_dma (
             output reg start_write,
             input wire trans_block_compl,
             input wire ser_next_blk,
-            (* mark_debug = "true" *) input wire [1:0] write_timeout,
+            input wire [1:0] write_timeout,
             
             // FIFO Filler
-            (* mark_debug = "true" *) output reg fifo_dat_rd_ready,
-            (* mark_debug = "true" *) output reg fifo_dat_wr_ready,
-            (* mark_debug = "true" *) output reg fifo_rst,
+            output reg fifo_dat_rd_ready,
+            output reg fifo_dat_wr_ready,
+            output reg fifo_rst,
 
             // M_AXI
             input  wire next_data_word,
@@ -68,7 +68,7 @@ module  sd_emmc_controller_dma (
         );
 
 reg [15:0] block_count_bound;
-(* mark_debug = "true" *) reg [15:0] total_trans_blk;
+reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [7:0] data_cycle;
@@ -79,7 +79,7 @@ reg init_we_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
-(* mark_debug = "true" *) reg addr_accepted;
+reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
 reg data_write_disable;

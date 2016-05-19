@@ -1,19 +1,24 @@
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
-//// WISHBONE SD Card Controller IP Core                          ////
+//// AXI SD-eMMC Card Controller IP Core                          ////
 ////                                                              ////
 //// sd_data_serial_host.v                                        ////
 ////                                                              ////
 //// This file is part of the WISHBONE SD Card                    ////
 //// Controller IP Core project                                   ////
-//// http://opencores.org/project,sd_card_controller              ////
+////                                                              ////
 ////                                                              ////
 //// Description                                                  ////
 //// Module resposible for sending and receiving data through     ////
-//// 4-bit sd card data interface                                 ////
+//// 4 and 8-bits eMMC card data interface                        ////
 ////                                                              ////
 //// Author(s):                                                   ////
 ////     - Marek Czerski, ma.czerski@gmail.com                    ////
+////                                                              ////
+//// Contributers:                                                ////
+////     - Azamat Beksadaev, abeksadaev@gmail.com                 ////
+////     - Baktiiar Kukanov,                                      ////
+////     - Eldar Ismailov                                         ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
@@ -52,10 +57,10 @@ module sd_data_serial_host(
            input sd_clk,
            input rst,
            //Tx Fifo
-           (* mark_debug = "true" *) input [31:0] data_in,
-           (* mark_debug = "true" *) output reg rd,
+           input [31:0] data_in,
+           output reg rd,
            //Rx Fifo
-           (* mark_debug = "true" *) output wire [31:0] data_out_o,
+           output wire [31:0] data_out_o,
            (* mark_debug = "true" *) output reg we,
            //tristate data
            output reg DAT_oe_o,
@@ -79,19 +84,19 @@ module sd_data_serial_host(
            output wire write_next_block
        );
        
-//reg [31:0] data_out;
-(* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+3:0] data_cycles;
-(* mark_debug = "true" *) reg bus_4bit_reg;
-(* mark_debug = "true" *) reg bus_8bit_reg;
+
+reg [7:0] DAT_dat_reg;
+reg [`BLKSIZE_W-1+3:0] data_cycles;
+reg bus_4bit_reg;
+reg bus_8bit_reg;
 //CRC16
 reg [7:0] crc_in;
 reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [7:0];
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
+reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-(* mark_debug = "true" *) reg [SIZE-1:0] state;
+reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;
@@ -102,15 +107,15 @@ parameter READ_WAIT  = 6'b010000;
 parameter READ_DAT   = 6'b100000;
 reg [3:0] crc_status;
 reg busy_int;
-(* mark_debug = "true" *) reg [`BLKCNT_W-1:0] blkcnt_reg;
+reg [`BLKCNT_W-1:0] blkcnt_reg;
 reg [1:0] byte_alignment_reg;
 reg [`BLKSIZE_W-1:0] blksize_reg;
 reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
 reg [7:0] last_din;
-(* mark_debug = "true" *) reg [3:0] crc_s ;
-(* mark_debug = "true" *) reg [4:0] data_index;
+reg [3:0] crc_s ;
+reg [4:0] data_index;
 reg [31:0] data_out;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
