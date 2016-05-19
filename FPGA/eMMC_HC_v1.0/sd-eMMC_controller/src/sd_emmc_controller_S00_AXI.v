@@ -125,7 +125,7 @@
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
 		output reg sys_addr_set,
-		(* mark_debug = "true" *) input wire [1:0] dma_int
+		input wire [1:0] dma_int
 	);
     
 	// AXI4LITE signals
@@ -510,15 +510,11 @@
 	          5'h16:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                 if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-                  // Respective byte enables are asserted as per write strobes 
-                  // Slave register 19
                   slv_reg20[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
                 end
 	          5'h17:
                 for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                 if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-                  // Respective byte enables are asserted as per write strobes 
-                  // Slave register 19
                   slv_reg21[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
                 end
   
