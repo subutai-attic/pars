@@ -1,0 +1,5 @@
+rm vivado*
+rm *.jou
+rm *.log
+rm -rf tx_selio_lvds
+rm -rf .Xil
