@@ -64,7 +64,9 @@ module  sd_emmc_controller_dma (
             input wire axi_rvalid,
             output wire axi_rready,
             input wire axi_rlast,
-            output reg burst_tx
+            output reg burst_tx,
+            input wire [31:0] adma_sys_addr,
+            input wire [31:0] m_axi_rdata
         );
 
 reg [15:0] block_count_bound;
@@ -83,6 +85,7 @@ reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
 reg data_write_disable;
+(* mark_debug = "true" *) reg [2:0] adma_state;
 
 parameter IDLE                = 4'b0000;
 parameter WRITE_TO_FIFO       = 4'b0001;
@@ -93,6 +96,19 @@ parameter READ_BLK_CNT_CHECK  = 4'b0101;
 parameter TRANSFER_COMPLETE   = 4'b0110;
 parameter WRITE_ACT           = 4'b0111;
 parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
+
+parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
+                                  // (1) After Power on reset or software reset.
+                                  // (2) All descriptor data transfers are completed.
+                                  //If a new ADMA2 operation is started by writing Command register, go to ST_FDS state. 
+                ST_FDS  = 3'b001, //State Fetch Descriptor. In this state ADMA2 fetches a descriptor line 
+                                  //and set parameters in internal registers.
+                ST_CADR = 3'b010, //State Change Address. In this state Link operation loads another Descriptor address
+                                  //to ADMA System Address register.
+                ST_TFR  = 3'b011; //State Transfer Data. In this state data transfer of one descriptor line is executed 
+                                  //between system memory and SD card.
+                
+
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -399,6 +415,29 @@ parameter WRITE_CNT_BLK_CHECK = 4'b1000;
           init_we_ff2 <= init_we_ff;
         end
       end
+      
+      //adma state
+      
+    always @ (posedge clock)
+      begin: adma
+        if(reset == 1'b0) begin
+          adma_state <= ST_STOP;
+        end
+        else begin
+          case (adma_state)
+            ST_STOP: begin
+                       if (sys_addr_changed) begin
+                       end
+                     end
+            ST_FDS: begin
+                    end
+            ST_CADR: begin
+                     end
+            ST_TFR: begin
+                    end
+          endcase
+        end
+      end  
 
 
 endmodule

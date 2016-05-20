@@ -125,7 +125,8 @@
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
 		output reg sys_addr_set,
-		input wire [1:0] dma_int
+		input wire [1:0] dma_int,
+		output wire [31:0] adma_sys_addr
 	);
     
 	// AXI4LITE signals
@@ -208,6 +209,7 @@
     assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
     assign bfr_bound           = slv_reg1[14:12];
     assign sys_addr            = slv_reg0;
+    assign adma_sys_addr       = slv_reg20;
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -507,18 +509,19 @@
 	                // Slave register 19
 	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	          5'h16:
+	          5'h16: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-                  slv_reg20[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                  if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+                    slv_reg20[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                  end
+                  sys_addr_set <= 1'b1;
                 end
 	          5'h17:
                 for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                 if ( S_AXI_WSTRB[byte_index] == 1 ) begin
                   slv_reg21[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
                 end
-  
-	          default : begin
+  	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      slv_reg1 <= slv_reg1;
 	                      slv_reg2 <= slv_reg2;

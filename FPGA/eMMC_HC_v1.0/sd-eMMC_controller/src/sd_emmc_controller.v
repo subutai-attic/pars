@@ -271,7 +271,9 @@
             .trans_block_compl(trans_blk_compl),
             .ser_next_blk(next_block_st),
             .write_timeout({d_read, d_write}),
-            .burst_tx(burst_tx)
+            .burst_tx(burst_tx),
+            .adma_sys_addr(system_addr),
+            .m_axi_rdata(M_AXI_RDATA)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -403,10 +405,11 @@
             .start_tx_fifo_i(start_tx_fifo),
 //            .start_tx_o(start_tx),
             .bfr_bound(buff_bound),
-            .sys_addr(system_addr),
+//            .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
             .sys_addr_set(sys_addr_set),
-            .dma_int(dma_int)
+            .dma_int(dma_int),
+            .adma_sys_addr(system_addr)
         );
 
     // Clock divider
