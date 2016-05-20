@@ -223,7 +223,7 @@
     wire [2:0] buff_bound;
     wire [31:0] system_addr;
     wire [1:0] dma_and_blkcnt_en;
-    wire sys_addr_set;
+//    wire sys_addr_set;
     wire wordnext;
     wire m_axi_wvalid;
     wire [31:0] m_axi_awaddr;
@@ -237,16 +237,17 @@
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
     assign maxi_wlast = M_AXI_WLAST;
+    
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
             .reset(s00_axi_aresetn),
             .is_we_en(we_fifo),
             .buf_boundary(buff_bound),
-            .init_dma_sys_addr(system_addr),
+//            .init_dma_sys_addr(system_addr),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
             .blk_count_ena (dma_and_blkcnt_en [1]),
             .dir_dat_trans_mode(dat_trans_dir_axi_clk),
-            .sys_addr_changed(sys_addr_set),
+//            .sys_addr_changed(sys_addr_set),
             .block_count(block_count_reg_axi_clk),
             .xfer_compl(!data_busy),
             .next_data_word(wordnext),
@@ -272,8 +273,9 @@
             .ser_next_blk(next_block_st),
             .write_timeout({d_read, d_write}),
             .burst_tx(burst_tx),
-            .adma_sys_addr(system_addr),
-            .m_axi_rdata(M_AXI_RDATA)
+            .descriptor_pointer_i(system_addr),
+            .m_axi_rdata(M_AXI_RDATA),
+            .data_present(command_reg_wb_clk[5])
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -407,7 +409,7 @@
             .bfr_bound(buff_bound),
 //            .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
-            .sys_addr_set(sys_addr_set),
+//            .sys_addr_set(sys_addr_set),
             .dma_int(dma_int),
             .adma_sys_addr(system_addr)
         );
