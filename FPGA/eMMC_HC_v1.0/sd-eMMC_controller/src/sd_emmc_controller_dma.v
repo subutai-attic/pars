@@ -67,7 +67,13 @@ module  sd_emmc_controller_dma (
             output wire axi_rready,
             input wire axi_rlast,
             output reg burst_tx,
-            input wire [31:0] m_axi_rdata
+            input wire [31:0] m_axi_rdata,
+            output wire [7:0] m_axi_arlen,
+            output wire [2:0] m_axi_arsize,
+            output wire [1:0] m_axi_arburst,
+            output wire [1:0] m_axi_awburst,
+            output wire [7:0] m_axi_awlen,
+            output wire [2:0] m_axi_awsize
         );
 
 reg [15:0] block_count_bound;
@@ -114,6 +120,12 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                   //between system memory and SD card.
                 
   assign axi_araddr = sys_addr_sel ? descriptor_pointer_reg : data_system_addr;
+  assign m_axi_arlen	 = 8'h0f;
+  assign m_axi_arsize	 = 3'b010;
+  assign m_axi_arburst   = 2'b01;
+  assign m_axi_awburst   = 2'b01;
+  assign m_axi_awlen	 = 8'h0f;
+  assign m_axi_awsize	 = 3'b010;
 
 
     always @ (posedge clock)

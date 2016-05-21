@@ -265,6 +265,13 @@
             .axi_rvalid(M_AXI_RVALID),
             .axi_rready(M_AXI_RREADY),
             .axi_rlast(M_AXI_RLAST),
+            .m_axi_arlen(M_AXI_ARLEN),
+            .m_axi_arsize(M_AXI_ARSIZE),
+            .m_axi_arburst(M_AXI_ARBURST),
+            .m_axi_awburst(M_AXI_AWBURST),
+            .m_axi_awlen(M_AXI_AWLEN),
+            .m_axi_rdata(M_AXI_RDATA),
+            .m_axi_awsize(M_AXI_AWSIZE),
             .fifo_dat_wr_ready(fifo_data_write_ready),
             .fifo_rst(fifo_reset),
             .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
@@ -274,7 +281,6 @@
             .write_timeout({d_read, d_write}),
             .burst_tx(burst_tx),
             .descriptor_pointer_i(system_addr),
-            .m_axi_rdata(M_AXI_RDATA),
             .data_present(command_reg_wb_clk[5])
         );
         
@@ -294,9 +300,6 @@
             .M_AXI_ARESETN(M_AXI_ARESETN),
             .M_AXI_AWID(M_AXI_AWID),
             .M_AXI_AWADDR(M_AXI_AWADDR),
-            .M_AXI_AWLEN(M_AXI_AWLEN),
-            .M_AXI_AWSIZE(M_AXI_AWSIZE),
-            .M_AXI_AWBURST(M_AXI_AWBURST),
             .M_AXI_AWLOCK(M_AXI_AWLOCK),
             .M_AXI_AWCACHE(M_AXI_AWCACHE),
             .M_AXI_AWPROT(M_AXI_AWPROT),
@@ -316,9 +319,6 @@
             .M_AXI_BVALID(M_AXI_BVALID),
             .M_AXI_BREADY(M_AXI_BREADY),
             .M_AXI_ARID(M_AXI_ARID),
-            .M_AXI_ARLEN(M_AXI_ARLEN),
-            .M_AXI_ARSIZE(M_AXI_ARSIZE),
-            .M_AXI_ARBURST(M_AXI_ARBURST),
             .M_AXI_ARLOCK(M_AXI_ARLOCK),
             .M_AXI_ARCACHE(M_AXI_ARCACHE),
             .M_AXI_ARPROT(M_AXI_ARPROT),
@@ -326,17 +326,13 @@
             .M_AXI_ARUSER(M_AXI_ARUSER),
             .M_AXI_RID(M_AXI_RID),
             .M_AXI_RRESP(M_AXI_RRESP),
-//            .M_AXI_RLAST(M_AXI_RLAST),
             .M_AXI_RUSER(M_AXI_RUSER),
-//            .M_AXI_RVALID(M_AXI_RVALID),
-//            .M_AXI_RREADY(M_AXI_RREADY),
             .data_read_fifo(read_fifo_out),
             .wnext(wordnext),
             .dat_wr_valid(m_axi_wvalid),
             .addr_wr(m_axi_awaddr),
             .INIT_AXI_TXN(burst_tx),
             .addr_wr_valid(m_axi_awvalid)
-//            .m_axi_wlast(maxi_wlast)
         );
 
         // Instantiation of Axi Bus Interface S00_AXI
