@@ -232,6 +232,7 @@
     wire [1:0] dma_int;
     wire trans_blk_compl;
     wire burst_tx;
+    wire cmd_cmplt_axi_puls;
     
     // data aligning
     wire [31:0] write_dat_fifo;
@@ -281,7 +282,8 @@
             .write_timeout({d_read, d_write}),
             .burst_tx(burst_tx),
             .descriptor_pointer_i(system_addr),
-            .data_present(command_reg_wb_clk[5])
+            .data_present(command_reg_wb_clk[5]),
+            .cmd_compl_puls(cmd_cmplt_axi_puls)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -556,6 +558,7 @@
     edge_detect cmd_start_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_start), .rise(cmd_start_wb_clk), .fall());
     edge_detect dat_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(data_int_rst), .rise(data_int_rst_wb_clk), .fall());
     edge_detect cmd_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_rst), .rise(cmd_int_rst_wb_clk), .fall());
+    edge_detect cmd_cmplt_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_status_reg_wb_clk[0]), .rise(cmd_cmplt_axi_puls), .fall());
 //    edge_detect start_write(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(start_tx), .rise(start_tx_pulse), .fall());
         
     monostable_domain_cross soft_reset_cross_cmd(!s00_axi_aresetn, s00_axi_aclk, soft_rst_cmd_axi_clk, SD_CLK, soft_rst_cmd_sd_clk);

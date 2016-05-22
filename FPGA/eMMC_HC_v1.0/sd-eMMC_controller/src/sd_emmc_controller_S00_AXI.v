@@ -458,7 +458,7 @@
 	              cmd_int_rst <= 1'b1;
 	              dat_int_rst <= 1'b1;
 	              blk_size_cnt <= 0;
-	                 end
+	            end
 	          5'h0D:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -552,7 +552,7 @@
 //             slv_reg11[26] <= 1'b0;
 //          end
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, dma_int[1], 1'b0, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], 2'b00, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;
