@@ -446,6 +446,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       reg [1:0] start_dat_trans;
       reg [2:0] next_state;
       reg [15:0] rd_dat_words;
+      wire Tran;
+      wire Link;
+      
+      assign Tran = (descriptor_line[5:4] == 2'b10) ? 1'b1 : 1'b0;
+      assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
       
     always @ (posedge clock)
       begin: adma
@@ -469,6 +474,9 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          m_axi_arlen <= 8'h01;
                          descriptor_pointer_reg <= descriptor_pointer_i;
                        end
+                       else begin
+                         descriptor_line <= 0;
+                       end
                      end
             ST_FDS: begin
                       start_dat_trans <= 1'b00;
@@ -486,9 +494,26 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                       end
                     end
             ST_CADR: begin
+                       if (Tran) begin
+                         next_state <= ST_TFR;
+                       end
+                       else begin
+                         if (descriptor_line[`End])
+                           next_state <= ST_STOP;
+                         else
+                           next_state <= ST_FDS;
+                           sys_addr_sel <= 1'b1;        //под сомнением нужно ли тут устанаваливать и нужен ли он вообще
+                           start_dat_trans <= 2'b10;
+                           rd_dat_words <= 16'h0008;     //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
+                           m_axi_arlen <= 8'h01;         //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
+                       end
+                       if (Link)
+                         descriptor_pointer_reg <= descriptor_line[63:32];
+                       else
+                         descriptor_pointer_reg <= descriptor_pointer_reg + 32'h00000008;
                      end
             ST_TFR: begin
-                      dma_interrupts[0] <= 1'b1;
+//                      dma_interrupts[0] <= 1'b1;
                     end
           endcase
           if (dat_int_rst)

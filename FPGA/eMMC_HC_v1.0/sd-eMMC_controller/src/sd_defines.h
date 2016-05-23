@@ -59,6 +59,7 @@
 
 //adma attributes
 `define valid 0
+`define End 1
 
 //global defines
 `define BLKSIZE_W 12
