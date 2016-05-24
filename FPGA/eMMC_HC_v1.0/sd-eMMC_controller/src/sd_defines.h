@@ -60,6 +60,10 @@
 //adma attributes
 `define valid 0
 `define End 1
+`define DatTarg 2
+`define AddrSel 3
+`define BurstLen 11:4
+`define DatTransDir 1:0
 
 //global defines
 `define BLKSIZE_W 12

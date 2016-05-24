@@ -274,7 +274,7 @@
             .m_axi_awlen(M_AXI_AWLEN),
             .m_axi_rdata(M_AXI_RDATA),
             .m_axi_awsize(M_AXI_AWSIZE),
-            .fifo_dat_wr_ready(fifo_data_write_ready),
+            .fifo_dat_wr_ready_o(fifo_data_write_ready),
             .fifo_rst(fifo_reset),
             .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
             .start_write(start_tx),
