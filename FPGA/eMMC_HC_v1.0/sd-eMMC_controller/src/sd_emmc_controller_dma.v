@@ -39,6 +39,7 @@ module  sd_emmc_controller_dma (
             input wire cmd_int_rst_pulse,
             input wire data_present,
             input wire [31:0] descriptor_pointer_i,
+            input wire blk_gap_req,
 
             // Data serial
             input wire xfer_compl,
@@ -498,14 +499,16 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          next_state <= ST_TFR;
                        end
                        else begin
-                         if (descriptor_line[`End])
+                         if (descriptor_line[`End]) begin
                            next_state <= ST_STOP;
-                         else
+                         end
+                         else begin
                            next_state <= ST_FDS;
                            sys_addr_sel <= 1'b1;        //под сомнением нужно ли тут устанаваливать и нужен ли он вообще
                            start_dat_trans <= 2'b10;
                            rd_dat_words <= 16'h0008;     //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
                            m_axi_arlen <= 8'h01;         //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
+                         end
                        end
                        if (Link)
                          descriptor_pointer_reg <= descriptor_line[63:32];
@@ -513,6 +516,22 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          descriptor_pointer_reg <= descriptor_pointer_reg + 32'h00000008;
                      end
             ST_TFR: begin
+                      if(trans_compl_flag && (descriptor_line[`End] || blk_gap_req)) begin
+                        next_state <= ST_STOP;
+                      end
+                      else if (trans_compl_flag && ~descriptor_line[`End] && !blk_gap_req) begin
+                        next_state <= ST_FDS;
+                        sys_addr_sel <= 1'b1;
+                        start_dat_trans <= 2'b10;
+                        rd_dat_words <= 16'h0008;
+                        m_axi_arlen <= 8'h01;
+                      end
+                      else begin
+                        sys_addr_sel <= 1'b1;
+                        start_dat_trans <= 2'b10;
+                        rd_dat_words <= 16'h0008;
+                        m_axi_arlen <= 8'h01;
+                      end
 //                      dma_interrupts[0] <= 1'b1;
                     end
           endcase

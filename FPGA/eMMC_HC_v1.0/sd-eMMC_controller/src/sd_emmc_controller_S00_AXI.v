@@ -126,7 +126,8 @@
 		output wire [1:0] dma_en_and_blk_c_en,
 //		output reg sys_addr_set,
 		input wire [1:0] dma_int,
-		output wire [31:0] adma_sys_addr
+		output wire [31:0] adma_sys_addr,
+		output wire blk_gap_req
 	);
     
 	// AXI4LITE signals
@@ -209,6 +210,7 @@
     assign bfr_bound           = slv_reg1[14:12];
     assign sys_addr            = slv_reg0;
     assign adma_sys_addr       = slv_reg22;
+    assign blk_gap_req         = slv_reg10[16];
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
