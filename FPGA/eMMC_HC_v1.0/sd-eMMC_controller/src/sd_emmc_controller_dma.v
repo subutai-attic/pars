@@ -461,8 +461,10 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       reg [1:0] start_dat_trans;
       reg [2:0] next_state;
       reg [16:0] rd_dat_words;
-      reg TFC;
+      (* mark_debug = "true" *) reg TFC;
       reg a;
+      reg trans_act;
+      reg next_trans_act;
       wire Tran;
       wire Link;
       
@@ -492,9 +494,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                        end
                      end
             ST_FDS: begin
-                      sdma_contr_reg[`DatTransDir] <= 0; // Reset start read
+                      sdma_contr_reg[`DatTransDir] <= 0; // Reset start transferring command
                       TFC <= 1'b0;
+                      next_trans_act <= 1'b0;
                       a <= 1'b1;
+//                      rd_dat_words <= 17'h00008;
                       if (stop_trans) begin
                         if (descriptor_line[`valid] == 1) begin
                           next_state <= ST_CADR;
@@ -517,7 +521,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          else begin
                            next_state <= ST_FDS;
                            sdma_contr_reg <= 12'h01E;
-                           rd_dat_words <= 17'h00008;     //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
                          end
                        end
                        if (Link)
@@ -526,31 +529,40 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          descriptor_pointer_reg <= descriptor_pointer_reg + 32'h00000008;
                      end
             ST_TFR: begin
-                      case (TFC)
-                        1'b1: begin
-                                if (descriptor_line[`End] || blk_gap_req) begin
-                                  next_state <= ST_STOP;
-                                end
-                                else begin
-                                  next_state <= ST_FDS;
-                                  sdma_contr_reg <= 12'h01E;
-                                  rd_dat_words <= 17'h00008;
-                                end
-                              end
-                        1'b0: begin
-                                if (stop_trans) begin
-                                  TFC <= 1'b1;
-                                end
-                                else begin
-                                  if (!dir_dat_trans_mode & !xfer_compl) begin
-                                    sdma_contr_reg <= 12'h01E; //Нужео пересмотреть
+                      if (TFC && (descriptor_line[`End] || blk_gap_req)) begin
+                        next_state <= ST_STOP;
+                        dma_interrupts[0] <= 1'b1;
+                      end
+                      else if (TFC && ~descriptor_line[`End] && !blk_gap_req) begin
+                        next_state <= ST_FDS;
+                        sdma_contr_reg <= 12'h01E;
+                        rd_dat_words <= 17'h00008;
+                      end
+                      else begin
+                        case (trans_act)
+                          1'b0: begin
+                                  if (dir_dat_trans_mode) begin
+                                    sdma_contr_reg <= 12'h0F1;
                                   end
-                                  else if (dir_dat_trans_mode & !xfer_compl) begin
-                                    sdma_contr_reg <= 12'h01E; // Нужно пересмотреть
+                                  else begin
+                                    sdma_contr_reg <= 12'h0F2;
                                   end
+                                  next_trans_act <= 1'b1;
                                 end
-                              end
-                      endcase
+                          1'b1: begin
+                                  if (stop_trans) begin
+                                    TFC <= 1'b1;
+                                  end
+                                  else begin
+                                  end
+                                  sdma_contr_reg[`DatTransDir] <= 0; // Reset start transferring command
+                                end
+                        endcase
+                        if (descriptor_line[31:16] == 16'h0000)
+                          rd_dat_words <= 17'h10000;
+                        else
+                          rd_dat_words <= descriptor_line[31:16];
+                      end
                     end
           endcase
           if (dat_int_rst)
@@ -560,10 +572,14 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       
       always @(posedge clock)
       begin: FSM_SEQ
-        if (reset == 1'b0) 
+        if (reset == 1'b0) begin
           adma_state <= ST_STOP;
-        else
+          trans_act <= 0;
+        end
+        else begin
+          trans_act <= next_trans_act;
           adma_state <= next_state;
+        end
       end
 
 
