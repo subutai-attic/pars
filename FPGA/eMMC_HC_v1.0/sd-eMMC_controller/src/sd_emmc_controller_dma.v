@@ -50,7 +50,7 @@ module  sd_emmc_controller_dma (
             input wire [1:0] write_timeout,
             
             // Command master
-            (* mark_debug = "true" *)input wire cmd_compl_puls,
+            input wire cmd_compl_puls,
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
@@ -86,7 +86,7 @@ reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [15:0] data_cycle;
 reg [15:0] blk_done_cnt_within_boundary;
-(* mark_debug = "true" *) reg [11:0] we_counter;
+reg [11:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
 reg init_rready;
@@ -100,7 +100,7 @@ reg data_write_disable;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 (* mark_debug = "true" *) reg [63:0] descriptor_line;
-reg [11:0] sdma_contr_reg;
+(* mark_debug = "true" *) reg [11:0] sdma_contr_reg;
 reg fifo_dat_wr_ready_reg;
 wire stop_trans;
 
@@ -134,6 +134,9 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign fifo_dat_wr_ready_o = sdma_contr_reg[`DatTarg] ? 1'b0 : fifo_dat_wr_ready_reg;
   assign axi_araddr          = sdma_contr_reg[`AddrSel] ? descriptor_pointer_reg : descriptor_line [63:32];
   assign m_axi_arlen         = sdma_contr_reg[`BurstLen];
+  assign Tran = (descriptor_line[5:4] == 2'b10) ? 1'b1 : 1'b0;
+  assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
+
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -201,6 +204,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
 //        dma_interrupts <= 0;
         axi_arvalid <= 0;
         fifo_rst <= 0;
+        descriptor_line <= 0;
       end
       else begin
         case (state)
@@ -359,13 +363,16 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                             1'b1: begin  //The burst read active
                               if (axi_rvalid && ~fifo_dat_wr_ready_reg) begin
                                 fifo_dat_wr_ready_reg <= 1'b1;
-                                if (sdma_contr_reg[`DatTarg])
-                                  descriptor_line <= {m_axi_rdata, descriptor_line[63:32]};
-                                if(axi_rready)
+                                if (axi_rready) begin
                                   data_cycle <= data_cycle + 1;
+                                end
                               end
                               else if (fifo_dat_wr_ready_reg) begin
                                 fifo_dat_wr_ready_reg <= 1'b0;
+                                if (sdma_contr_reg[`DatTarg]) begin
+                                  descriptor_line <= {m_axi_rdata, descriptor_line[63:32]};
+                                end
+
                                 if (axi_rlast) begin
                                  addr_accepted <= 1'b0;  //The burst read stopped
                                  data_cycle <= data_cycle + 1;
@@ -455,11 +462,9 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       reg [2:0] next_state;
       reg [16:0] rd_dat_words;
       reg TFC;
+      reg a;
       wire Tran;
       wire Link;
-      
-      assign Tran = (descriptor_line[5:4] == 2'b10) ? 1'b1 : 1'b0;
-      assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
       
     always @ (posedge clock)
       begin: adma
@@ -468,10 +473,10 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
           sys_addr_sel <= 0;
           descriptor_pointer_reg <= 0;
           dma_interrupts <= 0;
-          descriptor_line <=0;
           rd_dat_words <= 0;
           TFC <= 0;
           sdma_contr_reg <= 0;
+          a <= 0;
         end
         else begin
           case (adma_state)
@@ -479,21 +484,17 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                        if (dma_ena_trans_mode & cmd_compl_puls & data_present) begin
                          next_state <= ST_FDS;
                          sdma_contr_reg <= 12'h01E; //Read from SysRam, read to descriptor line, read from adma_descriptor_pointer addres, read two beats in burst, start read. 
-//                         sys_addr_sel <= 1'b1;
-//                         start_dat_trans <= 2'b10;
                          rd_dat_words <= 17'h00008;
-//                         m_axi_arlen <= 8'h01;
                          descriptor_pointer_reg <= descriptor_pointer_i;
                        end
                        else begin
-                         descriptor_line <= 0;
                          TFC <= 0;
-                         sdma_contr_reg <= 0;
                        end
                      end
             ST_FDS: begin
-                      sdma_contr_reg[`DatTransDir] <= 2'b0; // Reset start read
+                      sdma_contr_reg[`DatTransDir] <= 0; // Reset start read
                       TFC <= 1'b0;
+                      a <= 1'b1;
                       if (stop_trans) begin
                         if (descriptor_line[`valid] == 1) begin
                           next_state <= ST_CADR;
@@ -505,6 +506,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                       end
                     end
             ST_CADR: begin
+                       a <= 1'b0;
                        if (Tran) begin
                          next_state <= ST_TFR;
                        end
@@ -516,14 +518,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                            next_state <= ST_FDS;
                            sdma_contr_reg <= 12'h01E;
                            rd_dat_words <= 17'h00008;     //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
-//                           sys_addr_sel <= 1'b1;        //под сомнением нужно ли тут устанаваливать и нужен ли он вообще
-//                           start_dat_trans <= 2'b10;
-//                           m_axi_arlen <= 8'h01;         //под сомнением нужно ли тут устанаваливать, так как после FDS данные не меняются
                          end
                        end
                        if (Link)
                          descriptor_pointer_reg <= descriptor_line[63:32];
-                       else
+                       else if (a)
                          descriptor_pointer_reg <= descriptor_pointer_reg + 32'h00000008;
                      end
             ST_TFR: begin
