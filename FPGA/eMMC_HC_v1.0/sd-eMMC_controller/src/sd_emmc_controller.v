@@ -228,17 +228,17 @@
 //    wire m_axi_wvalid;
     wire [31:0] m_axi_awaddr;
 //    wire m_axi_awvalid;
-    wire maxi_wlast;
+//    wire maxi_wlast;
     wire [1:0] dma_int;
     wire trans_blk_compl;
-    wire burst_tx;
+//    wire burst_tx;
     wire cmd_cmplt_axi_puls;
     wire stop_blk_gap_req;
     
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
-    assign maxi_wlast = M_AXI_WLAST;
+//    assign maxi_wlast = M_AXI_WLAST;
     
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
@@ -254,11 +254,12 @@
             .xfer_compl(!data_busy),
             .next_data_word(wordnext),
             .m_axi_wvalid(M_AXI_WVALID),
+            .m_axi_wready(M_AXI_WREADY),
             .write_addr(m_axi_awaddr),
             .m_axi_awvalid(M_AXI_AWVALID),
             .m_axi_awready(M_AXI_AWREADY),
             .fifo_dat_rd_ready(fifo_data_read_ready),
-            .w_last(maxi_wlast),
+            .w_last(M_AXI_WLAST),
             .dma_interrupts(dma_int),
             .dat_int_rst(data_int_rst),
             .axi_araddr(M_AXI_ARADDR),
@@ -281,7 +282,7 @@
             .trans_block_compl(trans_blk_compl),
             .ser_next_blk(next_block_st),
             .write_timeout({d_read, d_write}),
-            .burst_tx(burst_tx),
+//            .burst_tx(burst_tx),
             .descriptor_pointer_i(system_addr),
             .data_present(command_reg_wb_clk[5]),
             .cmd_compl_puls(cmd_cmplt_axi_puls),
@@ -313,10 +314,10 @@
 //            .M_AXI_AWREADY(M_AXI_AWREADY),
             .M_AXI_WDATA(M_AXI_WDATA),
             .M_AXI_WSTRB(M_AXI_WSTRB),
-            .M_AXI_WLAST(M_AXI_WLAST),
+//            .M_AXI_WLAST(M_AXI_WLAST),
             .M_AXI_WUSER(M_AXI_WUSER),
 //            .M_AXI_WVALID(M_AXI_WVALID),
-            .M_AXI_WREADY(M_AXI_WREADY),
+//            .M_AXI_WREADY(M_AXI_WREADY),
             .M_AXI_BID(M_AXI_BID),
             .M_AXI_BRESP(M_AXI_BRESP),
             .M_AXI_BUSER(M_AXI_BUSER),
@@ -332,10 +333,10 @@
             .M_AXI_RRESP(M_AXI_RRESP),
             .M_AXI_RUSER(M_AXI_RUSER),
             .data_read_fifo(read_fifo_out),
-            .wnext(wordnext),
+//            .wnext(wordnext),
 //            .dat_wr_valid(m_axi_wvalid),
-            .addr_wr(m_axi_awaddr),
-            .INIT_AXI_TXN(burst_tx)
+            .addr_wr(m_axi_awaddr)
+//            .INIT_AXI_TXN(burst_tx)
 //            .addr_wr_valid(m_axi_awvalid)
         );
 

@@ -60,17 +60,18 @@ module  sd_emmc_controller_dma (
             // M_AXI
             input  wire next_data_word,
             output reg m_axi_wvalid,
+            input wire m_axi_wready,
             output reg [31:0] write_addr,
             output reg m_axi_awvalid,
             input wire m_axi_awready,
-            input  wire w_last,
+            output wire w_last,
             output wire [31:0] axi_araddr,
             output reg axi_arvalid,
             input wire axi_arready,
             input wire axi_rvalid,
             output wire axi_rready,
             input wire axi_rlast,
-            output reg burst_tx,
+//            output reg burst_tx,
             input wire [31:0] m_axi_rdata,
             output wire [7:0] m_axi_arlen,
             output wire [2:0] m_axi_arsize,
@@ -102,6 +103,9 @@ reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;
 reg [11:0] sdma_contr_reg;
 reg fifo_dat_wr_ready_reg;
+reg [3:0] write_index;
+reg axi_wlast;
+reg burst_tx;
 wire stop_trans;
 
 parameter IDLE                = 4'b0000;
@@ -128,7 +132,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign m_axi_arsize	     = 3'b010;
   assign m_axi_arburst       = 2'b01;
   assign m_axi_awburst       = 2'b01;
-  assign m_axi_awlen	     = 8'h0f;
+  assign m_axi_awlen	     = sdma_contr_reg[`BurstLen];
   assign m_axi_awsize	     = 3'b010;
   assign stop_trans          = state == IDLE ? 1'b1 : 1'b0;
   assign fifo_dat_wr_ready_o = sdma_contr_reg[`DatTarg] ? 1'b0 : fifo_dat_wr_ready_reg;
@@ -136,7 +140,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign m_axi_arlen         = sdma_contr_reg[`BurstLen];
   assign Tran = (descriptor_line[5:4] == 2'b10) ? 1'b1 : 1'b0;
   assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
-
+  assign next_data_word = m_axi_wready & m_axi_wvalid;
+  assign w_last = axi_wlast;
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -183,6 +188,36 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         end
       end
     end
+    
+    always @(posedge clock)                                                      
+    begin                                                                             
+      if (reset == 1'b0 || burst_tx == 1'b1) begin
+        write_index <= 0;                                                           
+      end                                                                           
+      else if (next_data_word && (write_index != m_axi_awlen)) begin                         
+        write_index <= write_index + 1;                                             
+      end                                                                           
+      else                                                                            
+        write_index <= write_index;                                                   
+    end                                                                               
+
+
+	always @(posedge clock)                                                      
+	begin
+	  if (reset == 1'b0 || burst_tx == 1'b1) begin
+	    axi_wlast <= 1'b0;
+	  end
+	  else if (((write_index == sdma_contr_reg[`BurstLen] -1 && sdma_contr_reg[`BurstLen] >= 2) && next_data_word) || (sdma_contr_reg[`BurstLen] == 1 )) begin
+	    axi_wlast <= 1'b1;
+	  end
+	  else if (next_data_word)
+	    axi_wlast <= 1'b0;
+	  else if (axi_wlast && sdma_contr_reg[`BurstLen] == 1)
+	    axi_wlast <= 1'b0;
+	  else
+	    axi_wlast <= axi_wlast;
+	end
+
 
     /*
     *  SDMA
