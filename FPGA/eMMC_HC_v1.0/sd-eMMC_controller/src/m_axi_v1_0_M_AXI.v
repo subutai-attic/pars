@@ -64,7 +64,7 @@
 		output wire [M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER,
 		// Write address valid. This signal indicates that
     // the channel is signaling valid write address and control information.
-		output wire  M_AXI_AWVALID,
+//		output wire  M_AXI_AWVALID,
 		// Write address ready. This signal indicates that
     // the slave is ready to accept an address and associated control signals
 		input wire  M_AXI_AWREADY,
@@ -221,7 +221,7 @@
 	assign M_AXI_AWPROT	 = 3'h0;
 	assign M_AXI_AWQOS	 = 4'h0;
 	assign M_AXI_AWUSER	 = 'b0;
-	assign M_AXI_AWVALID = addr_wr_valid; //axi_awvalid;
+//	assign M_AXI_AWVALID = addr_wr_valid; //axi_awvalid;
 	//Write Data(W)
 	assign M_AXI_WDATA	 = data_read_fifo; //axi_wdata;
 	//All bursts are complete and aligned in this example

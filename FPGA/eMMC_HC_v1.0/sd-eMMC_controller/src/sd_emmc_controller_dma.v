@@ -42,8 +42,8 @@ module  sd_emmc_controller_dma (
             input wire blk_gap_req,
 
             // Data serial
-            input wire xfer_compl,
-            input  wire is_we_en,
+            (* mark_debug = "true" *)input wire xfer_compl,
+            (* mark_debug = "true" *)input  wire is_we_en,
             output reg start_write,
             input wire trans_block_compl,
             input wire ser_next_blk,
@@ -53,16 +53,16 @@ module  sd_emmc_controller_dma (
             input wire cmd_compl_puls,
             
             // FIFO Filler
-            output reg fifo_dat_rd_ready,
+            (* mark_debug = "true" *)output reg fifo_dat_rd_ready,
             (* mark_debug = "true" *)output wire fifo_dat_wr_ready_o,
             output reg fifo_rst,
 
             // M_AXI
             input  wire next_data_word,
-            output reg data_write_valid,
+            output reg m_axi_wvalid,
             output reg [31:0] write_addr,
-            output reg addr_write_valid,
-            input wire addr_write_ready,
+            output reg m_axi_awvalid,
+            input wire m_axi_awready,
             input  wire w_last,
             output wire [31:0] axi_araddr,
             output reg axi_arvalid,
@@ -99,8 +99,8 @@ reg data_write_disable;
 (* mark_debug = "true" *) reg [2:0] adma_state;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
-(* mark_debug = "true" *) reg [63:0] descriptor_line;
-(* mark_debug = "true" *) reg [11:0] sdma_contr_reg;
+reg [63:0] descriptor_line;
+reg [11:0] sdma_contr_reg;
 reg fifo_dat_wr_ready_reg;
 wire stop_trans;
 
@@ -192,8 +192,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       if (reset == 1'b0) begin
         state <= IDLE;
         total_trans_blk <= 0;
-        addr_write_valid <= 0;
-        data_write_valid <= 0;
+        m_axi_awvalid <= 0;
+        m_axi_wvalid <= 0;
         blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
         write_addr <= 0;
@@ -241,46 +241,47 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                   else begin
                     state <= READ_WAIT;
                   end 
-                  if (data_cycle == 8'h80) begin
-                    blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
-                    total_trans_blk <= total_trans_blk + 1;
+                  if (data_cycle >= (rd_dat_words/4)) begin
+//                    blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
+//                    total_trans_blk <= total_trans_blk + 1;
                     data_cycle <= 0;
                     we_counter_reset <= 1'b0;
-                    state <= READ_BLK_CNT_CHECK;
+                    state <= IDLE; //READ_BLK_CNT_CHECK;
                   end
                 end
           READ_ACT: begin
                       we_counter_reset <= 1'b1;
                       case (addr_accepted)
                           1'b0: begin 
-                                 if (addr_write_valid && addr_write_ready) begin
-                                   addr_write_valid <= 1'b0;
+                                 if (m_axi_awvalid && m_axi_awready) begin
+                                   m_axi_awvalid <= 1'b0;
                                    addr_accepted <= 1'b1;
-                                   write_addr <= write_addr + 64;
-                                   data_write_valid <= 1'b1;
+//                                   write_addr <= write_addr + 64;
+                                   descriptor_line [63:32] <= descriptor_line [63:32] + 64;
+                                   m_axi_wvalid <= 1'b1;
                                  end
                                  else begin
-                                   addr_write_valid <= 1'b1;
+                                   m_axi_awvalid <= 1'b1;
                                 end
                                 end
                           1'b1: begin
                                 if (next_data_word) begin
                                     data_cycle <= data_cycle + 1;
                                     fifo_dat_rd_ready <= 1'b1;
-                                    data_write_valid <= 1'b0;
+                                    m_axi_wvalid <= 1'b0;
                                     data_write_disable <= 1'b1;
                                 end
                                 else if (data_write_disable) begin
                                     fifo_dat_rd_ready <= 1'b0;
-                                    data_write_valid <= 1'b0;
+                                    m_axi_wvalid <= 1'b0;
                                     data_write_disable <= 1'b0;
                                 end
                                 else begin
-                                    data_write_valid <= 1'b1;
+                                    m_axi_wvalid <= 1'b1;
                                 end
-                                if (w_last & data_write_valid) begin
+                                if (w_last & m_axi_wvalid) begin
                                     state <= READ_WAIT;
-                                    data_write_valid <= 1'b0;
+                                    m_axi_wvalid <= 1'b0;
                                     addr_accepted <= 1'b0;
                                     fifo_dat_rd_ready <= 1'b1;
                                     data_write_disable <= 1'b0;
@@ -461,7 +462,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       reg [1:0] start_dat_trans;
       reg [2:0] next_state;
       reg [16:0] rd_dat_words;
-      (* mark_debug = "true" *) reg TFC;
+      reg TFC;
       reg a;
       reg trans_act;
       reg next_trans_act;

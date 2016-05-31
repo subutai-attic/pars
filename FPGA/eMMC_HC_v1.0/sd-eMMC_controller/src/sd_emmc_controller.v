@@ -225,9 +225,9 @@
     wire [1:0] dma_and_blkcnt_en;
 //    wire sys_addr_set;
     wire wordnext;
-    wire m_axi_wvalid;
+//    wire m_axi_wvalid;
     wire [31:0] m_axi_awaddr;
-    wire m_axi_awvalid;
+//    wire m_axi_awvalid;
     wire maxi_wlast;
     wire [1:0] dma_int;
     wire trans_blk_compl;
@@ -253,10 +253,10 @@
             .block_count(block_count_reg_axi_clk),
             .xfer_compl(!data_busy),
             .next_data_word(wordnext),
-            .data_write_valid(m_axi_wvalid),
+            .m_axi_wvalid(M_AXI_WVALID),
             .write_addr(m_axi_awaddr),
-            .addr_write_valid(m_axi_awvalid),
-            .addr_write_ready(M_AXI_AWREADY),
+            .m_axi_awvalid(M_AXI_AWVALID),
+            .m_axi_awready(M_AXI_AWREADY),
             .fifo_dat_rd_ready(fifo_data_read_ready),
             .w_last(maxi_wlast),
             .dma_interrupts(dma_int),
@@ -309,13 +309,13 @@
             .M_AXI_AWPROT(M_AXI_AWPROT),
             .M_AXI_AWQOS(M_AXI_AWQOS),
             .M_AXI_AWUSER(M_AXI_AWUSER),
-            .M_AXI_AWVALID(M_AXI_AWVALID),
-            .M_AXI_AWREADY(M_AXI_AWREADY),
+//            .M_AXI_AWVALID(M_AXI_AWVALID),
+//            .M_AXI_AWREADY(M_AXI_AWREADY),
             .M_AXI_WDATA(M_AXI_WDATA),
             .M_AXI_WSTRB(M_AXI_WSTRB),
             .M_AXI_WLAST(M_AXI_WLAST),
             .M_AXI_WUSER(M_AXI_WUSER),
-            .M_AXI_WVALID(M_AXI_WVALID),
+//            .M_AXI_WVALID(M_AXI_WVALID),
             .M_AXI_WREADY(M_AXI_WREADY),
             .M_AXI_BID(M_AXI_BID),
             .M_AXI_BRESP(M_AXI_BRESP),
@@ -333,10 +333,10 @@
             .M_AXI_RUSER(M_AXI_RUSER),
             .data_read_fifo(read_fifo_out),
             .wnext(wordnext),
-            .dat_wr_valid(m_axi_wvalid),
+//            .dat_wr_valid(m_axi_wvalid),
             .addr_wr(m_axi_awaddr),
-            .INIT_AXI_TXN(burst_tx),
-            .addr_wr_valid(m_axi_awvalid)
+            .INIT_AXI_TXN(burst_tx)
+//            .addr_wr_valid(m_axi_awvalid)
         );
 
         // Instantiation of Axi Bus Interface S00_AXI
