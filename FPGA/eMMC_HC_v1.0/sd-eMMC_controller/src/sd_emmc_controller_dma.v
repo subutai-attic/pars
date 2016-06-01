@@ -61,7 +61,7 @@ module  sd_emmc_controller_dma (
             input  wire next_data_word,
             output reg m_axi_wvalid,
             input wire m_axi_wready,
-            output reg [31:0] write_addr,
+            output wire [31:0] m_axi_awaddr,
             output reg m_axi_awvalid,
             input wire m_axi_awready,
             output wire w_last,
@@ -142,6 +142,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
   assign next_data_word = m_axi_wready & m_axi_wvalid;
   assign w_last = axi_wlast;
+  assign m_axi_awaddr = descriptor_line [63:32];
 
     always @ (posedge clock)
     begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
@@ -231,7 +232,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         m_axi_wvalid <= 0;
         blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
-        write_addr <= 0;
         fifo_dat_rd_ready <= 0;
         fifo_dat_wr_ready_reg <= 0;
         addr_accepted <= 0;
@@ -246,7 +246,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
           IDLE: begin
                    total_trans_blk <= 0;
                    blk_done_cnt_within_boundary <= 0;
-                   write_addr <= 0;
                    data_cycle <= 0;
                    fifo_dat_rd_ready <= 0;
                    fifo_dat_wr_ready_reg <= 0; 

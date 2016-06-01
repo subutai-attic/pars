@@ -226,7 +226,7 @@
 //    wire sys_addr_set;
     wire wordnext;
 //    wire m_axi_wvalid;
-    wire [31:0] m_axi_awaddr;
+//    wire [31:0] m_axi_awaddr;
 //    wire m_axi_awvalid;
 //    wire maxi_wlast;
     wire [1:0] dma_int;
@@ -255,7 +255,7 @@
             .next_data_word(wordnext),
             .m_axi_wvalid(M_AXI_WVALID),
             .m_axi_wready(M_AXI_WREADY),
-            .write_addr(m_axi_awaddr),
+            .m_axi_awaddr(M_AXI_AWADDR),
             .m_axi_awvalid(M_AXI_AWVALID),
             .m_axi_awready(M_AXI_AWREADY),
             .fifo_dat_rd_ready(fifo_data_read_ready),
@@ -332,10 +332,10 @@
             .M_AXI_RID(M_AXI_RID),
             .M_AXI_RRESP(M_AXI_RRESP),
             .M_AXI_RUSER(M_AXI_RUSER),
-            .data_read_fifo(read_fifo_out),
+            .data_read_fifo(read_fifo_out)
 //            .wnext(wordnext),
 //            .dat_wr_valid(m_axi_wvalid),
-            .addr_wr(m_axi_awaddr)
+//            .addr_wr(m_axi_awaddr)
 //            .INIT_AXI_TXN(burst_tx)
 //            .addr_wr_valid(m_axi_awvalid)
         );

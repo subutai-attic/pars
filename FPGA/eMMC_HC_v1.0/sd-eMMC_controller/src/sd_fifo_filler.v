@@ -55,7 +55,7 @@ module sd_fifo_filler(
            // AXI Signals
            output reg [31:0] wbm_adr_o,                     
            output wbm_we_o,                                 //drived here
-           output [31:0] read_fifo_out,                     //wbm_dat_o,         
+           (* mark_debug = "true" *) output [31:0] read_fifo_out,                     //wbm_dat_o,         
            input  [31:0] write_fifo_in,                     //wbm_dat_i,
            output wbm_cyc_o,                                //drived here
            output wbm_stb_o,                                //drived here
