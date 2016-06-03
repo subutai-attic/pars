@@ -69,7 +69,7 @@ module sd_fifo_filler(
            
            //Data Serial signals
            input  sd_clk,
-           input  [31:0] dat_i,
+           (* mark_debug = "true" *) input  [31:0] dat_i,
            output [31:0] dat_o,
            input  wr_i,
            input  rd_i,

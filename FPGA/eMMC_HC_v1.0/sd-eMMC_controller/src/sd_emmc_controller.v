@@ -224,7 +224,7 @@
     wire [31:0] system_addr;
     wire [1:0] dma_and_blkcnt_en;
 //    wire sys_addr_set;
-    wire wordnext;
+//    wire wordnext;
 //    wire m_axi_wvalid;
 //    wire [31:0] m_axi_awaddr;
 //    wire m_axi_awvalid;
@@ -252,7 +252,7 @@
 //            .sys_addr_changed(sys_addr_set),
             .block_count(block_count_reg_axi_clk),
             .xfer_compl(!data_busy),
-            .next_data_word(wordnext),
+//            .next_data_word(wordnext),
             .m_axi_wvalid(M_AXI_WVALID),
             .m_axi_wready(M_AXI_WREADY),
             .m_axi_awaddr(M_AXI_AWADDR),
@@ -304,7 +304,7 @@
             .M_AXI_ACLK(M_AXI_ACLK),
             .M_AXI_ARESETN(M_AXI_ARESETN),
             .M_AXI_AWID(M_AXI_AWID),
-            .M_AXI_AWADDR(M_AXI_AWADDR),
+//            .M_AXI_AWADDR(M_AXI_AWADDR),
             .M_AXI_AWLOCK(M_AXI_AWLOCK),
             .M_AXI_AWCACHE(M_AXI_AWCACHE),
             .M_AXI_AWPROT(M_AXI_AWPROT),
