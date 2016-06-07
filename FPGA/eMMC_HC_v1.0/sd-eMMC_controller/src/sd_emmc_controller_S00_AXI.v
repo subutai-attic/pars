@@ -707,7 +707,7 @@
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00010000;  //Host Controller Version
 	        
 	        default : reg_data_out <= 0;
 	      endcase
