@@ -48,13 +48,6 @@
 		output wire [M_AXI_ID_WIDTH-1 : 0] M_AXI_AWID,
 		// Master Interface Write Address
 		output wire [M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR,
-		// Burst length. The burst length gives the exact number of transfers in a burst
-		output wire [7 : 0] M_AXI_AWLEN,
-		// Burst size. This signal indicates the size of each transfer in the burst
-		output wire [2 : 0] M_AXI_AWSIZE,
-		// Burst type. The burst type and the size information, 
-    // determine how the address for each transfer within the burst is calculated.
-		output wire [1 : 0] M_AXI_AWBURST,
 		// Lock type. Provides additional information about the
     // atomic characteristics of the transfer.
 		output wire  M_AXI_AWLOCK,
@@ -71,7 +64,7 @@
 		output wire [M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER,
 		// Write address valid. This signal indicates that
     // the channel is signaling valid write address and control information.
-		output wire  M_AXI_AWVALID,
+//		output wire  M_AXI_AWVALID,
 		// Write address ready. This signal indicates that
     // the slave is ready to accept an address and associated control signals
 		input wire  M_AXI_AWREADY,
@@ -105,13 +98,6 @@
 		output wire  M_AXI_BREADY,
 		// Master Interface Read Address.
 		output wire [M_AXI_ID_WIDTH-1 : 0] M_AXI_ARID,
-		// Burst length. The burst length gives the exact number of transfers in a burst
-		output wire [7 : 0] M_AXI_ARLEN,
-		// Burst size. This signal indicates the size of each transfer in the burst
-		output wire [2 : 0] M_AXI_ARSIZE,
-		// Burst type. The burst type and the size information, 
-    // determine how the address for each transfer within the burst is calculated.
-		output wire [1 : 0] M_AXI_ARBURST,
 		// Lock type. Provides additional information about the
     // atomic characteristics of the transfer.
 		output wire  M_AXI_ARLOCK,
@@ -229,19 +215,13 @@
 	assign M_AXI_AWID	 = 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
     assign M_AXI_AWADDR	 = addr_wr;//axi_awaddr;
-	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_AWLEN	 = 8'h0f; //M_AXI_BURST_LEN - 1;
-	//Size should be M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
-	assign M_AXI_AWSIZE	 = 3'b010; //clogb2((M_AXI_DATA_WIDTH/8)-1);
-	//INCR burst type is usually used, except for keyhole bursts
-	assign M_AXI_AWBURST = 2'b01;
 	assign M_AXI_AWLOCK	 = 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
 	assign M_AXI_AWCACHE = 4'b0011;
 	assign M_AXI_AWPROT	 = 3'h0;
 	assign M_AXI_AWQOS	 = 4'h0;
 	assign M_AXI_AWUSER	 = 'b0;
-	assign M_AXI_AWVALID = addr_wr_valid; //axi_awvalid;
+//	assign M_AXI_AWVALID = addr_wr_valid; //axi_awvalid;
 	//Write Data(W)
 	assign M_AXI_WDATA	 = data_read_fifo; //axi_wdata;
 	//All bursts are complete and aligned in this example
@@ -253,12 +233,6 @@
 	assign M_AXI_BREADY	 = axi_bready;
 	//Read Address (AR)
 	assign M_AXI_ARID	 = 'b0;
-	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_ARLEN	 = 8'h0f; //M_AXI_BURST_LEN - 1;
-	//Size should be M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
-	assign M_AXI_ARSIZE	 = 3'b010; //clogb2((M_AXI_DATA_WIDTH/8)-1);
-	//INCR burst type is usually used, except for keyhole bursts
-	assign M_AXI_ARBURST = 2'b01;
 	assign M_AXI_ARLOCK	 = 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
 	assign M_AXI_ARCACHE = 4'b0011;

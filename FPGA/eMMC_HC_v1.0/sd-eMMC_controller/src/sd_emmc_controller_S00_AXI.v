@@ -124,8 +124,10 @@
 		output wire [2:0] bfr_bound,
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
-		output reg sys_addr_set,
-		input wire [1:0] dma_int
+//		output reg sys_addr_set,
+		input wire [1:0] dma_int,
+		output wire [31:0] adma_sys_addr,
+		output wire blk_gap_req
 	);
     
 	// AXI4LITE signals
@@ -171,8 +173,7 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg19;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg20;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg21;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg22;
 	
 	wire	 slv_reg_rden;
 	wire	 slv_reg_wren;
@@ -208,6 +209,8 @@
     assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
     assign bfr_bound           = slv_reg1[14:12];
     assign sys_addr            = slv_reg0;
+    assign adma_sys_addr       = slv_reg22;
+    assign blk_gap_req         = slv_reg10[16];
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -343,7 +346,7 @@
 	    cmd_int_rst <= 1'b0;
 	    dat_int_rst <= 1'b0;
 	    slv_reg11[26:24] <= 3'b000;
-	    sys_addr_set <= 1'b0;
+//	    sys_addr_set <= 1'b0;
 	    if (dat_int_st || cmd_int_st) begin
 	       slv_reg12_1 <= slv_reg12_1;
 	    end
@@ -360,7 +363,7 @@
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	              sys_addr_set <= 1'b1;
+//	              sys_addr_set <= 1'b1;
 	            end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
@@ -457,7 +460,7 @@
 	              cmd_int_rst <= 1'b1;
 	              dat_int_rst <= 1'b1;
 	              blk_size_cnt <= 0;
-	                 end
+	            end
 	          5'h0D:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -507,18 +510,16 @@
 	                // Slave register 19
 	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	          5'h16:
+	          5'h16: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-                  slv_reg20[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                  if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+                    // Slave register 19
+                    slv_reg22[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+                  end
+//                  sys_addr_set <= 1'b1;
                 end
-	          5'h17:
-                for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-                if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-                  slv_reg21[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-                end
-  
-	          default : begin
+  	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      slv_reg1 <= slv_reg1;
 	                      slv_reg2 <= slv_reg2;
@@ -539,8 +540,7 @@
 	                      slv_reg17 <= slv_reg17;
 	                      slv_reg18 <= slv_reg18;
 	                      slv_reg19 <= slv_reg19;
-	                      slv_reg20 <= slv_reg20;
-	                      slv_reg21 <= slv_reg21; 
+	                      slv_reg22 <= slv_reg22;
 	                    end
 	        endcase
 	        
@@ -554,7 +554,7 @@
 //             slv_reg11[26] <= 1'b0;
 //          end
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 5'b00000, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, dma_int[1], 1'b0, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], 2'b00, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;
@@ -707,7 +707,7 @@
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00010000;  //Host Controller Version
 	        
 	        default : reg_data_out <= 0;
 	      endcase

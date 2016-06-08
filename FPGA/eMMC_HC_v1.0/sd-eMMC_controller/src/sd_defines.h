@@ -48,7 +48,6 @@
 
 
 //sdma boubdaries
-
 `define A11 8
 `define A12 16
 `define A13 32
@@ -57,6 +56,14 @@
 `define A16 256 
 `define A17 512 
 `define A18 1024
+
+//adma attributes
+`define valid 0
+`define End 1
+`define DatTarg 2
+`define AddrSel 3
+`define BurstLen 11:4
+`define DatTransDir 1:0
 
 //global defines
 `define BLKSIZE_W 12

@@ -223,39 +223,43 @@
     wire [2:0] buff_bound;
     wire [31:0] system_addr;
     wire [1:0] dma_and_blkcnt_en;
-    wire sys_addr_set;
-    wire wordnext;
-    wire m_axi_wvalid;
-    wire [31:0] m_axi_awaddr;
-    wire m_axi_awvalid;
-    wire maxi_wlast;
+//    wire sys_addr_set;
+//    wire wordnext;
+//    wire m_axi_wvalid;
+//    wire [31:0] m_axi_awaddr;
+//    wire m_axi_awvalid;
+//    wire maxi_wlast;
     wire [1:0] dma_int;
     wire trans_blk_compl;
-    wire burst_tx;
+//    wire burst_tx;
+    wire cmd_cmplt_axi_puls;
+    wire stop_blk_gap_req;
     
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
-    assign maxi_wlast = M_AXI_WLAST;
+//    assign maxi_wlast = M_AXI_WLAST;
+    
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(s00_axi_aclk),
             .reset(s00_axi_aresetn),
             .is_we_en(we_fifo),
             .buf_boundary(buff_bound),
-            .init_dma_sys_addr(system_addr),
+//            .init_dma_sys_addr(system_addr),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
             .blk_count_ena (dma_and_blkcnt_en [1]),
             .dir_dat_trans_mode(dat_trans_dir_axi_clk),
-            .sys_addr_changed(sys_addr_set),
+//            .sys_addr_changed(sys_addr_set),
             .block_count(block_count_reg_axi_clk),
             .xfer_compl(!data_busy),
-            .next_data_word(wordnext),
-            .data_write_valid(m_axi_wvalid),
-            .write_addr(m_axi_awaddr),
-            .addr_write_valid(m_axi_awvalid),
-            .addr_write_ready(M_AXI_AWREADY),
+//            .next_data_word(wordnext),
+            .m_axi_wvalid(M_AXI_WVALID),
+            .m_axi_wready(M_AXI_WREADY),
+            .m_axi_awaddr(M_AXI_AWADDR),
+            .m_axi_awvalid(M_AXI_AWVALID),
+            .m_axi_awready(M_AXI_AWREADY),
             .fifo_dat_rd_ready(fifo_data_read_ready),
-            .w_last(maxi_wlast),
+            .w_last(M_AXI_WLAST),
             .dma_interrupts(dma_int),
             .dat_int_rst(data_int_rst),
             .axi_araddr(M_AXI_ARADDR),
@@ -264,14 +268,25 @@
             .axi_rvalid(M_AXI_RVALID),
             .axi_rready(M_AXI_RREADY),
             .axi_rlast(M_AXI_RLAST),
-            .fifo_dat_wr_ready(fifo_data_write_ready),
+            .m_axi_arlen(M_AXI_ARLEN),
+            .m_axi_arsize(M_AXI_ARSIZE),
+            .m_axi_arburst(M_AXI_ARBURST),
+            .m_axi_awburst(M_AXI_AWBURST),
+            .m_axi_awlen(M_AXI_AWLEN),
+            .m_axi_rdata(M_AXI_RDATA),
+            .m_axi_awsize(M_AXI_AWSIZE),
+            .fifo_dat_wr_ready_o(fifo_data_write_ready),
             .fifo_rst(fifo_reset),
             .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
             .start_write(start_tx),
             .trans_block_compl(trans_blk_compl),
             .ser_next_blk(next_block_st),
             .write_timeout({d_read, d_write}),
-            .burst_tx(burst_tx)
+//            .burst_tx(burst_tx),
+            .descriptor_pointer_i(system_addr),
+            .data_present(command_reg_wb_clk[5]),
+            .cmd_compl_puls(cmd_cmplt_axi_puls),
+            .blk_gap_req(stop_blk_gap_req)
         );
         
         // Instantiation of Master Axi Bus Interface M_AXI
@@ -289,32 +304,26 @@
             .M_AXI_ACLK(M_AXI_ACLK),
             .M_AXI_ARESETN(M_AXI_ARESETN),
             .M_AXI_AWID(M_AXI_AWID),
-            .M_AXI_AWADDR(M_AXI_AWADDR),
-            .M_AXI_AWLEN(M_AXI_AWLEN),
-            .M_AXI_AWSIZE(M_AXI_AWSIZE),
-            .M_AXI_AWBURST(M_AXI_AWBURST),
+//            .M_AXI_AWADDR(M_AXI_AWADDR),
             .M_AXI_AWLOCK(M_AXI_AWLOCK),
             .M_AXI_AWCACHE(M_AXI_AWCACHE),
             .M_AXI_AWPROT(M_AXI_AWPROT),
             .M_AXI_AWQOS(M_AXI_AWQOS),
             .M_AXI_AWUSER(M_AXI_AWUSER),
-            .M_AXI_AWVALID(M_AXI_AWVALID),
-            .M_AXI_AWREADY(M_AXI_AWREADY),
+//            .M_AXI_AWVALID(M_AXI_AWVALID),
+//            .M_AXI_AWREADY(M_AXI_AWREADY),
             .M_AXI_WDATA(M_AXI_WDATA),
             .M_AXI_WSTRB(M_AXI_WSTRB),
-            .M_AXI_WLAST(M_AXI_WLAST),
+//            .M_AXI_WLAST(M_AXI_WLAST),
             .M_AXI_WUSER(M_AXI_WUSER),
-            .M_AXI_WVALID(M_AXI_WVALID),
-            .M_AXI_WREADY(M_AXI_WREADY),
+//            .M_AXI_WVALID(M_AXI_WVALID),
+//            .M_AXI_WREADY(M_AXI_WREADY),
             .M_AXI_BID(M_AXI_BID),
             .M_AXI_BRESP(M_AXI_BRESP),
             .M_AXI_BUSER(M_AXI_BUSER),
             .M_AXI_BVALID(M_AXI_BVALID),
             .M_AXI_BREADY(M_AXI_BREADY),
             .M_AXI_ARID(M_AXI_ARID),
-            .M_AXI_ARLEN(M_AXI_ARLEN),
-            .M_AXI_ARSIZE(M_AXI_ARSIZE),
-            .M_AXI_ARBURST(M_AXI_ARBURST),
             .M_AXI_ARLOCK(M_AXI_ARLOCK),
             .M_AXI_ARCACHE(M_AXI_ARCACHE),
             .M_AXI_ARPROT(M_AXI_ARPROT),
@@ -322,17 +331,13 @@
             .M_AXI_ARUSER(M_AXI_ARUSER),
             .M_AXI_RID(M_AXI_RID),
             .M_AXI_RRESP(M_AXI_RRESP),
-//            .M_AXI_RLAST(M_AXI_RLAST),
             .M_AXI_RUSER(M_AXI_RUSER),
-//            .M_AXI_RVALID(M_AXI_RVALID),
-//            .M_AXI_RREADY(M_AXI_RREADY),
-            .data_read_fifo(read_fifo_out),
-            .wnext(wordnext),
-            .dat_wr_valid(m_axi_wvalid),
-            .addr_wr(m_axi_awaddr),
-            .INIT_AXI_TXN(burst_tx),
-            .addr_wr_valid(m_axi_awvalid)
-//            .m_axi_wlast(maxi_wlast)
+            .data_read_fifo(read_fifo_out)
+//            .wnext(wordnext),
+//            .dat_wr_valid(m_axi_wvalid),
+//            .addr_wr(m_axi_awaddr)
+//            .INIT_AXI_TXN(burst_tx)
+//            .addr_wr_valid(m_axi_awvalid)
         );
 
         // Instantiation of Axi Bus Interface S00_AXI
@@ -403,10 +408,12 @@
             .start_tx_fifo_i(start_tx_fifo),
 //            .start_tx_o(start_tx),
             .bfr_bound(buff_bound),
-            .sys_addr(system_addr),
+//            .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
-            .sys_addr_set(sys_addr_set),
-            .dma_int(dma_int)
+//            .sys_addr_set(sys_addr_set),
+            .dma_int(dma_int),
+            .adma_sys_addr(system_addr),
+            .blk_gap_req(stop_blk_gap_req)
         );
 
     // Clock divider
@@ -555,6 +562,7 @@
     edge_detect cmd_start_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_start), .rise(cmd_start_wb_clk), .fall());
     edge_detect dat_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(data_int_rst), .rise(data_int_rst_wb_clk), .fall());
     edge_detect cmd_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_rst), .rise(cmd_int_rst_wb_clk), .fall());
+    edge_detect cmd_cmplt_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_status_reg_wb_clk[0]), .rise(cmd_cmplt_axi_puls), .fall());
 //    edge_detect start_write(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(start_tx), .rise(start_tx_pulse), .fall());
         
     monostable_domain_cross soft_reset_cross_cmd(!s00_axi_aresetn, s00_axi_aclk, soft_rst_cmd_axi_clk, SD_CLK, soft_rst_cmd_sd_clk);
