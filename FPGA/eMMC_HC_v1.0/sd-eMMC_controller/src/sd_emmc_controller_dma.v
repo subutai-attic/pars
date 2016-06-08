@@ -84,9 +84,9 @@ reg [15:0] block_count_bound;
 reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
-(* mark_debug = "true" *) reg [15:0] data_cycle;
+(* mark_debug = "true" *) reg [16:0] data_cycle;
 reg [15:0] blk_done_cnt_within_boundary;
-reg [11:0] we_counter;
+reg [16:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
 reg init_rready;
@@ -247,13 +247,13 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                    blk_done_cnt_within_boundary <= 0;
                    data_cycle <= 0;
                    fifo_dat_rd_ready <= 0;
-                   fifo_dat_wr_ready_reg <= 0; 
-                   data_write_disable <= 1'b0;
+                   fifo_dat_wr_ready_reg <= 0;
+                   data_write_disable <= 0;
+                   we_counter_reset <= 1;
                   if (sdma_contr_reg[`DatTransDir] == 2'b01) begin
 //                    write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
                     fifo_rst <= 1;
-                    we_counter_reset <= 1;
                   end
                   else if (sdma_contr_reg[`DatTransDir] == 2'b10) begin
 //                    axi_araddr <= init_dma_sys_addr;
