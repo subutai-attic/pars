@@ -46,8 +46,8 @@ module  sd_emmc_controller_dma (
             input wire is_we_en,
             input wire is_rd_en, 
             (* mark_debug = "true" *)output reg start_write,
-            input wire trans_block_compl,
-            input wire ser_next_blk,
+//            input wire trans_block_compl,
+//            input wire ser_next_blk,
             input wire [1:0] write_timeout,
             
             // Command master
@@ -88,6 +88,7 @@ reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [16:0] data_cycle;
 reg [15:0] blk_done_cnt_within_boundary;
 reg [16:0] we_counter;
+reg [16:0] rd_counter;
 reg init_we_ff;
 reg init_we_ff2;
 reg init_rd_ff;
@@ -97,8 +98,9 @@ reg init_rready2;
 reg init_rvalid;
 (* mark_debug = "true" *) reg addr_accepted;
 reg we_counter_reset;
+reg rd_counter_reset;
 wire we_pulse;
-(* mark_debug = "true" *) wire rd_pulse;
+wire rd_pulse;
 reg data_write_disable;
 (* mark_debug = "true" *) reg [2:0] adma_state;
 reg sys_addr_sel;
@@ -120,7 +122,7 @@ parameter NEW_SYS_ADDR        = 4'b0100;
 parameter READ_BLK_CNT_CHECK  = 4'b0101;
 parameter TRANSFER_COMPLETE   = 4'b0110;
 parameter WRITE_ACT           = 4'b0111;
-parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
+//parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
 
 parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
                                   // (1) After Power on reset or software reset.
@@ -254,6 +256,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                    fifo_dat_wr_ready_reg <= 0;
                    data_write_disable <= 0;
                    we_counter_reset <= 1;
+                   rd_counter_reset <= 1;
                   if (sdma_contr_reg[`DatTransDir] == 2'b01) begin
 //                    write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
@@ -421,27 +424,27 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                             end
                           endcase
                         end
-          WRITE_CNT_BLK_CHECK: begin
-                                 if (ser_next_blk) begin
-                                    start_write <= 0;
-                                 end
-                                 if ((total_trans_blk < block_count) && trans_block_compl) begin
-                                   if (blk_done_cnt_within_boundary == block_count_bound) begin
+//          WRITE_CNT_BLK_CHECK: begin
+//                                 if (ser_next_blk) begin
+//                                    start_write <= 0;
+//                                 end
+//                                 if (total_trans_blk < block_count) begin
+//                                   if (blk_done_cnt_within_boundary == block_count_bound) begin
 //                                     dma_interrupts[1] <= 1'b1;
-                                     state <= NEW_SYS_ADDR;
-                                     start_write <= 0;
-                                   end
-                                   else begin
-                                     state <=  READ_SYSRAM;
-                                     start_write <= 0;
-                                   end
-                                 end
-                                 else if ((total_trans_blk == block_count)  && xfer_compl) begin
-                                   state <= IDLE;
-                                   start_write <= 0;
+//                                     state <= NEW_SYS_ADDR;
+//                                     start_write <= 0;
+//                                   end
+//                                   else begin
+//                                     state <=  READ_SYSRAM;
+//                                     start_write <= 0;
+//                                   end
+//                                 end
+//                                 else if ((total_trans_blk == block_count)  && xfer_compl) begin
+//                                   state <= IDLE;
+//                                   start_write <= 0;
 //                                   dma_interrupts[0] <= 1'b1;
-                                 end
-                               end
+//                                 end
+//                               end
                                
         endcase
         // abort the state when timeout on data serializer
@@ -473,7 +476,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         end
         else begin
           if (we_pulse)
-              we_counter <= we_counter + 12'h001;
+              we_counter <= we_counter + 16'h0001;
         end
       end
 
@@ -503,6 +506,17 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         else begin
           init_rd_ff <= is_rd_en;
           init_rd_ff2 <= init_rd_ff;
+        end
+      end
+
+    always @ (posedge clock)
+      begin: NUMBER_OF_FIFO_READING_COUNTER
+        if (reset == 1'b0 || rd_counter_reset == 1'b0) begin
+          rd_counter <= 0;
+        end
+        else begin
+          if (rd_pulse)
+            rd_counter <= rd_counter + 16'h0001;
         end
       end
       
