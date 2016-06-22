@@ -43,8 +43,9 @@ module  sd_emmc_controller_dma (
 
             // Data serial
             (* mark_debug = "true" *)input wire xfer_compl,
-            (* mark_debug = "true" *)input  wire is_we_en,
-            output reg start_write,
+            input wire is_we_en,
+            input wire is_rd_en, 
+            (* mark_debug = "true" *)output reg start_write,
             input wire trans_block_compl,
             input wire ser_next_blk,
             input wire [1:0] write_timeout,
@@ -53,9 +54,9 @@ module  sd_emmc_controller_dma (
             input wire cmd_compl_puls,
             
             // FIFO Filler
-            (* mark_debug = "true" *)output reg fifo_dat_rd_ready,
-            (* mark_debug = "true" *)output wire fifo_dat_wr_ready_o,
-            output reg fifo_rst,
+            output reg fifo_dat_rd_ready,
+            output wire fifo_dat_wr_ready_o,
+            (* mark_debug = "true" *)output reg fifo_rst,
 
             // M_AXI
             
@@ -89,24 +90,27 @@ reg [15:0] blk_done_cnt_within_boundary;
 reg [16:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
+reg init_rd_ff;
+reg init_rd_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
 (* mark_debug = "true" *) reg addr_accepted;
 reg we_counter_reset;
 wire we_pulse;
-(* mark_debug = "true" *) reg data_write_disable;
+(* mark_debug = "true" *) wire rd_pulse;
+reg data_write_disable;
 (* mark_debug = "true" *) reg [2:0] adma_state;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;
 reg [11:0] sdma_contr_reg;
 reg fifo_dat_wr_ready_reg;
-(* mark_debug = "true" *) reg [3:0] write_index;
+reg [3:0] write_index;
 reg axi_wlast;
-(* mark_debug = "true" *) reg burst_tx;
+reg burst_tx;
 wire stop_trans;
-(* mark_debug = "true" *) wire next_data_word;
+wire next_data_word;
 
 parameter IDLE                = 4'b0000;
 parameter READ_SYSRAM         = 4'b0001;
@@ -263,6 +267,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                   else begin
                     state <= IDLE;
                     burst_tx <= 1'b1;
+                    start_write <= 1'b0;
                   end
                 end
           READ_WAIT: begin
@@ -381,12 +386,12 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                 data_cycle <= 0;
 //                                state <= WRITE_CNT_BLK_CHECK;
                                 state <= IDLE;
-                                start_write <= 1;
                               end
                               else begin
                                 if (axi_arvalid & axi_arready) begin
                                   axi_arvalid <= 1'b0;
                                   addr_accepted <= 1'b1;
+                                  start_write <= 1'b1;
                                   if (~sdma_contr_reg[`AddrSel])
                                     descriptor_line [63:32] <= descriptor_line [63:32] + 64;
                                 end
@@ -486,6 +491,20 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
           init_we_ff2 <= init_we_ff;
         end
       end
+    
+    assign rd_pulse = (!init_rd_ff2) && init_rd_ff;
+
+    always @ (posedge clock)
+      begin: RD_PULS_GENERATOR
+        if (reset == 1'b0) begin
+          init_rd_ff <= 1'b0;
+          init_rd_ff2 <= 1'b0;
+        end
+        else begin
+          init_rd_ff <= is_rd_en;
+          init_rd_ff2 <= init_rd_ff;
+        end
+      end
       
       /* 
       *   ADMA
@@ -550,11 +569,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          next_state <= ST_TFR;
                        end
                        else begin
-                         if (descriptor_line[`End]) begin
+                         if (descriptor_line[`End] && !Tran && xfer_compl) begin
                            next_state <= ST_STOP;
                            dma_interrupts[0] <= 1'b1;
                          end
-                         else begin
+                         else if (~descriptor_line[`End] && !Tran) begin
                            next_state <= ST_FDS;
                            sdma_contr_reg <= 12'h01E;
                          end
@@ -565,7 +584,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          descriptor_pointer_reg <= descriptor_pointer_reg + 32'h00000008;
                      end
             ST_TFR: begin
-                      if (TFC && (descriptor_line[`End] || blk_gap_req)) begin
+                      if (TFC && xfer_compl && (descriptor_line[`End] || blk_gap_req)) begin
                         next_state <= ST_STOP;
                         dma_interrupts[0] <= 1'b1;
                       end

@@ -216,7 +216,7 @@
     
     // data write to SD card
     wire start_tx;
-    wire start_tx_pulse;
+//    wire start_tx_pulse;
     wire start_write_sd_clk;
 
     // dma
@@ -244,6 +244,7 @@
             .clock(s00_axi_aclk),
             .reset(s00_axi_aresetn),
             .is_we_en(we_fifo),
+            .is_rd_en(rd_fifo),
             .buf_boundary(buff_bound),
 //            .init_dma_sys_addr(system_addr),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),

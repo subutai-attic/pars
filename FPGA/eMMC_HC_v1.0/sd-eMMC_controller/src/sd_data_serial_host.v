@@ -58,13 +58,13 @@ module sd_data_serial_host(
            input rst,
            //Tx Fifo
            input [31:0] data_in,
-           output reg rd,
+           (* mark_debug = "true" *) output reg rd,
            //Rx Fifo
            output wire [31:0] data_out_o,
            output reg we,
            //tristate data
            output reg DAT_oe_o,
-           output reg[7:0] DAT_dat_o,
+           (* mark_debug = "true" *) output reg[7:0] DAT_dat_o,
            input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
