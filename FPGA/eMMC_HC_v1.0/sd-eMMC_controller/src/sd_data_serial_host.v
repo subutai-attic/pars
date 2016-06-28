@@ -79,9 +79,9 @@ module sd_data_serial_host(
            output reg TLAST,
            output read_trans_active,
            output write_trans_active,
-           output next_block,
-           input start_write,
-           output wire write_next_block
+//           output next_block,
+           input start_write
+//           output wire write_next_block
        );
        
 
@@ -136,7 +136,7 @@ assign start_bit = !DAT_dat_reg[0];
 assign sd_data_busy = !DAT_dat_reg[0];
 assign read_trans_active = ((state == READ_DAT) || (state == READ_WAIT));
 assign write_trans_active = ((state == WRITE_DAT) || (state == WRITE_BUSY) || (state == WRITE_CRC) || (state == WRITE_WAIT));
-assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_reg[0] && next_block);
+//assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_reg[0] && next_block);
 
 always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block)
 begin: FSM_COMBO

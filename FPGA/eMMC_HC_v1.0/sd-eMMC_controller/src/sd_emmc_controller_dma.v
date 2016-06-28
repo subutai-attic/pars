@@ -29,10 +29,10 @@ module  sd_emmc_controller_dma (
 //            input  wire [31:0] init_dma_sys_addr,
             input  wire [2:0] buf_boundary,
             input  wire [`BLKCNT_W -1:0] block_count,
-            input  wire sys_addr_changed,
+//            input  wire sys_addr_changed,
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
-            input wire blk_count_ena,
+//            input wire blk_count_ena,
 //            input wire [11:0] blk_size,
             output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
@@ -82,11 +82,11 @@ module  sd_emmc_controller_dma (
         );
 
 reg [15:0] block_count_bound;
-reg [15:0] total_trans_blk;
+//reg [15:0] total_trans_blk;
 reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [16:0] data_cycle;
-reg [15:0] blk_done_cnt_within_boundary;
+//reg [15:0] blk_done_cnt_within_boundary;
 reg [16:0] we_counter;
 reg [16:0] rd_counter;
 reg init_we_ff;
@@ -118,10 +118,10 @@ parameter IDLE                = 4'b0000;
 parameter READ_SYSRAM         = 4'b0001;
 parameter READ_WAIT           = 4'b0010;
 parameter READ_ACT            = 4'b0011;
-parameter NEW_SYS_ADDR        = 4'b0100;
-parameter READ_BLK_CNT_CHECK  = 4'b0101;
-parameter TRANSFER_COMPLETE   = 4'b0110;
-parameter WRITE_ACT           = 4'b0111;
+//parameter NEW_SYS_ADDR        = 4'b0100;
+//parameter READ_BLK_CNT_CHECK  = 4'b0101;
+//parameter TRANSFER_COMPLETE   = 4'b0110;
+//parameter WRITE_ACT           = 4'b0111;
 //parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
 
 parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
@@ -232,10 +232,10 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
     begin: STATE_TRANSITION
       if (reset == 1'b0) begin
         state <= IDLE;
-        total_trans_blk <= 0;
+//        total_trans_blk <= 0;
         m_axi_awvalid <= 0;
         m_axi_wvalid <= 0;
-        blk_done_cnt_within_boundary <= 0;
+//        blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
         fifo_dat_rd_ready <= 0;
         fifo_dat_wr_ready_reg <= 0;
@@ -249,8 +249,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       else begin
         case (state)
           IDLE: begin
-                   total_trans_blk <= 0;
-                   blk_done_cnt_within_boundary <= 0;
+//                   total_trans_blk <= 0;
+//                   blk_done_cnt_within_boundary <= 0;
                    data_cycle <= 0;
                    fifo_dat_rd_ready <= 0;
                    fifo_dat_wr_ready_reg <= 0;
@@ -332,53 +332,53 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                 end
                       endcase 
                     end
-          READ_BLK_CNT_CHECK: begin
-                                we_counter_reset <= 1'b1;
-                                if (blk_count_ena) begin
-                                  if (total_trans_blk < block_count) begin
-                                    if (blk_done_cnt_within_boundary == block_count_bound) begin
+//          READ_BLK_CNT_CHECK: begin
+//                                we_counter_reset <= 1'b1;
+//                                if (blk_count_ena) begin
+//                                  if (total_trans_blk < block_count) begin
+//                                    if (blk_done_cnt_within_boundary == block_count_bound) begin
 //                                      dma_interrupts[1] <= 1'b1;
-                                      state <= NEW_SYS_ADDR;
-                                    end
-                                    else begin
-                                      state <= READ_WAIT;
-                                    end
-                                  end
-                                  else begin
-                                    state <= TRANSFER_COMPLETE;
-                                  end
-                                end
-                                else if (blk_done_cnt_within_boundary == block_count_bound) begin
-                                  state <= NEW_SYS_ADDR;
-                                end
-                                else begin
-                                  state <= READ_WAIT;
-                                end
-                              end
-          NEW_SYS_ADDR: begin
-                          if (sys_addr_changed & dir_dat_trans_mode) begin
-                            state <= READ_WAIT;
-                            blk_done_cnt_within_boundary <= 0;
+//                                      state <= NEW_SYS_ADDR;
+//                                    end
+//                                    else begin
+//                                      state <= READ_WAIT;
+//                                    end
+//                                  end
+//                                  else begin
+//                                    state <= TRANSFER_COMPLETE;
+//                                  end
+//                                end
+//                                else if (blk_done_cnt_within_boundary == block_count_bound) begin
+//                                  state <= NEW_SYS_ADDR;
+//                                end
+//                                else begin
+//                                  state <= READ_WAIT;
+//                                end
+//                              end
+//          NEW_SYS_ADDR: begin
+//                          if (sys_addr_changed & dir_dat_trans_mode) begin
+//                            state <= READ_WAIT;
+//                            blk_done_cnt_within_boundary <= 0;
 //                            write_addr <= init_dma_sys_addr;
-                          end
-                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
-                            state <= READ_SYSRAM;
-                            blk_done_cnt_within_boundary <= 0;
+//                          end
+//                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
+//                            state <= READ_SYSRAM;
+//                            blk_done_cnt_within_boundary <= 0;
 //                            write_addr <= init_dma_sys_addr;
-                          end
-                          else begin
-                            state <= NEW_SYS_ADDR;
-                          end 
-                        end                              
-          TRANSFER_COMPLETE: begin
-                              if (xfer_compl) begin
-                                state <= IDLE;
+//                          end
+//                          else begin
+//                            state <= NEW_SYS_ADDR;
+//                          end 
+//                        end                              
+//          TRANSFER_COMPLETE: begin
+//                              if (xfer_compl) begin
+//                                state <= IDLE;
 //                                dma_interrupts[0] <= 1'b1;
-                              end
-                              else begin
-                                state <= TRANSFER_COMPLETE;
-                              end
-                            end
+//                              end
+//                              else begin
+//                                state <= TRANSFER_COMPLETE;
+//                              end
+//                            end
           READ_SYSRAM: begin
                           fifo_rst <= 0;
                           case (addr_accepted)

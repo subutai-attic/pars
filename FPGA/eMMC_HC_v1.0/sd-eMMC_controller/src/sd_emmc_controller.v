@@ -186,7 +186,7 @@
     wire soft_rst_dat_sd_clk;
     wire cmd_serial_h_rst_h;
     wire data_master_rst_ack;
-    wire next_block_st;
+//    wire next_block_st;
     wire fifo_reset;
     
     //Interrupts
@@ -230,7 +230,7 @@
 //    wire m_axi_awvalid;
 //    wire maxi_wlast;
     wire [1:0] dma_int;
-    wire trans_blk_compl;
+//    wire trans_blk_compl;
 //    wire burst_tx;
     wire cmd_cmplt_axi_puls;
     wire stop_blk_gap_req;
@@ -248,7 +248,7 @@
             .buf_boundary(buff_bound),
 //            .init_dma_sys_addr(system_addr),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
-            .blk_count_ena (dma_and_blkcnt_en [1]),
+//            .blk_count_ena (dma_and_blkcnt_en [1]),
             .dir_dat_trans_mode(dat_trans_dir_axi_clk),
 //            .sys_addr_changed(sys_addr_set),
             .block_count(block_count_reg_axi_clk),
@@ -515,9 +515,9 @@
         .TLAST          (m_axis_tlast),
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
-        .next_block(next_block_st),
-        .start_write(start_write_sd_clk),
-        .write_next_block(trans_blk_compl)
+//        .next_block(next_block_st),
+        .start_write(start_write_sd_clk)
+//        .write_next_block(trans_blk_compl)
         );
 
     sd_fifo_filler sd_fifo_filler0(
