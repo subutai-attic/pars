@@ -80,6 +80,11 @@ module  sd_emmc_controller_dma (
             output wire [7:0] m_axi_awlen,
             output wire [2:0] m_axi_awsize,
             output wire [31:0] m_axi_wdata,
+            output wire [0:0] m_axi_arid,
+            output wire  m_axi_arlock,
+            output wire [3 : 0] m_axi_arcache,
+            output wire [2 : 0] m_axi_arprot,
+            output wire [3:0] m_axi_arqos,
             output wire [0:0] m_axi_aruser,
             input wire [0:0] m_axi_rid,
             input wire [1:0] m_axi_rresp,
@@ -147,6 +152,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign m_axi_awaddr = descriptor_line [63:32];
   assign m_axi_wdata  = read_fifo_data;
   assign m_axi_aruser = 'b0;
+  assign m_axi_arqos  = 4'h0;
+  assign m_axi_arprot = 3'h0;
+  assign m_axi_arcache = 4'b0011;
+  assign m_axi_arlock  = 1'b0;
+  assign m_axi_arid	 = 'b0;
 
 
     always @(posedge clock)

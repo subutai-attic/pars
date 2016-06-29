@@ -277,6 +277,11 @@
             .m_axi_rdata(M_AXI_RDATA),
             .m_axi_awsize(M_AXI_AWSIZE),
             .m_axi_wdata(M_AXI_WDATA),
+            .m_axi_arid(M_AXI_ARID),
+            .m_axi_arlock(M_AXI_ARLOCK),
+            .m_axi_arcache(M_AXI_ARCACHE),
+            .m_axi_arprot(M_AXI_ARPROT),
+            .m_axi_arqos(M_AXI_ARQOS),
             .m_axi_aruser(M_AXI_ARUSER),
             .m_axi_rid(M_AXI_RID),
             .m_axi_rresp(M_AXI_RRESP),
@@ -329,12 +334,12 @@
             .M_AXI_BRESP(M_AXI_BRESP),
             .M_AXI_BUSER(M_AXI_BUSER),
             .M_AXI_BVALID(M_AXI_BVALID),
-            .M_AXI_BREADY(M_AXI_BREADY),
-            .M_AXI_ARID(M_AXI_ARID),
-            .M_AXI_ARLOCK(M_AXI_ARLOCK),
-            .M_AXI_ARCACHE(M_AXI_ARCACHE),
-            .M_AXI_ARPROT(M_AXI_ARPROT),
-            .M_AXI_ARQOS(M_AXI_ARQOS)
+            .M_AXI_BREADY(M_AXI_BREADY)
+//            .M_AXI_ARID(M_AXI_ARID),
+//            .M_AXI_ARLOCK(M_AXI_ARLOCK),
+//            .M_AXI_ARCACHE(M_AXI_ARCACHE),
+//            .M_AXI_ARPROT(M_AXI_ARPROT)
+//            .M_AXI_ARQOS(M_AXI_ARQOS)
 //            .M_AXI_ARUSER(M_AXI_ARUSER),
 //            .M_AXI_RID(M_AXI_RID),
 //            .M_AXI_RRESP(M_AXI_RRESP)
