@@ -60,7 +60,6 @@ module  sd_emmc_controller_dma (
             (* mark_debug = "true" *)output reg fifo_rst,
 
             // M_AXI
-            
             output reg m_axi_wvalid,
             input wire m_axi_wready,
             output wire [31:0] m_axi_awaddr,
@@ -80,7 +79,11 @@ module  sd_emmc_controller_dma (
             output wire [1:0] m_axi_awburst,
             output wire [7:0] m_axi_awlen,
             output wire [2:0] m_axi_awsize,
-            output wire [31:0] m_axi_wdata
+            output wire [31:0] m_axi_wdata,
+            output wire [0:0] m_axi_aruser,
+            input wire [0:0] m_axi_rid,
+            input wire [1:0] m_axi_rresp,
+            input wire [0:0] m_axi_ruser
         );
 
 (* mark_debug = "true" *) reg [3:0] state;
@@ -143,6 +146,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign w_last = axi_wlast;
   assign m_axi_awaddr = descriptor_line [63:32];
   assign m_axi_wdata  = read_fifo_data;
+  assign m_axi_aruser = 'b0;
 
 
     always @(posedge clock)

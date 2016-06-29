@@ -277,6 +277,10 @@
             .m_axi_rdata(M_AXI_RDATA),
             .m_axi_awsize(M_AXI_AWSIZE),
             .m_axi_wdata(M_AXI_WDATA),
+            .m_axi_aruser(M_AXI_ARUSER),
+            .m_axi_rid(M_AXI_RID),
+            .m_axi_rresp(M_AXI_RRESP),
+            .m_axi_ruser(M_AXI_RUSER),
             .fifo_dat_wr_ready_o(fifo_data_write_ready),
             .read_fifo_data(read_fifo_out),
             .fifo_rst(fifo_reset),
@@ -330,11 +334,11 @@
             .M_AXI_ARLOCK(M_AXI_ARLOCK),
             .M_AXI_ARCACHE(M_AXI_ARCACHE),
             .M_AXI_ARPROT(M_AXI_ARPROT),
-            .M_AXI_ARQOS(M_AXI_ARQOS),
-            .M_AXI_ARUSER(M_AXI_ARUSER),
-            .M_AXI_RID(M_AXI_RID),
-            .M_AXI_RRESP(M_AXI_RRESP),
-            .M_AXI_RUSER(M_AXI_RUSER)
+            .M_AXI_ARQOS(M_AXI_ARQOS)
+//            .M_AXI_ARUSER(M_AXI_ARUSER),
+//            .M_AXI_RID(M_AXI_RID),
+//            .M_AXI_RRESP(M_AXI_RRESP)
+//            .M_AXI_RUSER(M_AXI_RUSER)
 //            .data_read_fifo(read_fifo_out)
 //            .wnext(wordnext),
 //            .dat_wr_valid(m_axi_wvalid),
