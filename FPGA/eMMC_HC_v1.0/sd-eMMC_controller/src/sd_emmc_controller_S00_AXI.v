@@ -24,7 +24,7 @@
         input wire  [31:0] response_1_reg,
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
-        input wire  [31:0] read_fifo_in,
+//        input wire  [31:0] read_fifo_in,
         output wire [31:0] write_fifo_out,     //need to removed
         output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
@@ -695,7 +695,7 @@
 	        5'h05   : reg_data_out <= response_1_reg;
 	        5'h06   : reg_data_out <= response_2_reg;
 	        5'h07   : reg_data_out <= response_3_reg;
-	        5'h08   : reg_data_out <= read_fifo_in;
+	        5'h08   : reg_data_out <= 0; //read_fifo_in;
 	        5'h09   : reg_data_out <= slv_reg9;
 	        5'h0A   : reg_data_out <= slv_reg10;
 	        5'h0B   : reg_data_out <= slv_reg11;

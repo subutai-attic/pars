@@ -69,7 +69,7 @@
     // the slave is ready to accept an address and associated control signals
 		input wire  M_AXI_AWREADY,
 		// Master Interface Write Data.
-		output wire [M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA,
+//		output wire [M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA,
 		// Write strobes. This signal indicates which byte
     // lanes hold valid data. There is one write strobe
     // bit for each eight bits of the write data bus.
@@ -125,7 +125,7 @@
     // accept the read data and response information.
 		
 	// Data from FIFO
-	    input  wire [31:0] data_read_fifo,
+//	    input  wire [31:0] data_read_fifo,
 	    output wire        wnext,
 	    input wire dat_wr_valid,
 	    input wire [31:0] addr_wr,
@@ -223,7 +223,7 @@
 	assign M_AXI_AWUSER	 = 'b0;
 //	assign M_AXI_AWVALID = addr_wr_valid; //axi_awvalid;
 	//Write Data(W)
-	assign M_AXI_WDATA	 = data_read_fifo; //axi_wdata;
+//	assign M_AXI_WDATA	 = data_read_fifo; //axi_wdata;
 	//All bursts are complete and aligned in this example
 	assign M_AXI_WSTRB	 = 4'hf; //{(M_AXI_DATA_WIDTH/8){1'b1}};
 	assign M_AXI_WLAST	 = axi_wlast;

@@ -56,6 +56,7 @@ module  sd_emmc_controller_dma (
             // FIFO Filler
             output reg fifo_dat_rd_ready,
             output wire fifo_dat_wr_ready_o,
+            input wire [31:0] read_fifo_data,
             (* mark_debug = "true" *)output reg fifo_rst,
 
             // M_AXI
@@ -78,15 +79,12 @@ module  sd_emmc_controller_dma (
             output wire [1:0] m_axi_arburst,
             output wire [1:0] m_axi_awburst,
             output wire [7:0] m_axi_awlen,
-            output wire [2:0] m_axi_awsize
+            output wire [2:0] m_axi_awsize,
+            output wire [31:0] m_axi_wdata
         );
 
-//reg [15:0] block_count_bound;
-//reg [15:0] total_trans_blk;
-//reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [16:0] data_cycle;
-//reg [15:0] blk_done_cnt_within_boundary;
 reg [16:0] we_counter;
 reg [16:0] rd_counter;
 reg init_we_ff;
@@ -144,53 +142,9 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign next_data_word = m_axi_wready & m_axi_wvalid;
   assign w_last = axi_wlast;
   assign m_axi_awaddr = descriptor_line [63:32];
+  assign m_axi_wdata  = read_fifo_data;
 
-//    always @ (posedge clock)
-//    begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
-//      if (reset == 1'b0) begin
-//        block_count_bound <= 0;
-//        if_buf_boundary_changed <= 0;
-//      end
-//      else begin
-//        if (if_buf_boundary_changed != buf_boundary) begin
-//          case (buf_boundary)
-//          3'b000: begin
-//                block_count_bound <= `A11;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b001: begin
-//                block_count_bound <= `A12;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b010: begin
-//                block_count_bound <= `A13;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b011: begin
-//                block_count_bound <= `A14;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b100: begin
-//                block_count_bound <= `A15;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b101: begin
-//                block_count_bound <= `A16;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b110: begin
-//                block_count_bound <= `A17;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          3'b111: begin
-//                block_count_bound <= `A18;
-//                if_buf_boundary_changed <= buf_boundary;
-//              end
-//          endcase
-//        end
-//      end
-//    end
-    
+
     always @(posedge clock)
     begin: WRITE_DATA_BEAT_COUNTER
       if (reset == 1'b0 || burst_tx == 1'b1) begin
