@@ -220,7 +220,7 @@
     wire start_write_sd_clk;
 
     // dma
-    wire [2:0] buff_bound;
+//    wire [2:0] buff_bound;
     wire [31:0] system_addr;
     wire [1:0] dma_and_blkcnt_en;
 //    wire sys_addr_set;
@@ -245,7 +245,7 @@
             .reset(s00_axi_aresetn),
             .is_we_en(we_fifo),
             .is_rd_en(rd_fifo),
-            .buf_boundary(buff_bound),
+//            .buf_boundary(buff_bound),
 //            .init_dma_sys_addr(system_addr),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
 //            .blk_count_ena (dma_and_blkcnt_en [1]),
@@ -408,7 +408,7 @@
             .data_transfer_direction(dat_trans_dir_axi_clk),
             .start_tx_fifo_i(start_tx_fifo),
 //            .start_tx_o(start_tx),
-            .bfr_bound(buff_bound),
+//            .bfr_bound(buff_bound),
 //            .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
 //            .sys_addr_set(sys_addr_set),

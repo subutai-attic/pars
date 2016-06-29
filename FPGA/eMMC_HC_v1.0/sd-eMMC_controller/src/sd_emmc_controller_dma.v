@@ -27,7 +27,7 @@ module  sd_emmc_controller_dma (
 
             // S_AXI
 //            input  wire [31:0] init_dma_sys_addr,
-            input  wire [2:0] buf_boundary,
+//            input  wire [2:0] buf_boundary,
             input  wire [`BLKCNT_W -1:0] block_count,
 //            input  wire sys_addr_changed,
             input wire dma_ena_trans_mode,
@@ -81,9 +81,9 @@ module  sd_emmc_controller_dma (
             output wire [2:0] m_axi_awsize
         );
 
-reg [15:0] block_count_bound;
+//reg [15:0] block_count_bound;
 //reg [15:0] total_trans_blk;
-reg [2:0] if_buf_boundary_changed;
+//reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [16:0] data_cycle;
 //reg [15:0] blk_done_cnt_within_boundary;
@@ -118,11 +118,6 @@ parameter IDLE                = 4'b0000;
 parameter READ_SYSRAM         = 4'b0001;
 parameter READ_WAIT           = 4'b0010;
 parameter READ_ACT            = 4'b0011;
-//parameter NEW_SYS_ADDR        = 4'b0100;
-//parameter READ_BLK_CNT_CHECK  = 4'b0101;
-//parameter TRANSFER_COMPLETE   = 4'b0110;
-//parameter WRITE_ACT           = 4'b0111;
-//parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
 
 parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
                                   // (1) After Power on reset or software reset.
@@ -150,51 +145,51 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign w_last = axi_wlast;
   assign m_axi_awaddr = descriptor_line [63:32];
 
-    always @ (posedge clock)
-    begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
-      if (reset == 1'b0) begin
-        block_count_bound <= 0;
-        if_buf_boundary_changed <= 0;
-      end
-      else begin
-        if (if_buf_boundary_changed != buf_boundary) begin
-          case (buf_boundary)
-          3'b000: begin
-                block_count_bound <= `A11;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b001: begin
-                block_count_bound <= `A12;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b010: begin
-                block_count_bound <= `A13;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b011: begin
-                block_count_bound <= `A14;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b100: begin
-                block_count_bound <= `A15;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b101: begin
-                block_count_bound <= `A16;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b110: begin
-                block_count_bound <= `A17;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b111: begin
-                block_count_bound <= `A18;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          endcase
-        end
-      end
-    end
+//    always @ (posedge clock)
+//    begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
+//      if (reset == 1'b0) begin
+//        block_count_bound <= 0;
+//        if_buf_boundary_changed <= 0;
+//      end
+//      else begin
+//        if (if_buf_boundary_changed != buf_boundary) begin
+//          case (buf_boundary)
+//          3'b000: begin
+//                block_count_bound <= `A11;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b001: begin
+//                block_count_bound <= `A12;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b010: begin
+//                block_count_bound <= `A13;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b011: begin
+//                block_count_bound <= `A14;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b100: begin
+//                block_count_bound <= `A15;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b101: begin
+//                block_count_bound <= `A16;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b110: begin
+//                block_count_bound <= `A17;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          3'b111: begin
+//                block_count_bound <= `A18;
+//                if_buf_boundary_changed <= buf_boundary;
+//              end
+//          endcase
+//        end
+//      end
+//    end
     
     always @(posedge clock)
     begin: WRITE_DATA_BEAT_COUNTER
@@ -232,16 +227,12 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
     begin: STATE_TRANSITION
       if (reset == 1'b0) begin
         state <= IDLE;
-//        total_trans_blk <= 0;
         m_axi_awvalid <= 0;
         m_axi_wvalid <= 0;
-//        blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
         fifo_dat_rd_ready <= 0;
         fifo_dat_wr_ready_reg <= 0;
         addr_accepted <= 0;
-//        w_last <= 0;
-//        dma_interrupts <= 0;
         axi_arvalid <= 0;
         fifo_rst <= 0;
         descriptor_line <= 0;
@@ -249,8 +240,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       else begin
         case (state)
           IDLE: begin
-//                   total_trans_blk <= 0;
-//                   blk_done_cnt_within_boundary <= 0;
                    data_cycle <= 0;
                    fifo_dat_rd_ready <= 0;
                    fifo_dat_wr_ready_reg <= 0;
@@ -258,12 +247,10 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                    we_counter_reset <= 1;
                    rd_counter_reset <= 1;
                   if (sdma_contr_reg[`DatTransDir] == 2'b01) begin
-//                    write_addr <= init_dma_sys_addr;
                     state <= READ_WAIT;
                     fifo_rst <= 1;
                   end
                   else if (sdma_contr_reg[`DatTransDir] == 2'b10) begin
-//                    axi_araddr <= init_dma_sys_addr;
                     state <= READ_SYSRAM;
                     fifo_rst <= 1;
                   end
@@ -283,11 +270,9 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          state <= READ_WAIT;
                        end 
                        if (data_cycle >= (rd_dat_words/4)) begin
-//                         blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
-//                         total_trans_blk <= total_trans_blk + 1;
                          data_cycle <= 0;
                          we_counter_reset <= 1'b0;
-                         state <= IDLE; //READ_BLK_CNT_CHECK;
+                         state <= IDLE;
                        end
                      end
           READ_ACT: begin
@@ -332,62 +317,12 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                 end
                       endcase 
                     end
-//          READ_BLK_CNT_CHECK: begin
-//                                we_counter_reset <= 1'b1;
-//                                if (blk_count_ena) begin
-//                                  if (total_trans_blk < block_count) begin
-//                                    if (blk_done_cnt_within_boundary == block_count_bound) begin
-//                                      dma_interrupts[1] <= 1'b1;
-//                                      state <= NEW_SYS_ADDR;
-//                                    end
-//                                    else begin
-//                                      state <= READ_WAIT;
-//                                    end
-//                                  end
-//                                  else begin
-//                                    state <= TRANSFER_COMPLETE;
-//                                  end
-//                                end
-//                                else if (blk_done_cnt_within_boundary == block_count_bound) begin
-//                                  state <= NEW_SYS_ADDR;
-//                                end
-//                                else begin
-//                                  state <= READ_WAIT;
-//                                end
-//                              end
-//          NEW_SYS_ADDR: begin
-//                          if (sys_addr_changed & dir_dat_trans_mode) begin
-//                            state <= READ_WAIT;
-//                            blk_done_cnt_within_boundary <= 0;
-//                            write_addr <= init_dma_sys_addr;
-//                          end
-//                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
-//                            state <= READ_SYSRAM;
-//                            blk_done_cnt_within_boundary <= 0;
-//                            write_addr <= init_dma_sys_addr;
-//                          end
-//                          else begin
-//                            state <= NEW_SYS_ADDR;
-//                          end 
-//                        end                              
-//          TRANSFER_COMPLETE: begin
-//                              if (xfer_compl) begin
-//                                state <= IDLE;
-//                                dma_interrupts[0] <= 1'b1;
-//                              end
-//                              else begin
-//                                state <= TRANSFER_COMPLETE;
-//                              end
-//                            end
           READ_SYSRAM: begin
                           fifo_rst <= 0;
                           case (addr_accepted)
                             1'b0: begin
                               if (data_cycle >= (rd_dat_words / 4)) begin
-//                                blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
-//                                total_trans_blk <= total_trans_blk + 1;
                                 data_cycle <= 0;
-//                                state <= WRITE_CNT_BLK_CHECK;
                                 state <= IDLE;
                               end
                               else begin
@@ -424,28 +359,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                             end
                           endcase
                         end
-//          WRITE_CNT_BLK_CHECK: begin
-//                                 if (ser_next_blk) begin
-//                                    start_write <= 0;
-//                                 end
-//                                 if (total_trans_blk < block_count) begin
-//                                   if (blk_done_cnt_within_boundary == block_count_bound) begin
-//                                     dma_interrupts[1] <= 1'b1;
-//                                     state <= NEW_SYS_ADDR;
-//                                     start_write <= 0;
-//                                   end
-//                                   else begin
-//                                     state <=  READ_SYSRAM;
-//                                     start_write <= 0;
-//                                   end
-//                                 end
-//                                 else if ((total_trans_blk == block_count)  && xfer_compl) begin
-//                                   state <= IDLE;
-//                                   start_write <= 0;
-//                                   dma_interrupts[0] <= 1'b1;
-//                                 end
-//                               end
-                               
         endcase
         // abort the state when timeout on data serializer
         if (write_timeout == 2'b11) begin

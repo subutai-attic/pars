@@ -121,7 +121,7 @@
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
 		output wire start_tx_o,
-		output wire [2:0] bfr_bound,
+//		output wire [2:0] bfr_bound,
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
 //		output reg sys_addr_set,
@@ -207,7 +207,7 @@
 	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
     assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
-    assign bfr_bound           = slv_reg1[14:12];
+//    assign bfr_bound           = slv_reg1[14:12];
     assign sys_addr            = slv_reg0;
     assign adma_sys_addr       = slv_reg22;
     assign blk_gap_req         = slv_reg10[16];
