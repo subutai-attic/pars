@@ -68,11 +68,9 @@ module  sd_emmc_controller_dma (
             output wire [3:0] m_axi_awcache,
             output wire [2:0] m_axi_awprot,
             output wire [3:0] m_axi_awqos,
-            output wire [0:0] m_axi_awuser,
             output reg m_axi_awvalid,
             input wire m_axi_awready,
             output wire [3:0] m_axi_wstrb,
-            output wire [0:0] m_axi_wuser,
             output wire [31:0] m_axi_araddr,
             output reg m_axi_arvalid,
             input wire m_axi_arready,
@@ -90,7 +88,6 @@ module  sd_emmc_controller_dma (
             output reg m_axi_wlast,
             input wire [0:0] m_axi_bid,
             input wire [1:0] m_axi_bresp,
-            input wire [0:0] m_axi_buser,
             input wire  m_axi_bvalid,
             output wire m_axi_bready,
             output wire [0:0] m_axi_arid,
@@ -98,10 +95,8 @@ module  sd_emmc_controller_dma (
             output wire [3 : 0] m_axi_arcache,
             output wire [2 : 0] m_axi_arprot,
             output wire [3:0] m_axi_arqos,
-            output wire [0:0] m_axi_aruser,
             input wire [0:0] m_axi_rid,
-            input wire [1:0] m_axi_rresp,
-            input wire [0:0] m_axi_ruser
+            input wire [1:0] m_axi_rresp
         );
 
 (* mark_debug = "true" *) reg [3:0] state;
@@ -128,7 +123,6 @@ reg [63:0] descriptor_line;
 reg [11:0] sdma_contr_reg;
 reg fifo_dat_wr_ready_reg;
 reg [3:0] write_index;
-//reg m_axi_wlast;
 reg burst_tx;
 reg axi_bready;
 wire Tran;
@@ -167,10 +161,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
   assign next_data_word = m_axi_wready & m_axi_wvalid;
   assign m_axi_awid	   = 'b0;
-  assign m_axi_wuser   = 'b0;
   assign m_axi_awaddr  = descriptor_line [63:32];
   assign m_axi_wdata   = read_fifo_data;
-  assign m_axi_aruser  = 'b0;
   assign m_axi_arqos   = 4'h0;
   assign m_axi_arprot  = 3'h0;
   assign m_axi_arcache = 4'b0011;
@@ -180,7 +172,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign m_axi_awcache = 4'b0011;
   assign m_axi_awprot  = 3'h0;
   assign m_axi_awqos   = 4'h0;
-  assign m_axi_awuser  = 'b0;
   assign m_axi_wstrb   = 4'hf;
   assign read_resp_error  = m_axi_rready & m_axi_rvalid & m_axi_rresp[1];
   assign write_resp_error = axi_bready & m_axi_bvalid & m_axi_bresp[1];

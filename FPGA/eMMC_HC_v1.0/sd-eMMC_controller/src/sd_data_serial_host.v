@@ -76,7 +76,6 @@ module sd_data_serial_host(
            output sd_data_busy,
            output busy,
            output reg crc_ok,
-           output reg TLAST,
            output read_trans_active,
            output write_trans_active,
 //           output next_block,
