@@ -53,7 +53,6 @@ module sd_fifo_filler(
            input fifo_reset,
            
            // AXI Signals
-           output reg [31:0] wbm_adr_o,                     
            output wbm_we_o,                                 //drived here
            output [31:0] read_fifo_out,                     //wbm_dat_o,         
            (* mark_debug = "true" *) input  [31:0] write_fifo_in,                     //wbm_dat_i,
@@ -65,7 +64,6 @@ module sd_fifo_filler(
            // Data Master Control signals
            input  en_rx_i,
            input  en_tx_i,
-           input  [31:0] adr_i,
            
            //Data Serial signals
            input  sd_clk,
@@ -135,17 +133,12 @@ generic_fifo_dc_gray #(
 
 always @(posedge wb_clk or posedge rst)
     if (rst) begin
-        wbm_adr_o <= 0;
         fifo_rd_reg <= 0;
         fifo_rd_ack <= 1;
     end
     else begin
         fifo_rd_reg <= fifo_rd;
         fifo_rd_ack <= fifo_rd_reg | !fifo_rd;
-        if (wbm_cyc_o & wbm_stb_o & (fifo_data_read_ready | fifo_data_write_ready))
-            wbm_adr_o <= wbm_adr_o + `MEM_OFFSET;
-        else if (reset_fifo)
-            wbm_adr_o <= adr_i;
     end
 
 endmodule

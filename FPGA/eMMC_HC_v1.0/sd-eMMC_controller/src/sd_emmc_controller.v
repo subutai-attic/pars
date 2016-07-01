@@ -142,7 +142,6 @@
     wire [`INT_CMD_SIZE-1:0] cmd_int_enable_reg_wb_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_enable_reg_wb_clk;
     wire [`BLKCNT_W-1:0] block_count_reg_axi_clk;
-    wire [31:0] dma_addr_reg_wb_clk;
     wire [7:0] clock_divider_reg_wb_clk;
 
     wire [31:0] argument_reg_sd_clk;
@@ -467,7 +466,6 @@
         .wb_clk    (s00_axi_aclk),
         .rst       (!s00_axi_aresetn |
                     soft_rst_dat_sd_clk ),
-        .wbm_adr_o (wbm_adr),
         .wbm_we_o  (m_wb_we_o),
         .read_fifo_out (read_fifo_out),
         .write_fifo_in (write_dat_fifo),
@@ -477,7 +475,6 @@
         .fifo_data_write_ready(fifo_data_write_ready),
         .en_rx_i   (start_rx_fifo),
         .en_tx_i   (start_tx_fifo),
-        .adr_i     (dma_addr_reg_wb_clk),
         .sd_clk    (SD_CLK),
         .dat_i     (data_in_rx_fifo),
         .dat_o     (data_out_tx_fifo),
