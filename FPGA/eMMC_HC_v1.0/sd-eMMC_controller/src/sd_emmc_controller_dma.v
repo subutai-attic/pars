@@ -47,7 +47,7 @@ module  sd_emmc_controller_dma (
             input wire is_rd_en, 
             (* mark_debug = "true" *)output reg start_write,
 //            input wire trans_block_compl,
-//            input wire ser_next_blk,
+            input wire ser_next_blk,
             input wire [1:0] write_timeout,
             
             // Command master
@@ -101,7 +101,7 @@ module  sd_emmc_controller_dma (
 
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [16:0] data_cycle;
-reg [16:0] we_counter;
+(* mark_debug = "true" *) reg [16:0] we_counter;
 reg [16:0] rd_counter;
 reg init_we_ff;
 reg init_we_ff2;
@@ -111,7 +111,7 @@ reg init_rready;
 reg init_rready2;
 reg init_rvalid;
 (* mark_debug = "true" *) reg addr_accepted;
-reg we_counter_reset;
+(* mark_debug = "true" *) reg we_counter_reset;
 reg rd_counter_reset;
 wire we_pulse;
 wire rd_pulse;
@@ -134,8 +134,9 @@ wire read_resp_error;
 
 parameter IDLE             = 4'b0000;
 parameter MEM2CARD         = 4'b0001;
-parameter CARD2MEM_WAIT    = 4'b0010;
-parameter CARD2MEM_ACT     = 4'b0011;
+parameter MEM2CARD_WAIT    = 4'b0010;
+parameter CARD2MEM_WAIT    = 4'b0011;
+parameter CARD2MEM_ACT     = 4'b0100;
 
 parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
                                   // (1) After Power on reset or software reset.
@@ -322,6 +323,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                     end
           MEM2CARD: begin
                           fifo_rst <= 0;
+                          start_write <= 1'b0;
+                          if (((data_cycle + 1) % 128 == 0) && data_cycle != 0) begin
+                           state <= MEM2CARD_WAIT;
+                           start_write <= 1'b1;
+                         end
                           case (addr_accepted)
                             1'b0: begin
                               if (data_cycle >= (rd_dat_words / 4)) begin
@@ -332,7 +338,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                 if (m_axi_arvalid & m_axi_arready) begin
                                   m_axi_arvalid <= 1'b0;
                                   addr_accepted <= 1'b1;
-                                  start_write <= 1'b1;
                                   if (~sdma_contr_reg[`AddrSel])
                                     descriptor_line [63:32] <= descriptor_line [63:32] + 64;
                                 end
@@ -361,6 +366,13 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                               end
                             end
                           endcase
+                        end
+          MEM2CARD_WAIT: begin
+                            start_write <= 1'b0;
+                            if (ser_next_blk | xfer_compl) begin
+                                state <= MEM2CARD;
+                                fifo_rst <= 1'b1;
+                            end
                         end
         endcase
         // abort the state when timeout on data serializer
@@ -442,8 +454,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       
       // CARD2MEM_WAIT = dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl
       // MEM2CARD = !dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl & cmd_int_rst_pulse
-      reg [1:0] start_dat_trans;
-      reg [2:0] next_state;
+      (* mark_debug = "true" *) reg [1:0] start_dat_trans;
+      (* mark_debug = "true" *) reg [2:0] next_state;
       reg [16:0] rd_dat_words;
       reg TFC;
       reg a;
