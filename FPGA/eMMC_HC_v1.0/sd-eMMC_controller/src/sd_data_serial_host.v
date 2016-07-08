@@ -58,13 +58,13 @@ module sd_data_serial_host(
            input rst,
            //Tx Fifo
            input [31:0] data_in,
-           output reg rd,
+           (* mark_debug = "true" *) output reg rd,
            //Rx Fifo
            output wire [31:0] data_out_o,
            output reg we,
            //tristate data
            output reg DAT_oe_o,
-           output reg[7:0] DAT_dat_o,
+           (* mark_debug = "true" *) output reg[7:0] DAT_dat_o,
            input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
@@ -76,16 +76,15 @@ module sd_data_serial_host(
            output sd_data_busy,
            output busy,
            output reg crc_ok,
-           output reg TLAST,
            output read_trans_active,
-           output write_trans_active,
-           output next_block,
-           input start_write,
+           (* mark_debug = "true" *) output write_trans_active,
+//           output next_block,
+           (* mark_debug = "true" *) input start_write,
            output wire write_next_block
        );
        
 
-reg [7:0] DAT_dat_reg;
+(* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
@@ -96,8 +95,8 @@ reg crc_rst;
 wire [15:0] crc_out [7:0];
 reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-reg [SIZE-1:0] state;
-reg [SIZE-1:0] next_state;
+(* mark_debug = "true" *) reg [SIZE-1:0] state;
+(* mark_debug = "true" *) reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;
 parameter WRITE_WAIT  = 6'b000011;

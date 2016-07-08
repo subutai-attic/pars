@@ -27,12 +27,12 @@ module  sd_emmc_controller_dma (
 
             // S_AXI
 //            input  wire [31:0] init_dma_sys_addr,
-            input  wire [2:0] buf_boundary,
+//            input  wire [2:0] buf_boundary,
             input  wire [`BLKCNT_W -1:0] block_count,
-            input  wire sys_addr_changed,
+//            input  wire sys_addr_changed,
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
-            input wire blk_count_ena,
+//            input wire blk_count_ena,
 //            input wire [11:0] blk_size,
             output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
@@ -43,9 +43,10 @@ module  sd_emmc_controller_dma (
 
             // Data serial
             (* mark_debug = "true" *)input wire xfer_compl,
-            (* mark_debug = "true" *)input  wire is_we_en,
-            output reg start_write,
-            input wire trans_block_compl,
+            input wire is_we_en,
+            input wire is_rd_en, 
+            (* mark_debug = "true" *)output reg start_write,
+//            input wire trans_block_compl,
             input wire ser_next_blk,
             input wire [1:0] write_timeout,
             
@@ -53,70 +54,89 @@ module  sd_emmc_controller_dma (
             input wire cmd_compl_puls,
             
             // FIFO Filler
-            (* mark_debug = "true" *)output reg fifo_dat_rd_ready,
-            (* mark_debug = "true" *)output wire fifo_dat_wr_ready_o,
-            output reg fifo_rst,
+            output reg fifo_dat_rd_ready,
+            output wire fifo_dat_wr_ready_o,
+            input wire [31:0] read_fifo_data,
+            (* mark_debug = "true" *)output reg fifo_rst,
 
             // M_AXI
-            
             output reg m_axi_wvalid,
             input wire m_axi_wready,
+            output wire [0:0] m_axi_awid,
             output wire [31:0] m_axi_awaddr,
+            output wire  m_axi_awlock,
+            output wire [3:0] m_axi_awcache,
+            output wire [2:0] m_axi_awprot,
+            output wire [3:0] m_axi_awqos,
             output reg m_axi_awvalid,
             input wire m_axi_awready,
-            output wire w_last,
-            output wire [31:0] axi_araddr,
-            output reg axi_arvalid,
-            input wire axi_arready,
-            input wire axi_rvalid,
-            output wire axi_rready,
-            input wire axi_rlast,
+            output wire [3:0] m_axi_wstrb,
+            output wire [31:0] m_axi_araddr,
+            output reg m_axi_arvalid,
+            input wire m_axi_arready,
+            input wire m_axi_rvalid,
+            output wire m_axi_rready,
+            input wire m_axi_rlast,
             input wire [31:0] m_axi_rdata,
             output wire [7:0] m_axi_arlen,
             output wire [2:0] m_axi_arsize,
             output wire [1:0] m_axi_arburst,
             output wire [1:0] m_axi_awburst,
             output wire [7:0] m_axi_awlen,
-            output wire [2:0] m_axi_awsize
+            output wire [2:0] m_axi_awsize,
+            output wire [31:0] m_axi_wdata,
+            output reg m_axi_wlast,
+            input wire [0:0] m_axi_bid,
+            input wire [1:0] m_axi_bresp,
+            input wire  m_axi_bvalid,
+            output wire m_axi_bready,
+            output wire [0:0] m_axi_arid,
+            output wire  m_axi_arlock,
+            output wire [3 : 0] m_axi_arcache,
+            output wire [2 : 0] m_axi_arprot,
+            output wire [3:0] m_axi_arqos,
+            input wire [0:0] m_axi_rid,
+            input wire [1:0] m_axi_rresp
         );
 
-reg [15:0] block_count_bound;
-reg [15:0] total_trans_blk;
-reg [2:0] if_buf_boundary_changed;
 (* mark_debug = "true" *) reg [3:0] state;
 (* mark_debug = "true" *) reg [16:0] data_cycle;
-reg [15:0] blk_done_cnt_within_boundary;
-reg [16:0] we_counter;
+(* mark_debug = "true" *) reg [16:0] we_counter;
+reg [16:0] rd_counter;
 reg init_we_ff;
 reg init_we_ff2;
+reg init_rd_ff;
+reg init_rd_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
 (* mark_debug = "true" *) reg addr_accepted;
-reg we_counter_reset;
+(* mark_debug = "true" *) reg we_counter_reset;
+reg rd_counter_reset;
 wire we_pulse;
-(* mark_debug = "true" *) reg data_write_disable;
+wire rd_pulse;
+reg data_write_disable;
 (* mark_debug = "true" *) reg [2:0] adma_state;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;
 reg [11:0] sdma_contr_reg;
 reg fifo_dat_wr_ready_reg;
-(* mark_debug = "true" *) reg [3:0] write_index;
-reg axi_wlast;
-(* mark_debug = "true" *) reg burst_tx;
+reg [3:0] write_index;
+reg burst_tx;
+reg axi_bready;
+wire Tran;
+wire Link;
 wire stop_trans;
-(* mark_debug = "true" *) wire next_data_word;
+wire next_data_word;
+wire write_resp_error;
+wire read_resp_error;
 
-parameter IDLE                = 4'b0000;
-parameter READ_SYSRAM         = 4'b0001;
-parameter READ_WAIT           = 4'b0010;
-parameter READ_ACT            = 4'b0011;
-parameter NEW_SYS_ADDR        = 4'b0100;
-parameter READ_BLK_CNT_CHECK  = 4'b0101;
-parameter TRANSFER_COMPLETE   = 4'b0110;
-parameter WRITE_ACT           = 4'b0111;
-parameter WRITE_CNT_BLK_CHECK = 4'b1000; 
+parameter IDLE             = 4'b0000;
+parameter MEM2CARD         = 4'b0001;
+parameter MEM2CARD_WAIT    = 4'b0010;
+parameter CARD2MEM_WAIT    = 4'b0011;
+parameter CARD2MEM_ACT     = 4'b0100;
 
 parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
                                   // (1) After Power on reset or software reset.
@@ -136,60 +156,48 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign m_axi_awsize	     = 3'b010;
   assign stop_trans          = state == IDLE ? 1'b1 : 1'b0;
   assign fifo_dat_wr_ready_o = sdma_contr_reg[`DatTarg] ? 1'b0 : fifo_dat_wr_ready_reg;
-  assign axi_araddr          = sdma_contr_reg[`AddrSel] ? descriptor_pointer_reg : descriptor_line [63:32];
+  assign m_axi_araddr        = sdma_contr_reg[`AddrSel] ? descriptor_pointer_reg : descriptor_line [63:32];
   assign m_axi_arlen         = sdma_contr_reg[`BurstLen];
   assign Tran = (descriptor_line[5:4] == 2'b10) ? 1'b1 : 1'b0;
   assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
   assign next_data_word = m_axi_wready & m_axi_wvalid;
-  assign w_last = axi_wlast;
-  assign m_axi_awaddr = descriptor_line [63:32];
-
-    always @ (posedge clock)
-    begin: BUFFER_BOUNDARY //see chapter 2.2.2 "SD Host Controller Simplified Specification V 3.00"
-      if (reset == 1'b0) begin
-        block_count_bound <= 0;
-        if_buf_boundary_changed <= 0;
+  assign m_axi_awid	   = 'b0;
+  assign m_axi_awaddr  = descriptor_line [63:32];
+  assign m_axi_wdata   = read_fifo_data;
+  assign m_axi_arqos   = 4'h0;
+  assign m_axi_arprot  = 3'h0;
+  assign m_axi_arcache = 4'b0011;
+  assign m_axi_arlock  = 1'b0;
+  assign m_axi_arid	   = 'b0;
+  assign m_axi_awlock  = 1'b0;
+  assign m_axi_awcache = 4'b0011;
+  assign m_axi_awprot  = 3'h0;
+  assign m_axi_awqos   = 4'h0;
+  assign m_axi_wstrb   = 4'hf;
+  assign read_resp_error  = m_axi_rready & m_axi_rvalid & m_axi_rresp[1];
+  assign write_resp_error = axi_bready & m_axi_bvalid & m_axi_bresp[1];
+  assign m_axi_bready	  = axi_bready;
+  
+  	
+  	always @(posedge clock)                                     
+    begin: WRITE_RESPONSE_B_CHANNEL                                                                 
+      if (reset == 1'b0 ) begin
+        axi_bready <= 1'b0;
       end
-      else begin
-        if (if_buf_boundary_changed != buf_boundary) begin
-          case (buf_boundary)
-          3'b000: begin
-                block_count_bound <= `A11;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b001: begin
-                block_count_bound <= `A12;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b010: begin
-                block_count_bound <= `A13;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b011: begin
-                block_count_bound <= `A14;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b100: begin
-                block_count_bound <= `A15;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b101: begin
-                block_count_bound <= `A16;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b110: begin
-                block_count_bound <= `A17;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          3'b111: begin
-                block_count_bound <= `A18;
-                if_buf_boundary_changed <= buf_boundary;
-              end
-          endcase
-        end
+      // accept/acknowledge bresp with axi_bready by the master           
+      // when m_axi_bvalid is asserted by slave                           
+      else if (m_axi_bvalid && ~axi_bready) begin
+        axi_bready <= 1'b1;
       end
+      // deassert after one clock cycle                                   
+      else if (axi_bready) begin
+        axi_bready <= 1'b0;
+      end
+      else
+        axi_bready <= axi_bready;
     end
-    
+
+
     always @(posedge clock)
     begin: WRITE_DATA_BEAT_COUNTER
       if (reset == 1'b0 || burst_tx == 1'b1) begin
@@ -205,17 +213,17 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
 	always @(posedge clock)
 	begin: WLAST_GENERATION
 	  if (reset == 1'b0 || burst_tx == 1'b1) begin
-	    axi_wlast <= 1'b0;
+	    m_axi_wlast <= 1'b0;
 	  end
 	  else if (((write_index == sdma_contr_reg[`BurstLen] -1 && sdma_contr_reg[`BurstLen] >= 2) && next_data_word) || (sdma_contr_reg[`BurstLen] == 1 )) begin
-	    axi_wlast <= 1'b1;
+	    m_axi_wlast <= 1'b1;
 	  end
 	  else if (next_data_word)
-	    axi_wlast <= 1'b0;
-	  else if (axi_wlast && sdma_contr_reg[`BurstLen] == 1)
-	    axi_wlast <= 1'b0;
+	    m_axi_wlast <= 1'b0;
+	  else if (m_axi_wlast && sdma_contr_reg[`BurstLen] == 1)
+	    m_axi_wlast <= 1'b0;
 	  else
-	    axi_wlast <= axi_wlast;
+	    m_axi_wlast <= m_axi_wlast;
 	end
 
 
@@ -226,63 +234,52 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
     begin: STATE_TRANSITION
       if (reset == 1'b0) begin
         state <= IDLE;
-        total_trans_blk <= 0;
         m_axi_awvalid <= 0;
         m_axi_wvalid <= 0;
-        blk_done_cnt_within_boundary <= 0;
         data_cycle <= 0;
         fifo_dat_rd_ready <= 0;
         fifo_dat_wr_ready_reg <= 0;
         addr_accepted <= 0;
-//        w_last <= 0;
-//        dma_interrupts <= 0;
-        axi_arvalid <= 0;
+        m_axi_arvalid <= 0;
         fifo_rst <= 0;
         descriptor_line <= 0;
       end
       else begin
         case (state)
           IDLE: begin
-                   total_trans_blk <= 0;
-                   blk_done_cnt_within_boundary <= 0;
                    data_cycle <= 0;
                    fifo_dat_rd_ready <= 0;
                    fifo_dat_wr_ready_reg <= 0;
                    data_write_disable <= 0;
                    we_counter_reset <= 1;
+                   rd_counter_reset <= 1;
                   if (sdma_contr_reg[`DatTransDir] == 2'b01) begin
-//                    write_addr <= init_dma_sys_addr;
-                    state <= READ_WAIT;
+                    state <= CARD2MEM_WAIT;
                     fifo_rst <= 1;
                   end
                   else if (sdma_contr_reg[`DatTransDir] == 2'b10) begin
-//                    axi_araddr <= init_dma_sys_addr;
-                    state <= READ_SYSRAM;
+                    state <= MEM2CARD;
                     fifo_rst <= 1;
                   end
                   else begin
                     state <= IDLE;
                     burst_tx <= 1'b1;
+                    start_write <= 1'b0;
                   end
                 end
-          READ_WAIT: begin
+          CARD2MEM_WAIT: begin
                        fifo_rst <= 0;
                        fifo_dat_rd_ready <= 1'b0;
                        if (we_counter >= (data_cycle + 16)) begin
-                         state <= READ_ACT;
+                         state <= CARD2MEM_ACT;
                        end
-                       else begin
-                         state <= READ_WAIT;
-                       end 
                        if (data_cycle >= (rd_dat_words/4)) begin
-//                         blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
-//                         total_trans_blk <= total_trans_blk + 1;
                          data_cycle <= 0;
                          we_counter_reset <= 1'b0;
-                         state <= IDLE; //READ_BLK_CNT_CHECK;
+                         state <= IDLE;
                        end
                      end
-          READ_ACT: begin
+          CARD2MEM_ACT: begin
                       we_counter_reset <= 1'b1;
                       case (addr_accepted)
                           1'b0: begin 
@@ -313,8 +310,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                   else begin
                                     m_axi_wvalid <= 1'b1;
                                   end
-                                  if (w_last & m_axi_wvalid) begin
-                                    state <= READ_WAIT;
+                                  if (m_axi_wlast & m_axi_wvalid) begin
+                                    state <= CARD2MEM_WAIT;
                                     m_axi_wvalid <= 1'b0;
                                     addr_accepted <= 1'b0;
                                     fifo_dat_rd_ready <= 1'b1;
@@ -324,81 +321,35 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                 end
                       endcase 
                     end
-          READ_BLK_CNT_CHECK: begin
-                                we_counter_reset <= 1'b1;
-                                if (blk_count_ena) begin
-                                  if (total_trans_blk < block_count) begin
-                                    if (blk_done_cnt_within_boundary == block_count_bound) begin
-//                                      dma_interrupts[1] <= 1'b1;
-                                      state <= NEW_SYS_ADDR;
-                                    end
-                                    else begin
-                                      state <= READ_WAIT;
-                                    end
-                                  end
-                                  else begin
-                                    state <= TRANSFER_COMPLETE;
-                                  end
-                                end
-                                else if (blk_done_cnt_within_boundary == block_count_bound) begin
-                                  state <= NEW_SYS_ADDR;
-                                end
-                                else begin
-                                  state <= READ_WAIT;
-                                end
-                              end
-          NEW_SYS_ADDR: begin
-                          if (sys_addr_changed & dir_dat_trans_mode) begin
-                            state <= READ_WAIT;
-                            blk_done_cnt_within_boundary <= 0;
-//                            write_addr <= init_dma_sys_addr;
-                          end
-                          else if (sys_addr_changed & !dir_dat_trans_mode) begin
-                            state <= READ_SYSRAM;
-                            blk_done_cnt_within_boundary <= 0;
-//                            write_addr <= init_dma_sys_addr;
-                          end
-                          else begin
-                            state <= NEW_SYS_ADDR;
-                          end 
-                        end                              
-          TRANSFER_COMPLETE: begin
-                              if (xfer_compl) begin
-                                state <= IDLE;
-//                                dma_interrupts[0] <= 1'b1;
-                              end
-                              else begin
-                                state <= TRANSFER_COMPLETE;
-                              end
-                            end
-          READ_SYSRAM: begin
+          MEM2CARD: begin
                           fifo_rst <= 0;
+                          start_write <= 1'b0;
+                          if (((data_cycle + 1) % 128 == 0) && data_cycle != 0) begin
+                           state <= MEM2CARD_WAIT;
+                           start_write <= 1'b1;
+                         end
                           case (addr_accepted)
                             1'b0: begin
                               if (data_cycle >= (rd_dat_words / 4)) begin
-//                                blk_done_cnt_within_boundary <= blk_done_cnt_within_boundary + 1;
-//                                total_trans_blk <= total_trans_blk + 1;
                                 data_cycle <= 0;
-//                                state <= WRITE_CNT_BLK_CHECK;
                                 state <= IDLE;
-                                start_write <= 1;
                               end
                               else begin
-                                if (axi_arvalid & axi_arready) begin
-                                  axi_arvalid <= 1'b0;
+                                if (m_axi_arvalid & m_axi_arready) begin
+                                  m_axi_arvalid <= 1'b0;
                                   addr_accepted <= 1'b1;
                                   if (~sdma_contr_reg[`AddrSel])
                                     descriptor_line [63:32] <= descriptor_line [63:32] + 64;
                                 end
                                 else begin
-                                  axi_arvalid <= 1'b1;
+                                  m_axi_arvalid <= 1'b1;
                                 end
                               end
                             end
                             1'b1: begin  //The burst read active
-                              if (axi_rvalid && ~fifo_dat_wr_ready_reg) begin
+                              if (m_axi_rvalid && ~fifo_dat_wr_ready_reg) begin
                                 fifo_dat_wr_ready_reg <= 1'b1;
-                                if (axi_rready) begin
+                                if (m_axi_rready) begin
                                   data_cycle <= data_cycle + 1;
                                 end
                               end
@@ -408,7 +359,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                                   descriptor_line <= {m_axi_rdata, descriptor_line[63:32]};
                                 end
 
-                                if (axi_rlast) begin
+                                if (m_axi_rlast) begin
                                  addr_accepted <= 1'b0;  //The burst read stopped
                                  data_cycle <= data_cycle + 1;
                                 end
@@ -416,28 +367,13 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                             end
                           endcase
                         end
-          WRITE_CNT_BLK_CHECK: begin
-                                 if (ser_next_blk) begin
-                                    start_write <= 0;
-                                 end
-                                 if ((total_trans_blk < block_count) && trans_block_compl) begin
-                                   if (blk_done_cnt_within_boundary == block_count_bound) begin
-//                                     dma_interrupts[1] <= 1'b1;
-                                     state <= NEW_SYS_ADDR;
-                                     start_write <= 0;
-                                   end
-                                   else begin
-                                     state <=  READ_SYSRAM;
-                                     start_write <= 0;
-                                   end
-                                 end
-                                 else if ((total_trans_blk == block_count)  && xfer_compl) begin
-                                   state <= IDLE;
-                                   start_write <= 0;
-//                                   dma_interrupts[0] <= 1'b1;
-                                 end
-                               end
-                               
+          MEM2CARD_WAIT: begin
+                            start_write <= 1'b0;
+                            if (ser_next_blk | xfer_compl) begin
+                                state <= MEM2CARD;
+                                fifo_rst <= 1'b1;
+                            end
+                        end
         endcase
         // abort the state when timeout on data serializer
         if (write_timeout == 2'b11) begin
@@ -447,7 +383,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       end
     end
     
-    assign axi_rready = (!init_rready2) && init_rready;
+    assign m_axi_rready = (!init_rready2) && init_rready;
 
     always @ (posedge clock)
       begin: AXI_RREADY_PULSE_GENERATOR
@@ -468,7 +404,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         end
         else begin
           if (we_pulse)
-              we_counter <= we_counter + 12'h001;
+              we_counter <= we_counter + 16'h0001;
         end
       end
 
@@ -486,22 +422,45 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
           init_we_ff2 <= init_we_ff;
         end
       end
+    
+    assign rd_pulse = (!init_rd_ff2) && init_rd_ff;
+
+    always @ (posedge clock)
+      begin: RD_PULS_GENERATOR
+        if (reset == 1'b0) begin
+          init_rd_ff <= 1'b0;
+          init_rd_ff2 <= 1'b0;
+        end
+        else begin
+          init_rd_ff <= is_rd_en;
+          init_rd_ff2 <= init_rd_ff;
+        end
+      end
+
+    always @ (posedge clock)
+      begin: NUMBER_OF_FIFO_READING_COUNTER
+        if (reset == 1'b0 || rd_counter_reset == 1'b0) begin
+          rd_counter <= 0;
+        end
+        else begin
+          if (rd_pulse)
+            rd_counter <= rd_counter + 16'h0001;
+        end
+      end
       
       /* 
       *   ADMA
       */
       
-      // READ_WAIT = dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl
-      // READ_SYSRAM = !dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl & cmd_int_rst_pulse
-      reg [1:0] start_dat_trans;
-      reg [2:0] next_state;
+      // CARD2MEM_WAIT = dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl
+      // MEM2CARD = !dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl & cmd_int_rst_pulse
+      (* mark_debug = "true" *) reg [1:0] start_dat_trans;
+      (* mark_debug = "true" *) reg [2:0] next_state;
       reg [16:0] rd_dat_words;
       reg TFC;
       reg a;
       reg trans_act;
       reg next_trans_act;
-      wire Tran;
-      wire Link;
       
     always @ (posedge clock)
       begin: adma
@@ -550,11 +509,11 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          next_state <= ST_TFR;
                        end
                        else begin
-                         if (descriptor_line[`End]) begin
+                         if (descriptor_line[`End] && !Tran && xfer_compl) begin
                            next_state <= ST_STOP;
                            dma_interrupts[0] <= 1'b1;
                          end
-                         else begin
+                         else if (~descriptor_line[`End] && !Tran) begin
                            next_state <= ST_FDS;
                            sdma_contr_reg <= 12'h01E;
                          end
@@ -565,7 +524,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                          descriptor_pointer_reg <= descriptor_pointer_reg + 32'h00000008;
                      end
             ST_TFR: begin
-                      if (TFC && (descriptor_line[`End] || blk_gap_req)) begin
+                      if (TFC && xfer_compl && (descriptor_line[`End] || blk_gap_req)) begin
                         next_state <= ST_STOP;
                         dma_interrupts[0] <= 1'b1;
                       end

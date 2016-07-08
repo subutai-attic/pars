@@ -24,8 +24,8 @@
         input wire  [31:0] response_1_reg,
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
-        input wire  [31:0] read_fifo_in,
-        output wire [31:0] write_fifo_out,     //need to removed
+//        input wire  [31:0] read_fifo_in,
+//        output wire [31:0] write_fifo_out,     //need to removed
         output wire        fifo_data_read_ready,
 //        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
@@ -121,7 +121,7 @@
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
 		output wire start_tx_o,
-		output wire [2:0] bfr_bound,
+//		output wire [2:0] bfr_bound,
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
 //		output reg sys_addr_set,
@@ -206,8 +206,8 @@
     assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
 	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
     assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
-    assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
-    assign bfr_bound           = slv_reg1[14:12];
+//    assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
+//    assign bfr_bound           = slv_reg1[14:12];
     assign sys_addr            = slv_reg0;
     assign adma_sys_addr       = slv_reg22;
     assign blk_gap_req         = slv_reg10[16];
@@ -695,7 +695,7 @@
 	        5'h05   : reg_data_out <= response_1_reg;
 	        5'h06   : reg_data_out <= response_2_reg;
 	        5'h07   : reg_data_out <= response_3_reg;
-	        5'h08   : reg_data_out <= read_fifo_in;
+	        5'h08   : reg_data_out <= 0; //read_fifo_in;
 	        5'h09   : reg_data_out <= slv_reg9;
 	        5'h0A   : reg_data_out <= slv_reg10;
 	        5'h0B   : reg_data_out <= slv_reg11;
