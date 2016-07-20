@@ -35,29 +35,29 @@ module  sd_emmc_controller_dma (
 //            input wire blk_count_ena,
 //            input wire [11:0] blk_size,
             output reg [1:0] dma_interrupts,
-            input wire dat_int_rst,
+            (* mark_debug = "true" *) input wire dat_int_rst,
             input wire cmd_int_rst_pulse,
             input wire data_present,
             input wire [31:0] descriptor_pointer_i,
             input wire blk_gap_req,
 
             // Data serial
-            (* mark_debug = "true" *)input wire xfer_compl,
+            input wire xfer_compl,
             input wire is_we_en,
             input wire is_rd_en, 
-            (* mark_debug = "true" *)output reg start_write,
+            output reg start_write,
 //            input wire trans_block_compl,
             input wire ser_next_blk,
             input wire [1:0] write_timeout,
             
             // Command master
-            input wire cmd_compl_puls,
+            (* mark_debug = "true" *) input wire cmd_compl_puls,
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
             output wire fifo_dat_wr_ready_o,
             input wire [31:0] read_fifo_data,
-            (* mark_debug = "true" *)output reg fifo_rst,
+            output reg fifo_rst,
 
             // M_AXI
             output reg m_axi_wvalid,
@@ -477,7 +477,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         else begin
           case (adma_state)
             ST_STOP: begin
-                       if (dma_ena_trans_mode & cmd_compl_puls & data_present) begin
+                       if (dma_ena_trans_mode & cmd_compl_puls & data_present /*& dat_int_rst*/) begin
                          next_state <= ST_FDS;
                          sdma_contr_reg <= 12'h01E; //Read from SysRam, read to descriptor line, read from adma_descriptor_pointer addres, read two beats in burst, start read. 
                          rd_dat_words <= 17'h00008;

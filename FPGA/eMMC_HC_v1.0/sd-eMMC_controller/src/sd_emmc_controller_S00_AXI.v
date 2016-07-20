@@ -38,7 +38,7 @@
         output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
-        output wire fifo_reset,
+//        output wire fifo_reset,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -103,8 +103,8 @@
     		// accept the read data and response information.
 		input wire  S_AXI_RREADY,
 		//Software reset completion
-		input wire rst_compl_cmd,
-		input wire rst_compl_dat,
+//		input wire rst_compl_cmd,
+//		input wire rst_compl_dat,
 		output wire [28:0] int_stat_reg,
 		output wire [28:0] int_stat_en_reg,
 		output wire [28:0] int_sig_en_reg,
@@ -120,7 +120,7 @@
 		input wire com_inh_cmd,
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
-		output wire start_tx_o,
+//		output wire start_tx_o,
 //		output wire [2:0] bfr_bound,
 		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
@@ -204,8 +204,8 @@
     assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
     assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
     assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
-	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
-    assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
+//	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
+//    assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
 //    assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
 //    assign bfr_bound           = slv_reg1[14:12];
     assign sys_addr            = slv_reg0;
