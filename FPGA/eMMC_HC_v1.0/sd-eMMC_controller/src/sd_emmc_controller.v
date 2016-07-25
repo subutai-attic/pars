@@ -167,8 +167,6 @@
     wire soft_rst_dat_axi_clk;
     wire soft_rst_cmd_sd_clk;
     wire soft_rst_dat_sd_clk;
-    wire cmd_serial_h_rst_h;
-    wire data_master_rst_ack;
     wire next_block_st;
     wire next_block_st_axi;
     wire fifo_reset;
@@ -311,8 +309,6 @@
             .S_AXI_RRESP(s00_axi_rresp),
             .S_AXI_RVALID(s00_axi_rvalid),
             .S_AXI_RREADY(s00_axi_rready),
-//            .read_fifo_in(read_fifo_out),
-//            .write_fifo_out(write_fifo_out),
 //            .fifo_data_read_ready(fifo_data_read_ready),
 //            .fifo_data_write_ready(fifo_data_write_ready),
             .clock_divisor(divisor),
@@ -330,12 +326,9 @@
             .response_2_reg(response_2_reg_wb_clk),
             .response_3_reg(response_3_reg_wb_clk),
             .software_reset_reg(software_reset_reg_axi_clk),  
-//            .fifo_reset(fifo_reset),          
             .timeout_reg(cmd_timeout_reg_wb_clk),
             .cmd_int_st(cmd_int_status_reg_wb_clk),
             .dat_int_st(data_int_status_reg_wb_clk),
-            .rst_compl_cmd(cmd_serial_h_rst_h),
-            .rst_compl_dat(data_master_rst_ack),
             .int_stat_reg(int_status_reg),
             .int_stat_en_reg(int_status_en_reg),
             .int_sig_en_reg(int_signal_en_reg),
@@ -351,11 +344,7 @@
             .com_inh_cmd(command_inhibit_cmd_axi_clk),
             .data_transfer_direction(dat_trans_dir_axi_clk),
             .start_tx_fifo_i(start_tx_fifo),
-//            .start_tx_o(start_tx),
-//            .bfr_bound(buff_bound),
-//            .sys_addr(system_addr),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
-//            .sys_addr_set(sys_addr_set),
             .dma_int(dma_int),
             .adma_sys_addr(system_addr),
             .blk_gap_req(stop_blk_gap_req)
@@ -410,7 +399,6 @@
         .cmd_dat_i  (sd_cmd_i),
         .cmd_out_o  (sd_cmd_o),
         .cmd_oe_o   (sd_cmd_t),
-        .rst_ack_cmd_serial_h (cmd_serial_h_rst_h),
         .command_inhibit_cmd (command_inhibit_cmd_sd_clk)
         );
 
@@ -432,7 +420,6 @@
         .crc_ok_i         (data_crc_ok),
         .int_status_o     (data_int_status_reg_sd_clk),
         .int_status_rst_i (data_int_rst_sd_clk),
-        .rst_ack_dat_master (data_master_rst_ack),
         .start_write(start_write_sd_clk)
         );
 
@@ -504,7 +491,7 @@
     edge_detect cmd_start_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_start), .rise(cmd_start_wb_clk), .fall());
     edge_detect dat_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(data_int_rst), .rise(data_int_rst_wb_clk), .fall());
     edge_detect cmd_int_rst_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_rst), .rise(cmd_int_rst_wb_clk), .fall());
-    edge_detect cmd_cmplt_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_status_reg_wb_clk[0]), .rise(cmd_cmplt_axi_puls), .fall());
+    edge_detect cmd_cmplt_edge(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(cmd_int_status_reg_wb_clk[0]), .rise(), .fall(cmd_cmplt_axi_puls));
     edge_detect start_write(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(start_tx), .rise(start_tx_pulse), .fall());
         
     monostable_domain_cross soft_reset_cross_cmd(!s00_axi_aresetn, s00_axi_aclk, soft_rst_cmd_axi_clk, SD_CLK, soft_rst_cmd_sd_clk);

@@ -60,7 +60,6 @@ module sd_mmc_cmd_serial_host (
            cmd_dat_i,
            cmd_out_o,
            cmd_oe_o,
-           rst_ack_cmd_serial_h,
            command_inhibit_cmd
        );
 
@@ -78,7 +77,6 @@ output reg crc_ok_o;                        // The CRC flag
 output reg index_ok_o;                      // The index check flag
 output reg cmd_oe_o;                        // The command send enable
 output reg cmd_out_o;                       // The command sending pot for the SD card
-output reg rst_ack_cmd_serial_h;
 output command_inhibit_cmd;
 //-------------Internal Constant-------------
 parameter INIT_DELAY = 4;
@@ -239,12 +237,6 @@ begin: FSM_OUT
         case(state)
             INIT: begin
                 counter <= counter+1;
-                if (counter == (INIT_DELAY -1)) begin
-                  rst_ack_cmd_serial_h <= 1'b1;
-                end
-                else begin
-                  rst_ack_cmd_serial_h <= 1'b0;
-                end
                 cmd_oe_o <= 0;
                 cmd_out_o <= 1;
             end

@@ -70,7 +70,6 @@ module sd_data_master (
            //status output
            output reg [`INT_DATA_SIZE-1:0] int_status_o,
            input int_status_rst_i,
-           output reg rst_ack_dat_master,
            input start_write
        );
 
@@ -147,7 +146,6 @@ begin
         int_status_o <= 0;
         timeout_reg <= 0;
         watchdog <= 0;
-        rst_ack_dat_master <= 1;
     end
     else begin
         case(state)
@@ -160,7 +158,6 @@ begin
                 tx_cycle <= 0;
                 timeout_reg <= timeout_i;
                 watchdog <= 0;
-                rst_ack_dat_master <= 0;
             end
             START_RX_FIFO: begin
                 start_rx_fifo_o <= 1;

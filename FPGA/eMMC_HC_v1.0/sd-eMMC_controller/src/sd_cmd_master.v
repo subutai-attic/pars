@@ -80,7 +80,7 @@ reg index_check;
 reg busy_check;
 reg expect_response;
 reg long_response;
-reg [`INT_CMD_SIZE-1:0] int_status_reg;
+(* mark_debug = "true" *) reg [`INT_CMD_SIZE-1:0] int_status_reg;
 //reg card_present;
 //reg [3:0]debounce;
 reg [`CMD_TIMEOUT_W-1:0] watchdog;
