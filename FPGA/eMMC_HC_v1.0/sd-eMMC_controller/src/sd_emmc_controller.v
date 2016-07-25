@@ -202,11 +202,9 @@
     wire start_write_sd_clk;
 
     // dma
-//    wire [2:0] buff_bound;
     wire [31:0] system_addr;
     wire [1:0] dma_and_blkcnt_en;
     wire [1:0] dma_int;
-//    wire trans_blk_compl;
     wire cmd_cmplt_axi_puls;
     wire stop_blk_gap_req;
     
@@ -220,7 +218,6 @@
             .reset(M_AXI_ARESETN),
             .is_we_en(we_fifo),
             .is_rd_en(rd_fifo),
-//            .buf_boundary(buff_bound),
 //            .init_dma_sys_addr(system_addr),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
 //            .blk_count_ena (dma_and_blkcnt_en [1]),
@@ -273,7 +270,6 @@
             .fifo_rst(fifo_reset),
             .cmd_int_rst_pulse(cmd_int_rst_wb_clk),
             .start_write(start_tx),
-//            .trans_block_compl(trans_blk_compl),
             .ser_next_blk(next_block_st_axi),
             .write_timeout({d_read, d_write}),
 //            .burst_tx(burst_tx),
@@ -309,7 +305,6 @@
             .S_AXI_RRESP(s00_axi_rresp),
             .S_AXI_RVALID(s00_axi_rvalid),
             .S_AXI_RREADY(s00_axi_rready),
-//            .fifo_data_read_ready(fifo_data_read_ready),
 //            .fifo_data_write_ready(fifo_data_write_ready),
             .clock_divisor(divisor),
 //            .internal_clock_en(int_clk_en),

@@ -13,10 +13,7 @@
 		parameter integer C_S_AXI_ADDR_WIDTH	= 32
 	)
 	(
-		// Users to add ports here
-//        output wire SD_CLK_O,
         output wire [7:0] clock_divisor,
-//        output wire internal_clock_en,
         input wire Internal_clk_stable,
         output wire [`CMD_REG_SIZE-1:0] command_reg,
         output wire [31:0] argument_reg,
@@ -24,8 +21,6 @@
         input wire  [31:0] response_1_reg,
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
-        output wire        fifo_data_read_ready,
-        output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
         input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
         input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
@@ -35,8 +30,6 @@
         output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
-		// User ports ends
-		// Do not modify the ports beyond this line
 
 		// Global Clock Signal
 		input wire  S_AXI_ACLK,
@@ -98,9 +91,6 @@
 		// Read ready. This signal indicates that the master can
     		// accept the read data and response information.
 		input wire  S_AXI_RREADY,
-		//Software reset completion
-//		input wire rst_compl_cmd,
-//		input wire rst_compl_dat,
 		output wire [28:0] int_stat_reg,
 		output wire [28:0] int_stat_en_reg,
 		output wire [28:0] int_sig_en_reg,
@@ -140,10 +130,7 @@
 	// ADDR_LSB = 3 for 64 bits (n downto 3)
 	localparam integer ADDR_LSB = (C_S_AXI_DATA_WIDTH/32) + 1;
 	localparam integer OPT_MEM_ADDR_BITS = 4;
-	//----------------------------------------------
-	//-- Signals for user logic register space example
-	//------------------------------------------------
-	//-- Number of Slave Registers 20
+
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg0;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg1;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg2;
@@ -183,7 +170,6 @@
 	assign software_reset_reg  = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
 	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
-//	assign internal_clock_en   = slv_reg11[0];                             // Enable internal clock  
 	assign command_reg         = slv_reg3 [29:16];                         // CMD_INDEX
 	assign argument_reg        = slv_reg2;                                 // CMD_Argument 
 	assign timeout_reg         = slv_reg5 [15:0];                          // Time_out regester
@@ -285,13 +271,6 @@
 	    end 
 	end       
 
-	// Implement memory mapped register select and write logic generation
-	// The write data is accepted and written to memory mapped registers when
-	// axi_awready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted. Write strobes are used to
-	// select byte enables of slave registers while writing.
-	// These registers are cleared when reset (active low) is applied.
-	// Slave register write enable is asserted when valid address and data are available
-	// and the slave is ready to accept the write address and write data.
 	assign slv_reg_wren = axi_wready && S_AXI_WVALID && axi_awready && S_AXI_AWVALID;
 	assign buff_read_en_int = ((dat_int_st[5] && buff_read_en) | (dat_int_st[0] && buff_read_en));
 	assign buff_write_en_int = ((dat_int_st[5] && start_tx_fifo_i) | (dat_int_st[0] && !buff_read_en && start_tx_fifo_i) | (!buff_read_en && start_tx_fifo_i && cmd_int_st[0])); // have to be changed for the SD fifo status
@@ -529,20 +508,11 @@
 	        
 	      end
 	      
-	      // Software_Reset completion controll
-//          if (rst_compl_cmd) begin 
-//             slv_reg11[25:24] <= 2'b00;
-//          end 
-//          if (rst_compl_dat) begin  
-//             slv_reg11[26] <= 1'b0;
-//          end
           // Error and Normal Interrupt registers 0x30
           slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], 2'b00, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;
-//          slv_reg3 [22:21] <= 2'b0;
-//          slv_reg1 [14:12] <= 2'b0;
           slv_reg9 [24] <= 1'b1;
           slv_reg9 [23:20] <= {4{~dat_line_act}};
           slv_reg9 [19:16] <= 4'b1111;
@@ -553,15 +523,6 @@
           slv_reg9 [2] <= dat_line_act;
           slv_reg9 [1] <= (command_inh_dat | read_trans_active);
           slv_reg9 [0] <= slv_reg9 [0] && !com_inh_cmd;
-          fifo_data_write_ready <= (slv_reg_wren && ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 5'h08 ))? 1'b1: 1'b0;
-          if (fifo_data_read_ready) begin
-                blk_size_cnt <=blk_size_cnt + 3'h4; 
-                if (blk_size_cnt == (slv_reg1[11:0]-3'h4))
-                    blk_count_cnt <= blk_count_cnt + 1'b1; 
-                end
-          if (fifo_data_write_ready) begin
-              blk_size_cn <=blk_size_cn + 3'h4; 
-              end
           if (buff_write_en_int)
               blk_size_cn <= 0;
 	  end
@@ -686,7 +647,7 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012C32B2; //slv_reg16; Capabilities register // 32'h416432B2; 8 bit support, 4 bit 016032B2
+	        5'h10   : reg_data_out <= 32'h012C32B2; //slv_reg16; Capabilities register
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
@@ -696,8 +657,6 @@
 	      endcase
 	end
 	
-    assign fifo_data_read_ready = slv_reg_rden && ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 5'h08 );// Releases fifo after every read 
-//    assign fifo_data_write_ready = slv_reg_wren && ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == 5'h08 ); //prepare fifo for new data
 	// Output register or memory read data
 	always @( posedge S_AXI_ACLK )
 	begin
