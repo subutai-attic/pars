@@ -24,10 +24,7 @@
         input wire  [31:0] response_1_reg,
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
-//        input wire  [31:0] read_fifo_in,
-//        output wire [31:0] write_fifo_out,     //need to removed
         output wire        fifo_data_read_ready,
-//        output wire        fifo_data_write_ready,
         output reg        fifo_data_write_ready,
         output wire [1:0] software_reset_reg,
         input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
@@ -38,7 +35,6 @@
         output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
-//        output wire fifo_reset,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -120,11 +116,7 @@
 		input wire com_inh_cmd,
 		output wire data_transfer_direction,
 		input wire start_tx_fifo_i,
-//		output wire start_tx_o,
-//		output wire [2:0] bfr_bound,
-		output wire [31:0] sys_addr,
 		output wire [1:0] dma_en_and_blk_c_en,
-//		output reg sys_addr_set,
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
 		output wire blk_gap_req
@@ -204,11 +196,6 @@
     assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
     assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
     assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
-//	assign fifo_reset          = ((blk_count_cnt == slv_reg1 [31:16]) || (buff_write_en_int))? 1'b1: 1'b0;
-//    assign start_tx_o          = (blk_size_cn == slv_reg1[11:0])? 1'b1: 1'b0;
-//    assign write_fifo_out      = {slv_reg8[7:0], slv_reg8[15:8], slv_reg8[23:16], slv_reg8[31:24]};
-//    assign bfr_bound           = slv_reg1[14:12];
-    assign sys_addr            = slv_reg0;
     assign adma_sys_addr       = slv_reg22;
     assign blk_gap_req         = slv_reg10[16];
 	
@@ -346,7 +333,6 @@
 	    cmd_int_rst <= 1'b0;
 	    dat_int_rst <= 1'b0;
 	    slv_reg11[26:24] <= 3'b000;
-//	    sys_addr_set <= 1'b0;
 	    if (dat_int_st || cmd_int_st) begin
 	       slv_reg12_1 <= slv_reg12_1;
 	    end
@@ -363,7 +349,6 @@
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-//	              sys_addr_set <= 1'b1;
 	            end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
@@ -510,15 +495,13 @@
 	                // Slave register 19
 	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	          5'h16: begin
+	          5'h16:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                   if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
                     // Slave register 19
                     slv_reg22[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
                   end
-//                  sys_addr_set <= 1'b1;
-                end
   	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      slv_reg1 <= slv_reg1;
@@ -695,7 +678,7 @@
 	        5'h05   : reg_data_out <= response_1_reg;
 	        5'h06   : reg_data_out <= response_2_reg;
 	        5'h07   : reg_data_out <= response_3_reg;
-	        5'h08   : reg_data_out <= 0; //read_fifo_in;
+	        5'h08   : reg_data_out <= 0;
 	        5'h09   : reg_data_out <= slv_reg9;
 	        5'h0A   : reg_data_out <= slv_reg10;
 	        5'h0B   : reg_data_out <= slv_reg11;
