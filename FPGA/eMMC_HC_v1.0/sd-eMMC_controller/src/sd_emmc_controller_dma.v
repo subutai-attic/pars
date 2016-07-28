@@ -30,7 +30,7 @@ module  sd_emmc_controller_dma (
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
             output reg [1:0] dma_interrupts,
-            (* mark_debug = "true" *) input wire dat_int_rst,
+            input wire dat_int_rst,
             input wire cmd_int_rst_pulse,
             input wire data_present,
             input wire [31:0] descriptor_pointer_i,
@@ -45,11 +45,11 @@ module  sd_emmc_controller_dma (
             input wire [1:0] write_timeout,
             
             // Command master
-            (* mark_debug = "true" *) input wire cmd_compl_puls,
+            input wire cmd_compl_puls,
             
             // FIFO Filler
             output reg fifo_dat_rd_ready,
-            (* mark_debug = "true" *) output wire fifo_dat_wr_ready_o,
+            output wire fifo_dat_wr_ready_o,
             input wire [31:0] read_fifo_data,
             output reg fifo_rst,
 
@@ -93,9 +93,9 @@ module  sd_emmc_controller_dma (
             input wire [1:0] m_axi_rresp
         );
 
-(* mark_debug = "true" *) reg [3:0] state;
-(* mark_debug = "true" *) reg [16:0] data_cycle;
-(* mark_debug = "true" *) reg [16:0] we_counter;
+reg [3:0] state;
+reg [16:0] data_cycle;
+reg [16:0] we_counter;
 reg [16:0] rd_counter;
 reg init_we_ff;
 reg init_we_ff2;
@@ -104,13 +104,13 @@ reg init_rd_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
-(* mark_debug = "true" *) reg addr_accepted;
-(* mark_debug = "true" *) reg we_counter_reset;
+reg addr_accepted;
+reg we_counter_reset;
 reg rd_counter_reset;
 wire we_pulse;
 wire rd_pulse;
 reg data_write_disable;
-(* mark_debug = "true" *) reg [2:0] adma_state;
+reg [2:0] adma_state;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;
@@ -437,11 +437,8 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       /* 
       *   ADMA
       */
-      
-      // CARD2MEM_WAIT = dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl
-      // MEM2CARD = !dir_dat_trans_mode & dma_ena_trans_mode & !xfer_compl & cmd_int_rst_pulse
-      (* mark_debug = "true" *) reg [1:0] start_dat_trans;
-      (* mark_debug = "true" *) reg [2:0] next_state;
+      reg [1:0] start_dat_trans;
+      reg [2:0] next_state;
       reg [16:0] rd_dat_words;
       reg TFC;
       reg a;

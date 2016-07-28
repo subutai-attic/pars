@@ -2,11 +2,6 @@
 `include "sd_defines.h"
 	module sd_emmc_controller_S00_AXI #
 	(
-		// Users to add parameters here
-
-		// User parameters ends
-		// Do not modify the parameters beyond this line
-
 		// Width of S_AXI data bus
 		parameter integer C_S_AXI_DATA_WIDTH	= 32,
 		// Width of S_AXI address bus
@@ -22,11 +17,11 @@
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
         output wire [1:0] software_reset_reg,
-        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
         input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
-        output reg cmd_start,
-        output reg cmd_int_rst,
+        (* mark_debug = "true" *) output wire cmd_start,
+        (* mark_debug = "true" *) output wire cmd_int_rst,
         output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
@@ -109,7 +104,8 @@
 		output wire [1:0] dma_en_and_blk_c_en,
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
-		output wire blk_gap_req
+		output wire blk_gap_req,
+		(* mark_debug = "true" *) input wire cc_int_puls
 	);
     
 	// AXI4LITE signals
@@ -165,13 +161,16 @@
     reg [15:0] blk_count_cnt = 0;
 	wire     buff_read_en_int;
 	wire     buff_write_en_int;
+	(* mark_debug = "true" *) wire cmd_compl_int;
+	reg  cmd_int_rst_reg;
+	reg  cmd_start_reg;
      
     //SD-eMMC host controller registers
 	assign software_reset_reg  = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
 	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
-	assign command_reg         = slv_reg3 [29:16];                         // CMD_INDEX
-	assign argument_reg        = slv_reg2;                                 // CMD_Argument 
+	assign command_reg         = cmd_sel ? 14'h171a : slv_reg3 [29:16];    // CMD_INDEX choose.
+	assign argument_reg        = arg_sel ? slv_reg0 : slv_reg2;            // CMD_Argument choose. Either Arg1 or Arg2  
 	assign timeout_reg         = slv_reg5 [15:0];                          // Time_out regester
 	assign block_size_reg      = slv_reg1 [11:0];                          // Block size register
 	assign block_count_reg     = slv_reg1 [31:16];                         // Block count register
@@ -184,6 +183,9 @@
     assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
     assign adma_sys_addr       = slv_reg22;
     assign blk_gap_req         = slv_reg10[16];
+    assign cmd_compl_int       = cc_int_sel ? 1'b0 : cmd_int_st[`INT_CMD_CC];
+    assign cmd_int_rst         = cmd_int_rst_after_cmd23 | cmd_int_rst_reg;
+    assign cmd_start           = cmd_start_after_cmdwodata_reg | cmd_start_reg;
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -300,16 +302,16 @@
 	      slv_reg17 <= 0;
 	      slv_reg18 <= 0;
 	      slv_reg19 <= 0;
-	      cmd_start <= 0;
-	      cmd_int_rst <= 0;
+	      cmd_start_reg <= 0;
+	      cmd_int_rst_reg <= 0;
 	      dat_int_rst <= 0;
 	      blk_size_cnt <= 0;
 	      blk_size_cn  <= 0;
           blk_count_cnt <= 0;
 	    end
 	  else begin
-	    cmd_start <= 1'b0;
-	    cmd_int_rst <= 1'b0;
+	    cmd_start_reg <= 1'b0;
+	    cmd_int_rst_reg <= 1'b0;
 	    dat_int_rst <= 1'b0;
 	    slv_reg11[26:24] <= 3'b000;
 	    if (dat_int_st || cmd_int_st) begin
@@ -354,7 +356,7 @@
 	              end  
 	              end
 	              if (S_AXI_WSTRB == 4'hC )
-	                cmd_start <= 1'b1;
+	                cmd_start_reg <= 1'b1;
 	                slv_reg9 [0] <= 1'b1;  // Present state register command inhibit busy
 	              end
 	          5'h04:
@@ -421,7 +423,7 @@
 	                slv_reg12_1[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
 	            end
-	              cmd_int_rst <= 1'b1;
+	              cmd_int_rst_reg <= 1'b1;
 	              dat_int_rst <= 1'b1;
 	              blk_size_cnt <= 0;
 	            end
@@ -509,7 +511,7 @@
 	      end
 	      
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], 2'b00, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], autocmderror, 1'b0, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_compl_int});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg3 [3:2] <= 2'b0;
@@ -675,5 +677,72 @@
 	        end   
 	    end
 	end    
+	
+	(* mark_debug = "true" *) reg [1:0] acmd23state;
+	reg cmd_int_rst_after_cmd23;
+	reg arg_sel;
+	reg cmd_sel;
+	reg cc_int_sel;
+	reg autocmderror;
+	reg cmd_start_after_cmdwodata_reg;
+	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 enable wait state
+	                ACMDC = 2'b01, // AutoCMD23 completion wait state
+	                ACMDS = 2'b10; // Associated CMDx send state
+	
+	always@(posedge S_AXI_ACLK)
+	begin: AUTOCMD23
+	  if (S_AXI_ARESETN == 1'b0) begin
+	    acmd23state <= 0;
+	    arg_sel <= 0;
+	    cmd_sel <= 0;
+	    cmd_int_rst_after_cmd23 <= 0;
+	    cc_int_sel <= 0;
+	    autocmderror <= 0;
+	    cmd_start_after_cmdwodata_reg <= 0;
+	  end
+	  else begin
+	    case (acmd23state)
+	      ACMDE: begin
+	               cmd_start_after_cmdwodata_reg <= 1'b0;
+	               if (slv_reg3[3:2] == 2'b10) begin
+	                 arg_sel <= 1'b1;
+	                 cmd_sel <= 1'b1;
+	                 cc_int_sel <= 1'b1;
+	                 if (cmd_start_reg)
+	                   acmd23state <= ACMDC;
+	               end
+	               else begin
+	                 arg_sel <= 1'b0;
+                     cmd_sel <= 1'b0;
+                     cc_int_sel <= 1'b0;
+	               end
+	            end
+	      ACMDC: begin
+	               if (|cmd_int_st) begin
+	                 cmd_int_rst_after_cmd23 <= 1'b1;
+	                 if (slv_reg4 == 32'h00000900) begin
+	                   acmd23state <= ACMDS;
+	                 end
+	                 else begin
+	                   acmd23state <= ACMDE;
+	                   autocmderror <= 1'b1;
+	                 end
+	               end
+	            end
+	      ACMDS: begin
+	               cmd_int_rst_after_cmd23 <= 1'b0;
+                   arg_sel <= 1'b0;
+                   cmd_sel <= 1'b0;
+                   cc_int_sel <= 1'b0;
+                   if (cc_int_puls) begin
+                     cmd_start_after_cmdwodata_reg <= 1'b1;
+                     acmd23state <= ACMDE;
+                   end
+	             end 
+	    endcase
+	  end
+	  if (cmd_int_rst_reg)
+	    autocmderror <= 0;
+	end
 
 	endmodule

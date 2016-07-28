@@ -76,7 +76,7 @@ output reg finish_o;                        // The flag of finished to send the 
 output reg crc_ok_o;                        // The CRC flag 
 output reg index_ok_o;                      // The index check flag
 output reg cmd_oe_o;                        // The command send enable
-output reg cmd_out_o;                       // The command sending pot for the SD card
+(* mark_debug = "true" *) output reg cmd_out_o;                       // The command sending pot for the SD card
 output command_inhibit_cmd;
 //-------------Internal Constant-------------
 parameter INIT_DELAY = 4;
