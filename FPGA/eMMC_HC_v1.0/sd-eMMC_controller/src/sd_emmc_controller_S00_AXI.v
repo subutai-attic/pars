@@ -184,8 +184,8 @@
     assign adma_sys_addr       = slv_reg22;
     assign blk_gap_req         = slv_reg10[16];
     assign cmd_compl_int       = cc_int_sel ? 1'b0 : cmd_int_st[`INT_CMD_CC];
-    assign cmd_int_rst         = cmd_int_rst_after_cmd23 | cmd_int_rst_reg;
-    assign cmd_start           = cmd_start_after_cmdwodata_reg | cmd_start_reg;
+    assign cmd_int_rst         = acmd23_int_rst | cmd_int_rst_reg;
+    assign cmd_start           = start_cmd_reg1 | cmd_start_reg;
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -323,14 +323,13 @@
 	    if (slv_reg_wren)
 	      begin
 	        case ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	          5'h00: begin
+	          5'h00:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	            end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -514,7 +513,6 @@
           slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], autocmderror, 1'b0, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_compl_int});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
-          slv_reg3 [3:2] <= 2'b0;
           slv_reg9 [24] <= 1'b1;
           slv_reg9 [23:20] <= {4{~dat_line_act}};
           slv_reg9 [19:16] <= 4'b1111;
@@ -633,7 +631,7 @@
 	begin
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	        5'h00   : reg_data_out <= 0;
+	        5'h00   : reg_data_out <= slv_reg0;
 	        5'h01   : reg_data_out <= slv_reg1;
 	        5'h02   : reg_data_out <= slv_reg2;
 	        5'h03   : reg_data_out <= slv_reg3;
@@ -653,7 +651,7 @@
 	        5'h11   : reg_data_out <= slv_reg17;
 	        5'h12   : reg_data_out <= slv_reg18;
 	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00010000;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
 	        
 	        default : reg_data_out <= 0;
 	      endcase
@@ -679,15 +677,16 @@
 	end    
 	
 	(* mark_debug = "true" *) reg [1:0] acmd23state;
-	reg cmd_int_rst_after_cmd23;
-	reg arg_sel;
-	reg cmd_sel;
-	reg cc_int_sel;
+	reg acmd23_int_rst;
+	(* mark_debug = "true" *) reg arg_sel;
+	(* mark_debug = "true" *) reg cmd_sel;
+	(* mark_debug = "true" *) reg cc_int_sel;
 	reg autocmderror;
-	reg cmd_start_after_cmdwodata_reg;
-	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 enable wait state
-	                ACMDC = 2'b01, // AutoCMD23 completion wait state
-	                ACMDS = 2'b10; // Associated CMDx send state
+	reg start_cmd_reg1;
+	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 Enable wait state
+	                ACMDC = 2'b01, // AutoCMD23 Completion wait state
+	                ACMDS = 2'b10, // Associated CMDx Send state
+	                ACMDI = 2'b11; // Associated CMDx Interrupt waiting
 	
 	always@(posedge S_AXI_ACLK)
 	begin: AUTOCMD23
@@ -695,15 +694,16 @@
 	    acmd23state <= 0;
 	    arg_sel <= 0;
 	    cmd_sel <= 0;
-	    cmd_int_rst_after_cmd23 <= 0;
 	    cc_int_sel <= 0;
 	    autocmderror <= 0;
-	    cmd_start_after_cmdwodata_reg <= 0;
+        start_cmd_reg1 <= 0;
+        acmd23_int_rst <= 0;
 	  end
 	  else begin
 	    case (acmd23state)
 	      ACMDE: begin
-	               cmd_start_after_cmdwodata_reg <= 1'b0;
+	               start_cmd_reg1 <= 1'b0;
+	               acmd23_int_rst <= 1'b0;
 	               if (slv_reg3[3:2] == 2'b10) begin
 	                 arg_sel <= 1'b1;
 	                 cmd_sel <= 1'b1;
@@ -719,8 +719,12 @@
 	            end
 	      ACMDC: begin
 	               if (|cmd_int_st) begin
-	                 cmd_int_rst_after_cmd23 <= 1'b1;
-	                 if (slv_reg4 == 32'h00000900) begin
+	                 if (response_0_reg[15:0] == 16'h0900) begin
+                       arg_sel <= 1'b0;
+                       cmd_sel <= 1'b0;
+                       cc_int_sel <= 1'b0;
+	                   acmd23_int_rst <= 1'b1;
+	                   start_cmd_reg1 <= 1'b1;
 	                   acmd23state <= ACMDS;
 	                 end
 	                 else begin
@@ -730,15 +734,17 @@
 	               end
 	            end
 	      ACMDS: begin
-	               cmd_int_rst_after_cmd23 <= 1'b0;
-                   arg_sel <= 1'b0;
-                   cmd_sel <= 1'b0;
-                   cc_int_sel <= 1'b0;
+	               start_cmd_reg1 <= 1'b0;
+	               acmd23_int_rst <= 1'b0;
                    if (cc_int_puls) begin
-                     cmd_start_after_cmdwodata_reg <= 1'b1;
+                     acmd23state <= ACMDI;
+                   end
+	             end
+	      ACMDI: begin
+	               if (|cmd_int_st) begin
                      acmd23state <= ACMDE;
                    end
-	             end 
+	             end
 	    endcase
 	  end
 	  if (cmd_int_rst_reg)
