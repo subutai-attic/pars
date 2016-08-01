@@ -17,11 +17,11 @@
         input wire  [31:0] response_2_reg,
         input wire  [31:0] response_3_reg,
         output wire [1:0] software_reset_reg,
-        (* mark_debug = "true" *) input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
+        input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
         input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire [23:0] timeout_reg,
-        (* mark_debug = "true" *) output wire cmd_start,
-        (* mark_debug = "true" *) output wire cmd_int_rst,
+        output wire cmd_start,
+        output wire cmd_int_rst,
         output reg dat_int_rst,
         output wire [`BLKSIZE_W-1:0] block_size_reg,
         output wire [`BLKCNT_W-1:0] block_count_reg,
@@ -105,7 +105,7 @@
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
 		output wire blk_gap_req,
-		(* mark_debug = "true" *) input wire cc_int_puls
+		input wire cc_int_puls
 	);
     
 	// AXI4LITE signals
@@ -161,7 +161,7 @@
     reg [15:0] blk_count_cnt = 0;
 	wire     buff_read_en_int;
 	wire     buff_write_en_int;
-	(* mark_debug = "true" *) wire cmd_compl_int;
+	wire cmd_compl_int;
 	reg  cmd_int_rst_reg;
 	reg  cmd_start_reg;
      
@@ -676,11 +676,11 @@
 	    end
 	end    
 	
-	(* mark_debug = "true" *) reg [1:0] acmd23state;
+	reg [1:0] acmd23state;
 	reg acmd23_int_rst;
-	(* mark_debug = "true" *) reg arg_sel;
-	(* mark_debug = "true" *) reg cmd_sel;
-	(* mark_debug = "true" *) reg cc_int_sel;
+	reg arg_sel;
+	reg cmd_sel;
+	reg cc_int_sel;
 	reg autocmderror;
 	reg start_cmd_reg1;
 	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 Enable wait state
