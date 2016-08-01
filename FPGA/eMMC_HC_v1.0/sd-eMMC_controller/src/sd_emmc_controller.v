@@ -342,7 +342,8 @@
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
             .dma_int(dma_int),
             .adma_sys_addr(system_addr),
-            .blk_gap_req(stop_blk_gap_req)
+            .blk_gap_req(stop_blk_gap_req),
+            .cc_int_puls(cmd_cmplt_axi_puls)
         );
 
     // Clock divider
