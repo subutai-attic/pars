@@ -685,8 +685,7 @@
 	reg start_cmd_reg1;
 	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 Enable wait state
 	                ACMDC = 2'b01, // AutoCMD23 Completion wait state
-	                ACMDS = 2'b10, // Associated CMDx Send state
-	                ACMDI = 2'b11; // Associated CMDx Interrupt waiting
+	                ACMDS = 2'b10; // Associated CMDx Send state
 	
 	always@(posedge S_AXI_ACLK)
 	begin: AUTOCMD23
@@ -719,11 +718,13 @@
 	            end
 	      ACMDC: begin
 	               if (|cmd_int_st) begin
+	                 acmd23_int_rst <= 1'b1;
+	               end
+	               else if (cc_int_puls) begin
 	                 if (response_0_reg[15:0] == 16'h0900) begin
                        arg_sel <= 1'b0;
                        cmd_sel <= 1'b0;
                        cc_int_sel <= 1'b0;
-	                   acmd23_int_rst <= 1'b1;
 	                   start_cmd_reg1 <= 1'b1;
 	                   acmd23state <= ACMDS;
 	                 end
@@ -736,19 +737,12 @@
 	      ACMDS: begin
 	               start_cmd_reg1 <= 1'b0;
 	               acmd23_int_rst <= 1'b0;
-                   if (cc_int_puls) begin
-                     acmd23state <= ACMDI;
-                   end
-	             end
-	      ACMDI: begin
-	               if (|cmd_int_st) begin
+                   if (cc_int_puls)
                      acmd23state <= ACMDE;
-                   end
 	             end
 	    endcase
 	  end
 	  if (cmd_int_rst_reg)
 	    autocmderror <= 0;
 	end
-
 	endmodule
