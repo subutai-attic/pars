@@ -10,20 +10,20 @@
 	(
         output wire [7:0] clock_divisor,
         input wire Internal_clk_stable,
-        output wire [`CMD_REG_SIZE-1:0] command_reg,
-        output wire [31:0] argument_reg,
-        input wire  [31:0] response_0_reg,
-        input wire  [31:0] response_1_reg,
-        input wire  [31:0] response_2_reg,
-        input wire  [31:0] response_3_reg,
-        output wire [1:0] software_reset_reg,
+        output wire [`CMD_REG_SIZE-1:0] command_o,
+        output wire [31:0] argument_o,
+        input wire  [31:0] response_0_i,
+        input wire  [31:0] response_1_i,
+        input wire  [31:0] response_2_i,
+        input wire  [31:0] response_3_i,
+        output wire [1:0] software_reset_o,
         input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
         input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
         output wire cmd_start,
         output wire cmd_int_rst,
         output reg dat_int_rst,
-        output wire [`BLKSIZE_W-1:0] block_size_reg,
-        output wire [`BLKCNT_W-1:0] block_count_reg,
+        output wire [`BLKSIZE_W-1:0] block_size_o,
+        output wire [`BLKCNT_W-1:0] block_count_o,
 
 		// Global Clock Signal
 		input wire  S_AXI_ACLK,
@@ -85,9 +85,9 @@
 		// Read ready. This signal indicates that the master can
     		// accept the read data and response information.
 		input wire  S_AXI_RREADY,
-		output wire [28:0] int_stat_reg,
-		output wire [28:0] int_stat_en_reg,
-		output wire [28:0] int_sig_en_reg,
+		output wire [28:0] int_stat_o,
+		output wire [28:0] int_stat_en_o,
+		output wire [28:0] int_sig_en_o,
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
@@ -165,16 +165,16 @@
 	reg  cmd_start_reg;
      
     //SD-eMMC host controller registers
-	assign software_reset_reg  = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
+	assign software_reset_o    = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
 	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
-	assign command_reg         = cmd_sel ? 14'h171a : slv_reg3 [29:16];    // CMD_INDEX choose.
-	assign argument_reg        = arg_sel ? slv_reg0 : slv_reg2;            // CMD_Argument choose. Either Arg1 or Arg2  
-	assign block_size_reg      = slv_reg1 [11:0];                          // Block size register
-	assign block_count_reg     = slv_reg1 [31:16];                         // Block count register
-	assign int_stat_reg        = slv_reg12 [28:0];                         // Error and Normal Interrupts Status registers
-    assign int_stat_en_reg     = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
-    assign int_sig_en_reg      = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
+	assign command_o           = cmd_sel ? 14'h171a : slv_reg3 [29:16];    // CMD_INDEX choose.
+	assign argument_o          = arg_sel ? slv_reg0 : slv_reg2;            // CMD_Argument choose. Either Arg1 or Arg2  
+	assign block_size_o        = slv_reg1 [11:0];                          // Block size register
+	assign block_count_o       = slv_reg1 [31:16];                         // Block count register
+	assign int_stat_o          = slv_reg12 [28:0];                         // Error and Normal Interrupts Status registers
+    assign int_stat_en_o       = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
+    assign int_sig_en_o        = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
     assign sd_dat_bus_width    = slv_reg10 [1];                            // Select sd data bus width 
     assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
     assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
@@ -633,10 +633,10 @@
 	        5'h01   : reg_data_out <= slv_reg1;
 	        5'h02   : reg_data_out <= slv_reg2;
 	        5'h03   : reg_data_out <= slv_reg3;
-	        5'h04   : reg_data_out <= response_0_reg;
-	        5'h05   : reg_data_out <= response_1_reg;
-	        5'h06   : reg_data_out <= response_2_reg;
-	        5'h07   : reg_data_out <= response_3_reg;
+	        5'h04   : reg_data_out <= response_0_i;
+	        5'h05   : reg_data_out <= response_1_i;
+	        5'h06   : reg_data_out <= response_2_i;
+	        5'h07   : reg_data_out <= response_3_i;
 	        5'h08   : reg_data_out <= 0;
 	        5'h09   : reg_data_out <= slv_reg9;
 	        5'h0A   : reg_data_out <= slv_reg10;
@@ -719,7 +719,7 @@
 	                 acmd23_int_rst <= 1'b1;
 	               end
 	               else if (cc_int_puls) begin
-	                 if (response_0_reg[15:0] == 16'h0900) begin
+	                 if (response_0_i[15:0] == 16'h0900) begin
                        arg_sel <= 1'b0;
                        cmd_sel <= 1'b0;
                        cc_int_sel <= 1'b0;
