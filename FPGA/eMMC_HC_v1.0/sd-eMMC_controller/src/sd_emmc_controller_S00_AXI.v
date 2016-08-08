@@ -19,7 +19,6 @@
         output wire [1:0] software_reset_reg,
         input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
         input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
-        output wire [23:0] timeout_reg,
         output wire cmd_start,
         output wire cmd_int_rst,
         output reg dat_int_rst,
@@ -171,7 +170,6 @@
 	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
 	assign command_reg         = cmd_sel ? 14'h171a : slv_reg3 [29:16];    // CMD_INDEX choose.
 	assign argument_reg        = arg_sel ? slv_reg0 : slv_reg2;            // CMD_Argument choose. Either Arg1 or Arg2  
-	assign timeout_reg         = slv_reg5 [15:0];                          // Time_out regester
 	assign block_size_reg      = slv_reg1 [11:0];                          // Block size register
 	assign block_count_reg     = slv_reg1 [31:16];                         // Block count register
 	assign int_stat_reg        = slv_reg12 [28:0];                         // Error and Normal Interrupts Status registers

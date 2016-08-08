@@ -127,7 +127,6 @@
     //wb accessible registers
     wire [31:0] argument_reg_wb_clk;
     wire [`CMD_REG_SIZE-1:0] command_reg_wb_clk;
-    wire [`CMD_TIMEOUT_W-1:0] cmd_timeout_reg_wb_clk;
     wire [`DATA_TIMEOUT_W-1:0] data_timeout_reg_wb_clk;
     wire [1:0] software_reset_reg_axi_clk;
     wire [31:0] response_0_reg_wb_clk;
@@ -146,7 +145,6 @@
 
     wire [31:0] argument_reg_sd_clk;
     wire [`CMD_REG_SIZE-1:0] command_reg_sd_clk;
-    wire [`CMD_TIMEOUT_W-1:0] cmd_timeout_reg_sd_clk;
     wire [`DATA_TIMEOUT_W-1:0] data_timeout_reg_sd_clk;
     wire [2:0] software_reset_reg_sd_clk;
     wire [31:0] response_0_reg_sd_clk;
@@ -321,7 +319,6 @@
             .response_2_reg(response_2_reg_wb_clk),
             .response_3_reg(response_3_reg_wb_clk),
             .software_reset_reg(software_reset_reg_axi_clk),  
-            .timeout_reg(cmd_timeout_reg_wb_clk),
             .cmd_int_st(cmd_int_status_reg_wb_clk),
             .dat_int_st(data_int_status_reg_wb_clk),
             .int_stat_reg(int_status_reg),
@@ -372,7 +369,6 @@
         .finish_i     (cmd_finish),
         .argument_i   (argument_reg_sd_clk),
         .command_i    (command_reg_sd_clk),
-        .timeout_i    (cmd_timeout_reg_sd_clk),
         .int_status_o (cmd_int_status_reg_sd_clk),
         .response_0_o (response_0_reg_sd_clk),
         .response_1_o (response_1_reg_sd_clk),
@@ -496,7 +492,6 @@
     monostable_domain_cross data_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, data_int_rst_wb_clk, SD_CLK, data_int_rst_sd_clk);
     monostable_domain_cross cmd_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_int_rst_wb_clk, SD_CLK, cmd_int_rst_sd_clk);
     monostable_domain_cross start_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx_pulse, SD_CLK, start_write_sd_clk);
-//    bistable_domain_cross #(1) data_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx, SD_CLK, start_write_sd_clk);
 
     bistable_domain_cross #(32) argument_reg_cross(!s00_axi_aresetn, s00_axi_aclk, argument_reg_wb_clk, SD_CLK, argument_reg_sd_clk);
     bistable_domain_cross #(`CMD_REG_SIZE) command_reg_cross(!s00_axi_aresetn, s00_axi_aclk, command_reg_wb_clk, SD_CLK, command_reg_sd_clk);
@@ -504,7 +499,6 @@
     bistable_domain_cross #(32) response_1_reg_cross(!s00_axi_aresetn, SD_CLK, response_1_reg_sd_clk, s00_axi_aclk, response_1_reg_wb_clk);
     bistable_domain_cross #(32) response_2_reg_cross(!s00_axi_aresetn, SD_CLK, response_2_reg_sd_clk, s00_axi_aclk, response_2_reg_wb_clk);
     bistable_domain_cross #(32) response_3_reg_cross(!s00_axi_aresetn, SD_CLK, response_3_reg_sd_clk, s00_axi_aclk, response_3_reg_wb_clk);
-    bistable_domain_cross #(`CMD_TIMEOUT_W) cmd_timeout_reg_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_timeout_reg_wb_clk, SD_CLK, cmd_timeout_reg_sd_clk);
     bistable_domain_cross #(`DATA_TIMEOUT_W) data_timeout_reg_cross(!s00_axi_aresetn, s00_axi_aclk, data_timeout_reg_wb_clk, SD_CLK, data_timeout_reg_sd_clk);
     bistable_domain_cross #(`BLKSIZE_W) block_size_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_size_reg_axi_clk, SD_CLK, block_size_reg_sd_clk);
     bistable_domain_cross #(1) controll_setting_reg_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_reg_wb_clk, SD_CLK, controll_setting_reg_sd_clk);
