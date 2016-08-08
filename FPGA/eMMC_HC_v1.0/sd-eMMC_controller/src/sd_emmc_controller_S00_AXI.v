@@ -142,7 +142,7 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg12_1;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg13;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg14;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg16;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
@@ -163,6 +163,7 @@
 	wire cmd_compl_int;
 	reg  cmd_int_rst_reg;
 	reg  cmd_start_reg;
+	reg  [7:0]ACMDErrorStatus;
      
     //SD-eMMC host controller registers
 	assign software_reset_o    = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
@@ -295,7 +296,7 @@
 	      slv_reg12_1 <= 0;
 	      slv_reg13 <= 0;
 	      slv_reg14 <= 0;
-	      slv_reg15 <= 0;
+//	      slv_reg15 <= 0;
 //	      slv_reg16 <= 0;
 //	      slv_reg17 <= 0;
 //	      slv_reg18 <= 0;
@@ -438,13 +439,13 @@
 	                // Slave register 14
 	                slv_reg14[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
-	          5'h0F:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 15
-	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
+//	          5'h0F:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 15
+//	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
 //	          5'h10:
 //	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 //	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -496,7 +497,7 @@
 	                      slv_reg12_1 <= slv_reg12_1;
 	                      slv_reg13 <= slv_reg13;
 	                      slv_reg14 <= slv_reg14;
-	                      slv_reg15 <= slv_reg15;
+//	                      slv_reg15 <= slv_reg15;
 //	                      slv_reg16 <= slv_reg16;
 //	                      slv_reg17 <= slv_reg17;
 //	                      slv_reg18 <= slv_reg18;
@@ -633,24 +634,24 @@
 	        5'h01   : reg_data_out <= slv_reg1;
 	        5'h02   : reg_data_out <= slv_reg2;
 	        5'h03   : reg_data_out <= slv_reg3;
-	        5'h04   : reg_data_out <= response_0_i;//slv_reg4;
-	        5'h05   : reg_data_out <= response_1_i;//slv_reg5;
-	        5'h06   : reg_data_out <= response_2_i;//slv_reg6;
-	        5'h07   : reg_data_out <= response_3_i;//slv_reg7;
-	        5'h08   : reg_data_out <= 0;           //slv_reg8;
+	        5'h04   : reg_data_out <= response_0_i;    //slv_reg4;
+	        5'h05   : reg_data_out <= response_1_i;    //slv_reg5;
+	        5'h06   : reg_data_out <= response_2_i;    //slv_reg6;
+	        5'h07   : reg_data_out <= response_3_i;    //slv_reg7;
+	        5'h08   : reg_data_out <= 0;               //slv_reg8;
 	        5'h09   : reg_data_out <= slv_reg9;
 	        5'h0A   : reg_data_out <= slv_reg10;
 	        5'h0B   : reg_data_out <= slv_reg11;
 	        5'h0C   : reg_data_out <= (slv_reg12 & slv_reg13);
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
-	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012C32B2; //slv_reg16; Capabilities register
-	        5'h11   : reg_data_out <= 0;            //slv_reg17;
-	        5'h12   : reg_data_out <= 0;            //slv_reg18;
-	        5'h13   : reg_data_out <= 0;            //slv_reg19;
+	        5'h0F   : reg_data_out <= ACMDErrorStatus; //slv_reg15;
+	        5'h10   : reg_data_out <= 32'h012C32B2;    //slv_reg16; Capabilities register
+	        5'h11   : reg_data_out <= 0;               //slv_reg17;
+	        5'h12   : reg_data_out <= 0;               //slv_reg18;
+	        5'h13   : reg_data_out <= 0;               //slv_reg19;
 	        5'h16   : reg_data_out <= slv_reg22;
-	        5'h3F   : reg_data_out <= 32'h00020000;  //Host Controller Version
+	        5'h3F   : reg_data_out <= 32'h00020000;    //Host Controller Version
 
 	        
 	        default : reg_data_out <= 0;
@@ -697,6 +698,7 @@
 	    autocmderror <= 0;
         start_cmd_reg1 <= 0;
         acmd23_int_rst <= 0;
+        ACMDErrorStatus <= 0;
 	  end
 	  else begin
 	    case (acmd23state)
@@ -731,6 +733,7 @@
 	                 else begin
 	                   acmd23state <= ACMDE;
 	                   autocmderror <= 1'b1;
+	                   ACMDErrorStatus <= {3'b0,cmd_int_st[`INT_CMD_CIE],cmd_int_st[`INT_CMD_EI],cmd_int_st[`INT_CMD_CCRCE],cmd_int_st[`INT_CMD_CTE],1'b0};
 	                 end
 	               end
 	            end

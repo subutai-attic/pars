@@ -73,11 +73,11 @@
 
 //cmd module interrupts
 `define INT_CMD_SIZE 6
-`define INT_CMD_CC 0
-`define INT_CMD_EI 1
-`define INT_CMD_CTE 2
-`define INT_CMD_CCRCE 3
-`define INT_CMD_CIE  4
+`define INT_CMD_CC 0        //Completion Error
+`define INT_CMD_EI 1        //End bit Error
+`define INT_CMD_CTE 2       //Timeout interrupt
+`define INT_CMD_CCRCE 3     //CRC Error Interrupt
+`define INT_CMD_CIE  4      //Index Error Interrupt
 `define INT_CMD_DC 5        // Data line not busy
 
 //data module interrupts
