@@ -2,11 +2,6 @@
 `include "sd_defines.h"
 	module sd_emmc_controller_S00_AXI #
 	(
-		// Users to add parameters here
-
-		// User parameters ends
-		// Do not modify the parameters beyond this line
-
 		// Width of S_AXI data bus
 		parameter integer C_S_AXI_DATA_WIDTH	= 32,
 		// Width of S_AXI address bus
@@ -15,21 +10,20 @@
 	(
         output wire [7:0] clock_divisor,
         input wire Internal_clk_stable,
-        output wire [`CMD_REG_SIZE-1:0] command_reg,
-        output wire [31:0] argument_reg,
-        input wire  [31:0] response_0_reg,
-        input wire  [31:0] response_1_reg,
-        input wire  [31:0] response_2_reg,
-        input wire  [31:0] response_3_reg,
-        output wire [1:0] software_reset_reg,
+        output wire [`CMD_REG_SIZE-1:0] command_o,
+        output wire [31:0] argument_o,
+        input wire  [31:0] response_0_i,
+        input wire  [31:0] response_1_i,
+        input wire  [31:0] response_2_i,
+        input wire  [31:0] response_3_i,
+        output wire [1:0] software_reset_o,
         input wire  [`INT_CMD_SIZE-1:0] cmd_int_st,
         input wire  [`INT_DATA_SIZE-1 :0] dat_int_st,
-        output wire [23:0] timeout_reg,
-        output reg cmd_start,
-        output reg cmd_int_rst,
+        output wire cmd_start,
+        output wire cmd_int_rst,
         output reg dat_int_rst,
-        output wire [`BLKSIZE_W-1:0] block_size_reg,
-        output wire [`BLKCNT_W-1:0] block_count_reg,
+        output wire [`BLKSIZE_W-1:0] block_size_o,
+        output wire [`BLKCNT_W-1:0] block_count_o,
 
 		// Global Clock Signal
 		input wire  S_AXI_ACLK,
@@ -91,9 +85,9 @@
 		// Read ready. This signal indicates that the master can
     		// accept the read data and response information.
 		input wire  S_AXI_RREADY,
-		output wire [28:0] int_stat_reg,
-		output wire [28:0] int_stat_en_reg,
-		output wire [28:0] int_sig_en_reg,
+		output wire [28:0] int_stat_o,
+		output wire [28:0] int_stat_en_o,
+		output wire [28:0] int_sig_en_o,
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
@@ -109,7 +103,8 @@
 		output wire [1:0] dma_en_and_blk_c_en,
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
-		output wire blk_gap_req
+		output wire blk_gap_req,
+		input wire cc_int_puls
 	);
     
 	// AXI4LITE signals
@@ -135,11 +130,11 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg1;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg2;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg3;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg4;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg5;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg6;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg7;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg8;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg4;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg5;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg6;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg7;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg8;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg9;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg10;
     reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg11;
@@ -147,11 +142,11 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg12_1;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg13;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg14;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg16;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg19;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg16;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
+//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg19;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg22;
 	
 	wire	 slv_reg_rden;
@@ -165,25 +160,31 @@
     reg [15:0] blk_count_cnt = 0;
 	wire     buff_read_en_int;
 	wire     buff_write_en_int;
+	wire cmd_compl_int;
+	reg  cmd_int_rst_reg;
+	reg  cmd_start_reg;
+	reg  [7:0]ACMDErrorStatus;
      
     //SD-eMMC host controller registers
-	assign software_reset_reg  = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
+	assign software_reset_o    = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
 	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
-	assign command_reg         = slv_reg3 [29:16];                         // CMD_INDEX
-	assign argument_reg        = slv_reg2;                                 // CMD_Argument 
-	assign timeout_reg         = slv_reg5 [15:0];                          // Time_out regester
-	assign block_size_reg      = slv_reg1 [11:0];                          // Block size register
-	assign block_count_reg     = slv_reg1 [31:16];                         // Block count register
-	assign int_stat_reg        = slv_reg12 [28:0];                         // Error and Normal Interrupts Status registers
-    assign int_stat_en_reg     = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
-    assign int_sig_en_reg      = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
+	assign command_o           = cmd_sel ? 14'h171a : slv_reg3 [29:16];    // CMD_INDEX choose.
+	assign argument_o          = arg_sel ? slv_reg0 : slv_reg2;            // CMD_Argument choose. Either Arg1 or Arg2  
+	assign block_size_o        = slv_reg1 [11:0];                          // Block size register
+	assign block_count_o       = slv_reg1 [31:16];                         // Block count register
+	assign int_stat_o          = slv_reg12 [28:0];                         // Error and Normal Interrupts Status registers
+    assign int_stat_en_o       = slv_reg13 [28:0];                         // Error and Normal Interrupts Status Enable Registers
+    assign int_sig_en_o        = slv_reg14 [28:0];                         // Error and Normal Interrupts Signal Enable Registers
     assign sd_dat_bus_width    = slv_reg10 [1];                            // Select sd data bus width 
     assign sd_dat_bus_width_8bit = slv_reg10 [5];                          //Select sd 8-bit data bus
     assign data_transfer_direction = slv_reg3 [4];                         // CMD_INDEX
     assign dma_en_and_blk_c_en = slv_reg3 [1:0];                           // "DMA enable" and blk "blk count enable" signals
     assign adma_sys_addr       = slv_reg22;
     assign blk_gap_req         = slv_reg10[16];
+    assign cmd_compl_int       = cc_int_sel ? 1'b0 : cmd_int_st[`INT_CMD_CC];
+    assign cmd_int_rst         = acmd23_int_rst | cmd_int_rst_reg;
+    assign cmd_start           = start_cmd_reg1 | cmd_start_reg;
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -283,11 +284,11 @@
 	      slv_reg1 <= 0;
 	      slv_reg2 <= 0;
 	      slv_reg3 <= 0;
-	      slv_reg4 <= 0;
-	      slv_reg5 <= 0;
-	      slv_reg6 <= 0;
-	      slv_reg7 <= 0;
-	      slv_reg8 <= 0;
+//	      slv_reg4 <= 0;
+//	      slv_reg5 <= 0;
+//	      slv_reg6 <= 0;
+//	      slv_reg7 <= 0;
+//	      slv_reg8 <= 0;
 	      slv_reg9 <= 0;
 	      slv_reg10 <= 0;
 	      slv_reg11 <= 0;
@@ -295,21 +296,21 @@
 	      slv_reg12_1 <= 0;
 	      slv_reg13 <= 0;
 	      slv_reg14 <= 0;
-	      slv_reg15 <= 0;
-	      slv_reg16 <= 0;
-	      slv_reg17 <= 0;
-	      slv_reg18 <= 0;
-	      slv_reg19 <= 0;
-	      cmd_start <= 0;
-	      cmd_int_rst <= 0;
+//	      slv_reg15 <= 0;
+//	      slv_reg16 <= 0;
+//	      slv_reg17 <= 0;
+//	      slv_reg18 <= 0;
+//	      slv_reg19 <= 0;
+	      cmd_start_reg <= 0;
+	      cmd_int_rst_reg <= 0;
 	      dat_int_rst <= 0;
 	      blk_size_cnt <= 0;
 	      blk_size_cn  <= 0;
           blk_count_cnt <= 0;
 	    end
 	  else begin
-	    cmd_start <= 1'b0;
-	    cmd_int_rst <= 1'b0;
+	    cmd_start_reg <= 1'b0;
+	    cmd_int_rst_reg <= 1'b0;
 	    dat_int_rst <= 1'b0;
 	    slv_reg11[26:24] <= 3'b000;
 	    if (dat_int_st || cmd_int_st) begin
@@ -321,14 +322,13 @@
 	    if (slv_reg_wren)
 	      begin
 	        case ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	          5'h00: begin
+	          5'h00:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
 	                // Respective byte enables are asserted as per write strobes 
 	                // Slave register 0
 	                slv_reg0[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
-	            end
 	          5'h01: begin
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -354,44 +354,44 @@
 	              end  
 	              end
 	              if (S_AXI_WSTRB == 4'hC )
-	                cmd_start <= 1'b1;
+	                cmd_start_reg <= 1'b1;
 	                slv_reg9 [0] <= 1'b1;  // Present state register command inhibit busy
 	              end
-	          5'h04:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 4
-	                slv_reg4[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h05:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 5
-	                slv_reg5[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h06:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 6
-	                slv_reg6[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h07:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 7
-	                slv_reg7[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h08:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 8
-	                slv_reg8[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
+//	          5'h04:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 4
+//	                slv_reg4[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h05:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 5
+//	                slv_reg5[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h06:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 6
+//	                slv_reg6[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h07:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 7
+//	                slv_reg7[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h08:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 8
+//	                slv_reg8[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
 	          5'h09:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -421,7 +421,7 @@
 	                slv_reg12_1[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end
 	            end
-	              cmd_int_rst <= 1'b1;
+	              cmd_int_rst_reg <= 1'b1;
 	              dat_int_rst <= 1'b1;
 	              blk_size_cnt <= 0;
 	            end
@@ -439,41 +439,41 @@
 	                // Slave register 14
 	                slv_reg14[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
-	          5'h0F:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 15
-	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h10:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 16
-	                slv_reg16[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h11:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 17
-	                slv_reg17[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h12:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 18
-	                slv_reg18[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end  
-	          5'h13:
-	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-	                // Respective byte enables are asserted as per write strobes 
-	                // Slave register 19
-	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-	              end
+//	          5'h0F:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 15
+//	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h10:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 16
+//	                slv_reg16[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h11:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 17
+//	                slv_reg17[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h12:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 18
+//	                slv_reg18[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end  
+//	          5'h13:
+//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+//	                // Respective byte enables are asserted as per write strobes 
+//	                // Slave register 19
+//	                slv_reg19[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+//	              end
 	          5'h16:
 	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
                   if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -486,22 +486,22 @@
 	                      slv_reg1 <= slv_reg1;
 	                      slv_reg2 <= slv_reg2;
 	                      slv_reg3 <= slv_reg3;
-	                      slv_reg4 <= slv_reg4;
-	                      slv_reg5 <= slv_reg5;
-	                      slv_reg6 <= slv_reg6;
-	                      slv_reg7 <= slv_reg7;
-	                      slv_reg8 <= slv_reg8;
+//	                      slv_reg4 <= slv_reg4;
+//	                      slv_reg5 <= slv_reg5;
+//	                      slv_reg6 <= slv_reg6;
+//	                      slv_reg7 <= slv_reg7;
+//	                      slv_reg8 <= slv_reg8;
 	                      slv_reg9 <= slv_reg9;
 	                      slv_reg10 <= slv_reg10;
 	                      slv_reg11 <= slv_reg11;
 	                      slv_reg12_1 <= slv_reg12_1;
 	                      slv_reg13 <= slv_reg13;
 	                      slv_reg14 <= slv_reg14;
-	                      slv_reg15 <= slv_reg15;
-	                      slv_reg16 <= slv_reg16;
-	                      slv_reg17 <= slv_reg17;
-	                      slv_reg18 <= slv_reg18;
-	                      slv_reg19 <= slv_reg19;
+//	                      slv_reg15 <= slv_reg15;
+//	                      slv_reg16 <= slv_reg16;
+//	                      slv_reg17 <= slv_reg17;
+//	                      slv_reg18 <= slv_reg18;
+//	                      slv_reg19 <= slv_reg19;
 	                      slv_reg22 <= slv_reg22;
 	                    end
 	        endcase
@@ -509,10 +509,9 @@
 	      end
 	      
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], 2'b00, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_int_st[`INT_CMD_CC]});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], autocmderror, 1'b0, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_compl_int});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
-          slv_reg3 [3:2] <= 2'b0;
           slv_reg9 [24] <= 1'b1;
           slv_reg9 [23:20] <= {4{~dat_line_act}};
           slv_reg9 [19:16] <= 4'b1111;
@@ -631,27 +630,29 @@
 	begin
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	        5'h00   : reg_data_out <= 0;
+	        5'h00   : reg_data_out <= slv_reg0;
 	        5'h01   : reg_data_out <= slv_reg1;
 	        5'h02   : reg_data_out <= slv_reg2;
 	        5'h03   : reg_data_out <= slv_reg3;
-	        5'h04   : reg_data_out <= response_0_reg;
-	        5'h05   : reg_data_out <= response_1_reg;
-	        5'h06   : reg_data_out <= response_2_reg;
-	        5'h07   : reg_data_out <= response_3_reg;
-	        5'h08   : reg_data_out <= 0;
+	        5'h04   : reg_data_out <= response_0_i;    //slv_reg4;
+	        5'h05   : reg_data_out <= response_1_i;    //slv_reg5;
+	        5'h06   : reg_data_out <= response_2_i;    //slv_reg6;
+	        5'h07   : reg_data_out <= response_3_i;    //slv_reg7;
+	        5'h08   : reg_data_out <= 0;               //slv_reg8;
 	        5'h09   : reg_data_out <= slv_reg9;
 	        5'h0A   : reg_data_out <= slv_reg10;
 	        5'h0B   : reg_data_out <= slv_reg11;
 	        5'h0C   : reg_data_out <= (slv_reg12 & slv_reg13);
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
-	        5'h0F   : reg_data_out <= slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012C32B2; //slv_reg16; Capabilities register
-	        5'h11   : reg_data_out <= slv_reg17;
-	        5'h12   : reg_data_out <= slv_reg18;
-	        5'h13   : reg_data_out <= slv_reg19;
-	        5'h3F   : reg_data_out <= 32'h00010000;  //Host Controller Version
+	        5'h0F   : reg_data_out <= ACMDErrorStatus; //slv_reg15;
+	        5'h10   : reg_data_out <= 32'h012C32B2;    //slv_reg16; Capabilities register
+	        5'h11   : reg_data_out <= 0;               //slv_reg17;
+	        5'h12   : reg_data_out <= 0;               //slv_reg18;
+	        5'h13   : reg_data_out <= 0;               //slv_reg19;
+	        5'h16   : reg_data_out <= slv_reg22;
+	        5'h3F   : reg_data_out <= 32'h00020000;    //Host Controller Version
+
 	        
 	        default : reg_data_out <= 0;
 	      endcase
@@ -675,5 +676,76 @@
 	        end   
 	    end
 	end    
-
+	
+	reg [1:0] acmd23state;
+	reg acmd23_int_rst;
+	reg arg_sel;
+	reg cmd_sel;
+	reg cc_int_sel;
+	reg autocmderror;
+	reg start_cmd_reg1;
+	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 Enable wait state
+	                ACMDC = 2'b01, // AutoCMD23 Completion wait state
+	                ACMDS = 2'b10; // Associated CMDx Send state
+	
+	always@(posedge S_AXI_ACLK)
+	begin: AUTOCMD23
+	  if (S_AXI_ARESETN == 1'b0) begin
+	    acmd23state <= 0;
+	    arg_sel <= 0;
+	    cmd_sel <= 0;
+	    cc_int_sel <= 0;
+	    autocmderror <= 0;
+        start_cmd_reg1 <= 0;
+        acmd23_int_rst <= 0;
+        ACMDErrorStatus <= 0;
+	  end
+	  else begin
+	    case (acmd23state)
+	      ACMDE: begin
+	               start_cmd_reg1 <= 1'b0;
+	               acmd23_int_rst <= 1'b0;
+	               if (slv_reg3[3:2] == 2'b10) begin
+	                 arg_sel <= 1'b1;
+	                 cmd_sel <= 1'b1;
+	                 cc_int_sel <= 1'b1;
+	                 if (cmd_start_reg)
+	                   acmd23state <= ACMDC;
+	               end
+	               else begin
+	                 arg_sel <= 1'b0;
+                     cmd_sel <= 1'b0;
+                     cc_int_sel <= 1'b0;
+	               end
+	            end
+	      ACMDC: begin
+	               if (|cmd_int_st) begin
+	                 acmd23_int_rst <= 1'b1;
+	               end
+	               else if (cc_int_puls) begin
+	                 if (response_0_i[15:0] == 16'h0900) begin
+                       arg_sel <= 1'b0;
+                       cmd_sel <= 1'b0;
+                       cc_int_sel <= 1'b0;
+	                   start_cmd_reg1 <= 1'b1;
+	                   acmd23state <= ACMDS;
+	                 end
+	                 else begin
+	                   acmd23state <= ACMDE;
+	                   autocmderror <= 1'b1;
+	                   ACMDErrorStatus <= {3'b0,cmd_int_st[`INT_CMD_CIE],cmd_int_st[`INT_CMD_EI],cmd_int_st[`INT_CMD_CCRCE],cmd_int_st[`INT_CMD_CTE],1'b0};
+	                 end
+	               end
+	            end
+	      ACMDS: begin
+	               start_cmd_reg1 <= 1'b0;
+	               acmd23_int_rst <= 1'b0;
+                   if (cc_int_puls)
+                     acmd23state <= ACMDE;
+	             end
+	    endcase
+	  end
+	  if (cmd_int_rst_reg)
+	    autocmderror <= 0;
+	end
 	endmodule

@@ -65,7 +65,6 @@ module sd_cmd_master(
            //input card_detect,
            input [31:0] argument_i,
            input [`CMD_REG_SIZE-1:0] command_i,
-           input [`CMD_TIMEOUT_W-1:0] timeout_i,
            output [`INT_CMD_SIZE-1:0] int_status_o,
            output reg [31:0] response_0_o,
            output reg [31:0] response_1_o,
@@ -80,7 +79,7 @@ reg index_check;
 reg busy_check;
 reg expect_response;
 reg long_response;
-(* mark_debug = "true" *) reg [`INT_CMD_SIZE-1:0] int_status_reg;
+reg [`INT_CMD_SIZE-1:0] int_status_reg;
 //reg card_present;
 //reg [3:0]debounce;
 reg [`CMD_TIMEOUT_W-1:0] watchdog;

@@ -13,9 +13,15 @@ The core has been rewritten from Wishbone to the AXI interface and adapted to "S
 ## Features
 The SD/eMMC HC provides the following features:
 - 4-bit SD card or/and  8-bit eMMC card mode (does not support SPI mode)
+- Hardware interrupt for data and command transactions
 - 32-bit AXI Interface
-- Interrupt generation on completion of data and command transactions
-- Compatible with Linux distributed Arasan SDHCI driver, for 8-bit support needs to be added in "drivers/mmc/host/sdhci.c#L3107" must set "mmc->caps |= MMC_CAP_8_BIT_DATA;"
+- 50 MGh clock, Single Data Rate (SDR)
+- ADMA2 support
+- AutoCMD23 feature support
+- Compatible with Linux distributed Arasan SDHCI driver
+
+## Howto
+To make driver support 8-bit need to add a line "mmc->caps |= MMC_CAP_8_BIT_DATA;" to the "drivers/mmc/host/sdhci.c#L3107"
 
 ## License
 This core is free software. You can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 2.1 of the License, or (at your option) any later version.
