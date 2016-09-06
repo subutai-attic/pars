@@ -89,7 +89,7 @@ data_write data_writeDDReMMC_I (
     .rd_clk     (sd_clk),
     .rst        (rst | reset_fifo),                    // input wire srst
 	.din		(write_fifo_in),      	// input wire [31 : 0] din
-	.wr_en		(fifo_data_write_ready && !wb_full_o),  		// input wire wr_en
+	.wr_en		(fifo_data_write_ready),  		// input wire wr_en
 	.rd_en		(rd_i),  			// input wire rd_en
 	.dout		(dat_o),    			// output wire [31 : 0] dout
 	.full		(wb_full_o),    					// output wire full
