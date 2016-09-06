@@ -438,11 +438,8 @@
         .wb_clk    (s00_axi_aclk),
         .rst       (!s00_axi_aresetn |
                     soft_rst_dat_sd_clk ),
-        .wbm_we_o  (m_wb_we_o),
         .read_fifo_out (read_fifo_out),
         .write_fifo_in (write_dat_fifo),
-        .wbm_cyc_o (m_wb_cyc_o),
-        .wbm_stb_o (m_wb_stb_o),
         .fifo_data_read_ready (fifo_data_read_ready),
         .fifo_data_write_ready(fifo_data_write_ready),
         .en_rx_i   (start_rx_fifo),

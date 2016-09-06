@@ -53,24 +53,21 @@ module sd_fifo_filler(
            input fifo_reset,
            
            // AXI Signals
-           output wbm_we_o,                                 //drived here
-           output [31:0] read_fifo_out,                     //wbm_dat_o,         
-           input  [31:0] write_fifo_in,                     //wbm_dat_i,
-           output wbm_cyc_o,                                //drived here
-           output wbm_stb_o,                                //drived here
-           input  fifo_data_read_ready,                     //input from axi
-           input  fifo_data_write_ready,
+           (* mark_debug = "true" *) output [31:0] read_fifo_out,                     //wbm_dat_o,         
+           (* mark_debug = "true" *) input  [31:0] write_fifo_in,                     //wbm_dat_i,
+           (* mark_debug = "true" *) input  fifo_data_read_ready,                     //input from axi
+           (* mark_debug = "true" *) input  fifo_data_write_ready,
            
            // Data Master Control signals
            input  en_rx_i,
            input  en_tx_i,
            
            //Data Serial signals
-           input  sd_clk,
-           input  [31:0] dat_i,
-           output [31:0] dat_o,
-           input  wr_i,
-           input  rd_i,
+           (* mark_debug = "true" *) input  sd_clk,
+           (* mark_debug = "true" *) input  [31:0] dat_i,
+           (* mark_debug = "true" *) output [31:0] dat_o,
+           (* mark_debug = "true" *) input  wr_i,
+           (* mark_debug = "true" *) input  rd_i,
            
            //Signals for Data Master Control
            output sd_full_o,
@@ -79,67 +76,38 @@ module sd_fifo_filler(
            output wb_empty_o
        );
 
-`define FIFO_MEM_ADR_SIZE 12
-`define MEM_OFFSET 4
-
-wire reset_fifo;
+(* mark_debug = "true" *) wire reset_fifo;
 wire fifo_rd;
-reg fifo_rd_ack;
-reg fifo_rd_reg;
-
 
 assign fifo_rd = !wb_empty_o & fifo_data_read_ready;
 assign reset_fifo = !en_rx_i & fifo_reset;
 
-assign wbm_we_o = en_rx_i & !wb_empty_o;
-assign wbm_cyc_o = en_rx_i ? en_rx_i & !wb_empty_o : en_tx_i & !wb_full_o;
-assign wbm_stb_o = en_rx_i ? wbm_cyc_o & fifo_rd_ack : wbm_cyc_o;
 
-generic_fifo_dc_gray #(
-    .dw(32), 
-    .aw(`FIFO_MEM_ADR_SIZE)
-    ) generic_fifo_dc_gray0 (
-    .rd_clk(wb_clk),
-    .wr_clk(sd_clk), 
-    .rst(!(rst | reset_fifo)), 
-    .clr(1'b0), 
-    .din(dat_i), 
-    .we(wr_i),
-    .dout(read_fifo_out),
-    .re(fifo_rd), 
-    .full(sd_full_o),
-    .empty(wb_empty_o),
-    .wr_level(), 
-    .rd_level() 
-    );
-    
-generic_fifo_dc_gray #(
-    .dw(32), 
-    .aw(9) //512 byte 1 block
-    ) generic_fifo_dc_gray1 (
-    .rd_clk(sd_clk),
-    .wr_clk(wb_clk), 
-    .rst(!(rst | reset_fifo)), 
-    .clr(1'b0), 
-    .din(write_fifo_in), 
-    .we(fifo_data_write_ready && !wb_full_o),
-    .dout(dat_o), 
-    .re(rd_i), 
-    .full(wb_full_o), 
-    .empty(sd_empty_o), 
-    .wr_level(), 
-    .rd_level() 
-    );
+// synchronous simple 32 bits fifo keeping data for the cpu to write into eMMC 
+data_write data_writeDDReMMC_I (
+	.wr_clk		(wb_clk),      				// input wire clk
+    .rd_clk     (sd_clk),
+    .rst        (rst | reset_fifo),                    // input wire srst
+	.din		(write_fifo_in),      	// input wire [31 : 0] din
+	.wr_en		(fifo_data_write_ready && !wb_full_o),  		// input wire wr_en
+	.rd_en		(rd_i),  			// input wire rd_en
+	.dout		(dat_o),    			// output wire [31 : 0] dout
+	.full		(wb_full_o),    					// output wire full
+	.empty		(sd_empty_o)  					// output wire empty
+);
 
-always @(posedge wb_clk or posedge rst)
-    if (rst) begin
-        fifo_rd_reg <= 0;
-        fifo_rd_ack <= 1;
-    end
-    else begin
-        fifo_rd_reg <= fifo_rd;
-        fifo_rd_ack <= fifo_rd_reg | !fifo_rd;
-    end
+// synchronous simple 32 bits fifo keeping data for the cpu to read from eMMC
+data_read data_read_eMMC_DDR_I (
+	.wr_clk		(sd_clk),      				// input wire clk
+	.rd_clk     (wb_clk),
+	.rst		(rst | reset_fifo),    				// input wire srst
+	.din		(dat_i),      	// input wire [31 : 0] din
+	.wr_en		(wr_i),  		// input wire wr_en
+	.rd_en		(fifo_rd),  			// input wire rd_en
+	.dout		(read_fifo_out),    			// output wire [31 : 0] dout
+	.full		(sd_full_o),    					// output wire full
+	.empty		(wb_empty_o)  					// output wire empty
+);
 
 endmodule
 

@@ -54,7 +54,7 @@
 `include "sd_defines.h"
 
 module sd_data_serial_host(
-           input sd_clk,
+           (* mark_debug = "true" *) input sd_clk,
            input rst,
            //Tx Fifo
            input [31:0] data_in,
@@ -84,7 +84,7 @@ module sd_data_serial_host(
        );
        
 
-reg [7:0] DAT_dat_reg;
+(* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
@@ -330,7 +330,7 @@ begin: FSM_OUT
                             data_in[25-(data_index[1:0]<<3)], 
                             data_in[24-(data_index[1:0]<<3)]
                             };
-                        if (data_index[1:0] == 2'h1/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
+                        if (data_index[1:0] == 2'h2/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
                             rd <= 1;
                         end
                     end
@@ -347,14 +347,14 @@ begin: FSM_OUT
                             data_in[29-(data_index[2:0]<<2)], 
                             data_in[28-(data_index[2:0]<<2)]
                             };
-                        if (data_index[2:0] == 3'h5/*not 7 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
+                        if (data_index[2:0] == 3'h6/*not 7 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
                             rd <= 1;
                         end
                     end
                     else begin
                         last_din <= {7'h7F, data_in[31-data_index]};
                         crc_in <= {7'h7F, data_in[31-data_index]};
-                        if (data_index == 29/*not 31 - read delay !!!*/) begin
+                        if (data_index == 30/*not 31 - read delay !!!*/) begin
                             rd <= 1;
                         end
                     end
