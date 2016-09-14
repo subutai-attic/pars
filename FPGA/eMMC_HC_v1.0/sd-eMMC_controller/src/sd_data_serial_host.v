@@ -58,13 +58,13 @@ module sd_data_serial_host(
            input rst,
            //Tx Fifo
            input [31:0] data_in,
-           output reg rd,
+           output wire rd_out,
            //Rx Fifo
            output wire [31:0] data_out_o,
-           output reg we,
+           output wire we_out,
            //tristate data
-           output reg DAT_oe_o,
-           output reg[7:0] DAT_dat_o,
+           output wire DAT_oe_out,
+           output wire[7:0] DAT_dat_out,
            input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
@@ -75,7 +75,7 @@ module sd_data_serial_host(
            input [1:0] byte_alignment,
            output sd_data_busy,
            output busy,
-           output reg crc_ok,
+           output wire crc_ok_out,
            output read_trans_active,
            output write_trans_active,
 //           output next_block,
@@ -85,6 +85,8 @@ module sd_data_serial_host(
        
 
 (* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
+reg DAT_oe_o;
+reg [7:0] DAT_dat_o;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
@@ -112,10 +114,13 @@ reg [`BLKSIZE_W-1:0] blksize_reg;
 reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
+reg crc_ok;
 reg [7:0] last_din;
 reg [3:0] crc_s ;
 reg [4:0] data_index;
 reg [31:0] data_out;
+reg rd;
+reg we;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
 
@@ -480,6 +485,481 @@ begin: FSM_OUT
         endcase
     end
 end
+
+reg [`BLKSIZE_W-1+3:0] ddr_data_cycles;
+reg ddr_bus_4bit_reg;
+reg ddr_bus_8bit_reg;
+//CRC16
+reg [7:0] ddr_crc_in;
+reg ddr_crc_en;
+reg ddr_crc_rst;
+wire [15:0] ddr_crc_out [7:0];
+reg [`BLKSIZE_W-1+4:0] ddr_transf_cnt;
+parameter DDR_SIZE = 6;
+reg [DDR_SIZE-1:0] ddr_state;
+reg [DDR_SIZE-1:0] ddr_next_state;
+parameter DDR_IDLE       = 6'b000001;
+parameter DDR_WRITE_DAT  = 6'b000010;
+parameter DDR_WRITE_WAIT  = 6'b000011;
+parameter DDR_WRITE_CRC  = 6'b000100;
+parameter DDR_WRITE_BUSY = 6'b001000;
+parameter DDR_READ_WAIT  = 6'b010000;
+parameter DDR_READ_DAT   = 6'b100000;
+reg [3:0] ddr_crc_status;
+reg ddr_busy_int;
+reg [`BLKCNT_W-1:0] ddr_blkcnt_reg;
+reg [1:0] ddr_byte_alignment_reg;
+reg [`BLKSIZE_W-1:0] ddr_blksize_reg;
+reg ddr_next_block;
+reg [4:0] ddr_crc_c;
+reg ddr_crc_ok;
+reg [7:0] ddr_last_din;
+reg [3:0] ddr_crc_s ;
+reg [4:0] ddr_data_index;
+reg [31:0] ddr_data_out;
+reg ddr_rd;
+reg ddr_we;
+reg [7:0] ddr_DAT_dat_o;
+reg ddr_DAT_oe_o;
+
+always @(ddr_state or start or start_bit or  ddr_transf_cnt or ddr_data_cycles or ddr_crc_status or ddr_crc_ok or ddr_busy_int or ddr_next_block)
+begin: FSM_DDR
+    case(ddr_state)
+        DDR_IDLE: begin
+            if (start == 2'b01)
+                ddr_next_state <= DDR_WRITE_WAIT;
+            else if  (start == 2'b10)
+                ddr_next_state <= DDR_READ_WAIT;
+            else
+                ddr_next_state <= DDR_IDLE;
+        end
+        DDR_WRITE_WAIT: begin
+            if (start_write && DAT_dat_reg[0])
+                ddr_next_state <= DDR_WRITE_DAT;
+            else
+                ddr_next_state <= DDR_WRITE_WAIT;
+        end
+        DDR_WRITE_DAT: begin
+            if (ddr_transf_cnt >= ddr_data_cycles+21 && start_bit)
+                ddr_next_state <= DDR_WRITE_CRC;
+            else
+                ddr_next_state <= DDR_WRITE_DAT;
+        end
+        DDR_WRITE_CRC: begin
+            if (ddr_crc_status == 3)
+                ddr_next_state <= DDR_WRITE_BUSY;
+            else
+                ddr_next_state <= DDR_WRITE_CRC;
+        end
+        DDR_WRITE_BUSY: begin
+            if (!ddr_busy_int && ddr_next_block && ddr_crc_ok)
+                ddr_next_state <= DDR_WRITE_WAIT;
+            else if (!ddr_busy_int)
+                ddr_next_state <= DDR_IDLE;
+            else
+                ddr_next_state <= DDR_WRITE_BUSY;
+        end
+        DDR_READ_WAIT: begin
+            if (start_bit)
+                ddr_next_state <= DDR_READ_DAT;
+            else
+                ddr_next_state <= DDR_READ_WAIT;
+        end
+        DDR_READ_DAT: begin
+            if (ddr_transf_cnt == ddr_data_cycles+17 && ddr_next_block && ddr_crc_ok)
+                ddr_next_state <= DDR_READ_WAIT;
+            else if (ddr_transf_cnt == ddr_data_cycles+17)
+                ddr_next_state <= DDR_IDLE;
+            else
+                ddr_next_state <= DDR_READ_DAT;
+        end
+        default: ddr_next_state <= DDR_IDLE;
+    endcase
+    //abort
+    if (start == 2'b11)
+        ddr_next_state <= DDR_IDLE;
+end
+
+always @(posedge sd_clk or posedge rst)
+begin: FSM_DDR_P
+    if (rst) begin
+    end
+    else begin
+        ddr_state <= ddr_next_state;
+        case(ddr_state)
+            DDR_IDLE: begin
+                ddr_DAT_oe_o <= 1;
+                ddr_DAT_dat_o <= 8'b11111111;
+                ddr_crc_en <= 0;
+                ddr_crc_rst <= 1;
+                ddr_transf_cnt <= 0;
+                ddr_crc_c <= 16;
+                ddr_crc_status <= 0;
+                ddr_crc_s <= 0;
+                ddr_we <= 0;
+                ddr_rd <= 0;
+                ddr_data_index <= 0;
+                ddr_next_block <= 0;
+                ddr_blkcnt_reg <= blkcnt;
+                ddr_byte_alignment_reg <= byte_alignment;
+                ddr_blksize_reg <= blksize;
+                ddr_data_cycles <= (bus_8bit ? blksize : (bus_4bit ? (blksize << 1) : (blksize << 3)));
+                ddr_bus_4bit_reg <= bus_4bit;
+                ddr_bus_8bit_reg <= bus_8bit;
+            end
+            DDR_WRITE_WAIT: begin
+                ddr_data_index <= 0;
+                ddr_next_block <= 0;
+            end
+            DDR_WRITE_DAT: begin
+                ddr_crc_ok <= 0;
+                ddr_transf_cnt <= transf_cnt + 16'h1;
+                ddr_rd <= 0;
+                //special case
+                if (ddr_transf_cnt == 0 && ddr_byte_alignment_reg == 2'b11 && ddr_bus_4bit_reg) begin
+                    ddr_rd <= 1;
+                end
+                else if (ddr_transf_cnt == 1) begin
+                    ddr_crc_rst <= 0;
+                    ddr_crc_en <= 1;
+                    if (ddr_bus_8bit_reg) begin
+                        ddr_last_din <= {
+                            data_in[31-(ddr_byte_alignment_reg << 4)], 
+                            data_in[30-(ddr_byte_alignment_reg << 4)], 
+                            data_in[29-(ddr_byte_alignment_reg << 4)], 
+                            data_in[28-(ddr_byte_alignment_reg << 4)],
+                            data_in[27-(ddr_byte_alignment_reg << 4)], 
+                            data_in[26-(ddr_byte_alignment_reg << 4)], 
+                            data_in[25-(ddr_byte_alignment_reg << 4)], 
+                            data_in[24-(ddr_byte_alignment_reg << 4)]
+                            };
+                        ddr_crc_in <= {
+                            data_in[31-(ddr_byte_alignment_reg << 4)], 
+                            data_in[30-(ddr_byte_alignment_reg << 4)], 
+                            data_in[29-(ddr_byte_alignment_reg << 4)], 
+                            data_in[28-(ddr_byte_alignment_reg << 4)],
+                            data_in[27-(ddr_byte_alignment_reg << 4)], 
+                            data_in[26-(ddr_byte_alignment_reg << 4)], 
+                            data_in[25-(ddr_byte_alignment_reg << 4)], 
+                            data_in[24-(ddr_byte_alignment_reg << 4)]
+                            };
+                    end                    
+                    ddr_DAT_oe_o <= 0;
+                    ddr_DAT_dat_o <= ddr_bus_8bit_reg ? 8'h0 :(ddr_bus_4bit_reg ? 8'hF0 : 8'hFE);
+                    ddr_data_index <= ddr_bus_8bit_reg ? {2'b0, ddr_byte_alignment_reg, 1'b1} :(ddr_bus_4bit_reg ? {2'b00, ddr_byte_alignment_reg, 1'b1} : {ddr_byte_alignment_reg, 3'b001});
+                end
+                else if ((ddr_transf_cnt >= 2) && (ddr_transf_cnt <= ddr_data_cycles+1)) begin
+                    ddr_DAT_oe_o<= 0;
+                    if (ddr_bus_8bit_reg) begin
+                        ddr_last_din <= {
+                            data_in[31-(ddr_data_index[0]<<4)], 
+                            data_in[30-(ddr_data_index[0]<<4)], 
+                            data_in[29-(ddr_data_index[0]<<4)], 
+                            data_in[28-(ddr_data_index[0]<<4)],
+                            data_in[27-(ddr_data_index[0]<<4)], 
+                            data_in[26-(ddr_data_index[0]<<4)], 
+                            data_in[25-(ddr_data_index[0]<<4)], 
+                            data_in[24-(ddr_data_index[0]<<4)]
+                            };
+                        ddr_crc_in <= {
+                            data_in[31-(ddr_data_index[0]<<4)], 
+                            data_in[30-(ddr_data_index[0]<<4)], 
+                            data_in[29-(ddr_data_index[0]<<4)], 
+                            data_in[28-(ddr_data_index[0]<<4)],
+                            data_in[27-(ddr_data_index[0]<<4)], 
+                            data_in[26-(ddr_data_index[0]<<4)], 
+                            data_in[25-(ddr_data_index[0]<<4)], 
+                            data_in[24-(ddr_data_index[0]<<4)]
+                            };
+                            // 31 -> 15 -> 31
+                        if (ddr_data_index[0] == 2'h1/*not 3 - read delay !!!*/ && ddr_transf_cnt <= ddr_data_cycles-1) begin
+                            ddr_rd <= 1;
+                        end
+                    end
+                    ddr_data_index <= ddr_data_index + 5'h1;
+                    ddr_DAT_dat_o <= ddr_last_din;
+                    if (ddr_transf_cnt == ddr_data_cycles+1)
+                        ddr_crc_en<=0;
+                end
+                else if (ddr_transf_cnt > ddr_data_cycles+1 & ddr_crc_c!=0) begin
+                    ddr_crc_en <= 0;
+                    ddr_crc_c <= ddr_crc_c - 5'h1;
+                    ddr_DAT_oe_o <= 0;
+                    ddr_DAT_dat_o[0] <= ddr_crc_out[0][ddr_crc_c-1];
+                    if (bus_8bit_reg)
+                        ddr_DAT_dat_o[7:1] <= {ddr_crc_out[7][ddr_crc_c-1], ddr_crc_out[6][ddr_crc_c-1], ddr_crc_out[5][ddr_crc_c-1], ddr_crc_out[4][ddr_crc_c-1], ddr_crc_out[3][ddr_crc_c-1], ddr_crc_out[2][ddr_crc_c-1], ddr_crc_out[1][ddr_crc_c-1]};                   
+                end
+                else if (ddr_transf_cnt == ddr_data_cycles+18) begin
+                    ddr_DAT_oe_o <= 0;
+                    ddr_DAT_dat_o <= 8'hFF;
+                end
+                else if (ddr_transf_cnt >= ddr_data_cycles+19) begin
+                    ddr_DAT_oe_o <= 1;
+                end
+            end
+            DDR_WRITE_CRC: begin
+                ddr_DAT_oe_o <= 1;
+                if (ddr_crc_status < 4)
+                    ddr_crc_s[ddr_crc_status] <= DAT_dat_reg[0];
+                ddr_crc_status <= ddr_crc_status + 4'h1;
+                ddr_busy_int <= 1;
+            end
+            DDR_WRITE_BUSY: begin
+                if (ddr_crc_s == 4'b1010)
+                    ddr_crc_ok <= 1;
+                else
+                    ddr_crc_ok <= 0;
+                ddr_busy_int <= !DAT_dat_reg[0];
+                ddr_next_block <= ((ddr_blkcnt_reg - `BLKCNT_W'h1) != 0);
+                if (ddr_next_state != DDR_WRITE_BUSY) begin
+                    ddr_blkcnt_reg <= ddr_blkcnt_reg - `BLKCNT_W'h1;
+                    ddr_byte_alignment_reg <=  0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
+                    ddr_crc_rst <= 1;
+                    ddr_crc_c <= 16;
+                    ddr_crc_status <= 0;
+                end
+                ddr_transf_cnt <= 0;
+            end
+            DDR_READ_WAIT: begin
+                ddr_DAT_oe_o <= 1;
+                ddr_crc_rst <= 0;
+                ddr_crc_en <= 1;
+                ddr_crc_in <= 0;
+                ddr_crc_c <= 15;// end
+                ddr_next_block <= 0;
+                ddr_transf_cnt <= 0;
+                ddr_data_index <= 0;//bus_4bit_reg ? (byte_alignment_reg << 1) : (byte_alignment_reg << 3);
+            end
+            DDR_READ_DAT: begin
+                if (ddr_transf_cnt < ddr_data_cycles) begin
+                    if (bus_8bit_reg) begin
+                        ddr_we <= (ddr_data_index[0] == 1 || (ddr_transf_cnt == ddr_data_cycles-1  && !ddr_blkcnt_reg));
+                        ddr_data_out[15-(ddr_data_index[0]<<3)] <= DAT_dat_reg[7];
+                        ddr_data_out[14-(ddr_data_index[0]<<3)] <= DAT_dat_reg[6];
+                        ddr_data_out[13-(ddr_data_index[0]<<3)] <= DAT_dat_reg[5];
+                        ddr_data_out[12-(ddr_data_index[0]<<3)] <= DAT_dat_reg[4];
+                        ddr_data_out[11-(ddr_data_index[0]<<3)] <= DAT_dat_reg[3];
+                        ddr_data_out[10-(ddr_data_index[0]<<3)] <= DAT_dat_reg[2];
+                        ddr_data_out[9 -(ddr_data_index[0]<<3)] <= DAT_dat_reg[1];
+                        ddr_data_out[8 -(ddr_data_index[0]<<3)] <= DAT_dat_reg[0];
+                        
+                        // 15 -> 7 -> 15
+                    end
+                    ddr_data_index <= ddr_data_index + 5'h1;
+                    ddr_crc_in <= DAT_dat_reg;
+                    ddr_crc_ok <= 1;
+                    ddr_transf_cnt <= ddr_transf_cnt + 16'h1;
+                end
+                else if (ddr_transf_cnt <= ddr_data_cycles+16) begin
+                    ddr_transf_cnt <= ddr_transf_cnt + 16'h1;
+                    ddr_crc_en <= 0;
+                    ddr_last_din <= DAT_dat_reg;
+                    ddr_we<=0;
+                    if (ddr_transf_cnt > ddr_data_cycles) begin
+                        ddr_crc_c <= ddr_crc_c - 5'h1;
+                        if  (ddr_crc_out[0][ddr_crc_c] != ddr_last_din[0])
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[1][ddr_crc_c] != ddr_last_din[1] && bus_8bit_reg)
+                            ddr_crc_ok<=0;
+                        if  (ddr_crc_out[2][ddr_crc_c] != ddr_last_din[2] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[3][ddr_crc_c] != ddr_last_din[3] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[4][ddr_crc_c] != ddr_last_din[4] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[5][ddr_crc_c] != ddr_last_din[5] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[6][ddr_crc_c] != ddr_last_din[6] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[7][ddr_crc_c] != ddr_last_din[7] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if (ddr_crc_c == 0) begin
+                            ddr_next_block <= ((ddr_blkcnt_reg - `BLKCNT_W'h1) != 0);
+                            ddr_blkcnt_reg <= ddr_blkcnt_reg - `BLKCNT_W'h1;
+                            ddr_byte_alignment_reg <= 0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
+                            ddr_crc_rst <= 1;
+                        end
+                    end
+                end
+            end
+
+        endcase            
+    end                
+end 
+
+always @(negedge sd_clk or posedge rst)
+begin: FSM_DDR_N
+    if (rst) begin
+    end
+    else begin
+        state <= next_state;
+        case(state)
+            DDR_IDLE: begin
+                ddr_transf_cnt <= 0;
+                ddr_crc_c <= 16;
+                ddr_crc_status <= 0;
+                ddr_crc_s <= 0;
+                ddr_data_index <= 0;
+            end
+            DDR_WRITE_WAIT: begin
+                ddr_data_index <= 0;
+            end
+            DDR_WRITE_DAT: begin
+                //special case
+                if (ddr_transf_cnt == 1) begin
+                    if (ddr_bus_8bit_reg) begin
+                        ddr_last_din <= {
+                            data_in[31-(ddr_byte_alignment_reg << 3)], 
+                            data_in[30-(ddr_byte_alignment_reg << 3)], 
+                            data_in[29-(ddr_byte_alignment_reg << 3)], 
+                            data_in[28-(ddr_byte_alignment_reg << 3)],
+                            data_in[27-(ddr_byte_alignment_reg << 3)], 
+                            data_in[26-(ddr_byte_alignment_reg << 3)], 
+                            data_in[25-(ddr_byte_alignment_reg << 3)], 
+                            data_in[24-(ddr_byte_alignment_reg << 3)]
+                            };
+                        ddr_crc_in <= {
+                            data_in[31-(ddr_byte_alignment_reg << 3)], 
+                            data_in[30-(ddr_byte_alignment_reg << 3)], 
+                            data_in[29-(ddr_byte_alignment_reg << 3)], 
+                            data_in[28-(ddr_byte_alignment_reg << 3)],
+                            data_in[27-(ddr_byte_alignment_reg << 3)], 
+                            data_in[26-(ddr_byte_alignment_reg << 3)], 
+                            data_in[25-(ddr_byte_alignment_reg << 3)], 
+                            data_in[24-(ddr_byte_alignment_reg << 3)]
+                            };
+                    end                    
+                    ddr_data_index <= ddr_bus_8bit_reg ? {2'b0, ddr_byte_alignment_reg, 1'b1} :(ddr_bus_4bit_reg ? {2'b00, ddr_byte_alignment_reg, 1'b1} : {ddr_byte_alignment_reg, 3'b001});
+                end
+                else if ((ddr_transf_cnt >= 2) && (ddr_transf_cnt <= ddr_data_cycles+1)) begin
+                    if (ddr_bus_8bit_reg) begin
+                        ddr_last_din <= {
+                            data_in[31-(ddr_data_index[1:0]<<3)], 
+                            data_in[30-(ddr_data_index[1:0]<<3)], 
+                            data_in[29-(ddr_data_index[1:0]<<3)], 
+                            data_in[28-(ddr_data_index[1:0]<<3)],
+                            data_in[27-(ddr_data_index[1:0]<<3)], 
+                            data_in[26-(ddr_data_index[1:0]<<3)], 
+                            data_in[25-(ddr_data_index[1:0]<<3)], 
+                            data_in[24-(ddr_data_index[1:0]<<3)]
+                            };
+                        ddr_crc_in <= {
+                            data_in[31-(ddr_data_index[1:0]<<3)], 
+                            data_in[30-(ddr_data_index[1:0]<<3)], 
+                            data_in[29-(ddr_data_index[1:0]<<3)], 
+                            data_in[28-(ddr_data_index[1:0]<<3)],
+                            data_in[27-(ddr_data_index[1:0]<<3)], 
+                            data_in[26-(ddr_data_index[1:0]<<3)], 
+                            data_in[25-(ddr_data_index[1:0]<<3)], 
+                            data_in[24-(ddr_data_index[1:0]<<3)]
+                            };
+                    end
+                    ddr_data_index <= ddr_data_index + 5'h1;
+                    ddr_DAT_dat_o <= ddr_last_din;
+                    if (ddr_transf_cnt == ddr_data_cycles+1)
+                        ddr_crc_en<=0;
+                end
+                else if (ddr_transf_cnt > ddr_data_cycles+1 & ddr_crc_c!=0) begin
+                    ddr_crc_en <= 0;
+                    ddr_crc_c <= ddr_crc_c - 5'h1;
+                    ddr_DAT_oe_o <= 0;
+                    ddr_DAT_dat_o[0] <= ddr_crc_out[0][ddr_crc_c-1];
+                    if (bus_8bit_reg)
+                        ddr_DAT_dat_o[7:1] <= {ddr_crc_out[7][ddr_crc_c-1], ddr_crc_out[6][ddr_crc_c-1], ddr_crc_out[5][ddr_crc_c-1], ddr_crc_out[4][ddr_crc_c-1], ddr_crc_out[3][ddr_crc_c-1], ddr_crc_out[2][ddr_crc_c-1], ddr_crc_out[1][ddr_crc_c-1]};                   
+                end
+                else if (ddr_transf_cnt == ddr_data_cycles+18) begin
+                    ddr_DAT_oe_o <= 0;
+                    ddr_DAT_dat_o <= 8'hFF;
+                end
+                else if (ddr_transf_cnt >= ddr_data_cycles+19) begin
+                    ddr_DAT_oe_o <= 1;
+                end
+            end
+            DDR_WRITE_CRC: begin
+                ddr_DAT_oe_o <= 1;
+                if (ddr_crc_status < 4)
+                    ddr_crc_s[ddr_crc_status] <= DAT_dat_reg[0];
+                ddr_crc_status <= ddr_crc_status + 4'h1;
+                ddr_busy_int <= 1;
+            end
+            DDR_WRITE_BUSY: begin
+                if (ddr_crc_s == 4'b1010)
+                    ddr_crc_ok <= 1;
+                else
+                    ddr_crc_ok <= 0;
+                ddr_busy_int <= !DAT_dat_reg[0];
+                ddr_next_block <= ((ddr_blkcnt_reg - `BLKCNT_W'h1) != 0);
+                if (ddr_next_state != DDR_WRITE_BUSY) begin
+                    ddr_blkcnt_reg <= ddr_blkcnt_reg - `BLKCNT_W'h1;
+                    ddr_byte_alignment_reg <=  0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
+                    ddr_crc_rst <= 1;
+                    ddr_crc_c <= 16;
+                    ddr_crc_status <= 0;
+                end
+                ddr_transf_cnt <= 0;
+            end
+            DDR_READ_WAIT: begin
+                ddr_DAT_oe_o <= 1;
+                ddr_crc_rst <= 0;
+                ddr_crc_en <= 1;
+                ddr_crc_in <= 0;
+                ddr_crc_c <= 15;// end
+                ddr_next_block <= 0;
+                ddr_transf_cnt <= 0;
+                ddr_data_index <= 0;//bus_4bit_reg ? (byte_alignment_reg << 1) : (byte_alignment_reg << 3);
+            end
+            DDR_READ_DAT: begin
+                if (ddr_transf_cnt < ddr_data_cycles) begin
+                    if (bus_8bit_reg) begin
+                        ddr_data_out[31-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[7];
+                        ddr_data_out[30-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[6];
+                        ddr_data_out[29-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[5];
+                        ddr_data_out[28-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[4];
+                        ddr_data_out[27-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[3];
+                        ddr_data_out[26-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[2];
+                        ddr_data_out[25-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[1];
+                        ddr_data_out[24-(ddr_data_index[1:0]<<3)] <= DAT_dat_reg[0];
+                    end
+                    ddr_data_index <= ddr_data_index + 5'h1;
+                    ddr_crc_in <= DAT_dat_reg;
+                    ddr_crc_ok <= 1;
+                    ddr_transf_cnt <= ddr_transf_cnt + 16'h1;
+                end
+                else if (ddr_transf_cnt <= ddr_data_cycles+16) begin
+                    ddr_transf_cnt <= ddr_transf_cnt + 16'h1;
+                    ddr_crc_en <= 0;
+                    ddr_last_din <= DAT_dat_reg;
+                    if (ddr_transf_cnt > ddr_data_cycles) begin
+                        ddr_crc_c <= ddr_crc_c - 5'h1;
+                        if  (ddr_crc_out[0][ddr_crc_c] != ddr_last_din[0])
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[1][ddr_crc_c] != ddr_last_din[1] && bus_8bit_reg)
+                            ddr_crc_ok<=0;
+                        if  (ddr_crc_out[2][ddr_crc_c] != ddr_last_din[2] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[3][ddr_crc_c] != ddr_last_din[3] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[4][ddr_crc_c] != ddr_last_din[4] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[5][ddr_crc_c] != ddr_last_din[5] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[6][ddr_crc_c] != ddr_last_din[6] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if  (ddr_crc_out[7][ddr_crc_c] != ddr_last_din[7] && bus_8bit_reg)
+                            ddr_crc_ok <= 0;
+                        if (ddr_crc_c == 0) begin
+                            ddr_next_block <= ((ddr_blkcnt_reg - `BLKCNT_W'h1) != 0);
+                            ddr_blkcnt_reg <= ddr_blkcnt_reg - `BLKCNT_W'h1;
+                            ddr_byte_alignment_reg <= 0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
+                            ddr_crc_rst <= 1;
+                        end
+                    end
+                end
+            end
+
+        endcase            
+    end                
+end 
 
 endmodule
 

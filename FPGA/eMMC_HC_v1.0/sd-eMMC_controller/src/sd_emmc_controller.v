@@ -412,9 +412,9 @@
         .rst            (!s00_axi_aresetn | 
                         soft_rst_dat_sd_clk ),
         .data_in        (data_out_tx_fifo),
-        .rd             (rd_fifo),
+        .rd_out         (rd_fifo),
         .data_out_o       (data_in_rx_fifo),
-        .we             (we_fifo),
+        .we_out         (we_fifo),
         .DAT_oe_o       (sd_dat_t),
         .DAT_dat_o      (sd_dat_o),
         .DAT_dat_i      (sd_dat_i),

@@ -646,7 +646,7 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= ACMDErrorStatus; //slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012C32B2;    //slv_reg16; Capabilities register
+	        5'h10   : reg_data_out <= 32'h1012C32B2;    //slv_reg16; Capabilities register
 	        5'h11   : reg_data_out <= 0;               //slv_reg17;
 	        5'h12   : reg_data_out <= 0;               //slv_reg18;
 	        5'h13   : reg_data_out <= 0;               //slv_reg19;
