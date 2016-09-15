@@ -91,6 +91,7 @@
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
+		(* mark_debug = "true" *) output wire ddr_en,
 		input wire buff_read_en,
 		input wire buff_writ_en,
 		input wire write_trans_active,
@@ -185,6 +186,7 @@
     assign cmd_compl_int       = cc_int_sel ? 1'b0 : cmd_int_st[`INT_CMD_CC];
     assign cmd_int_rst         = acmd23_int_rst | cmd_int_rst_reg;
     assign cmd_start           = start_cmd_reg1 | cmd_start_reg;
+    assign ddr_en              = slv_reg15[18];
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -646,8 +648,8 @@
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
 	        5'h0F   : reg_data_out <= {slv_reg15[31:16],8'b0,ACMDErrorStatus}; //slv_reg15;
-	        5'h10   : reg_data_out <= 32'h4012C32B2;    //slv_reg16; Capabilities register
-	        5'h11   : reg_data_out <= 0;               //slv_reg17;
+	        5'h10   : reg_data_out <= 32'h52C32B2;    //slv_reg16; Capabilities register - 012C32B2
+	        5'h11   : reg_data_out <= 32'h5;           //slv_reg17; Capabilities register
 	        5'h12   : reg_data_out <= 0;               //slv_reg18;
 	        5'h13   : reg_data_out <= 0;               //slv_reg19;
 	        5'h16   : reg_data_out <= slv_reg22;

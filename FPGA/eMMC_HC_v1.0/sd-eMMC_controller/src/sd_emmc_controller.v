@@ -150,6 +150,7 @@
     wire [`BLKSIZE_W-1:0] block_size_sd_clk;
     wire controll_setting_sd_clk;
     wire controll_setting_8bit_sd_clk;
+    wire ddr_en;
     wire [`INT_CMD_SIZE-1:0] cmd_int_status_sd_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_status_sd_clk;
     wire [`BLKCNT_W-1:0] block_count_sd_clk;
@@ -319,6 +320,7 @@
             .timeout_contr_wire(data_timeout_axi_clk),
             .sd_dat_bus_width(controll_setting_axi_clk),   
             .sd_dat_bus_width_8bit(controll_setting_8bit_axi_clk),   
+            .ddr_en(ddr_en),
             .buff_read_en(!rx_fifo_empty_axi_clk),
             .buff_writ_en(!tx_fifo_full_axi_clk),
             .write_trans_active(wr_trans_act_axi_clk),
@@ -421,12 +423,13 @@
         .blksize        (block_size_sd_clk),
         .bus_4bit       (controll_setting_sd_clk),
         .bus_8bit       (controll_setting_8bit_sd_clk),
+        .ddr50_en       (ddr_en),
         .blkcnt         (block_count_sd_clk),
         .start          ({d_read, d_write}),
         .byte_alignment (dma_addr_sd_clk),
         .sd_data_busy   (sd_data_busy),
         .busy           (data_busy),
-        .crc_ok_out     (data_crc_ok),
+        .crc_ok         (data_crc_ok),
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
 //        .next_block(next_block_st),

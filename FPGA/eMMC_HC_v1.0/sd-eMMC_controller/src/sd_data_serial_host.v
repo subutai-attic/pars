@@ -54,7 +54,7 @@
 `include "sd_defines.h"
 
 module sd_data_serial_host(
-           (* mark_debug = "true" *) input sd_clk,
+           input sd_clk,
            input rst,
            //Tx Fifo
            input [31:0] data_in,
@@ -76,7 +76,7 @@ module sd_data_serial_host(
            input [1:0] byte_alignment,
            output sd_data_busy,
            output busy,
-           output wire crc_ok_out,
+           output reg crc_ok,
            output read_trans_active,
            output write_trans_active,
 //           output next_block,
@@ -115,7 +115,7 @@ reg [`BLKSIZE_W-1:0] blksize_reg;
 reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
-reg crc_ok;
+//reg crc_ok;
 reg [7:0] last_din;
 reg [3:0] crc_s ;
 reg [4:0] data_index;
