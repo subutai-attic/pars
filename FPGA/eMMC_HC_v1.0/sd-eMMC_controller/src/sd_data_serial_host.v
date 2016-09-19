@@ -88,7 +88,7 @@ module sd_data_serial_host(
 
 (* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
 reg DAT_oe_o;
-reg [7:0] DAT_dat_o;
+(* mark_debug = "true" *) reg [7:0] DAT_dat_o;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
@@ -97,9 +97,9 @@ reg [7:0] crc_in;
 reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [7:0];
-reg [`BLKSIZE_W-1+4:0] transf_cnt;
+(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-reg [SIZE-1:0] state;
+(* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;
@@ -112,7 +112,7 @@ reg [3:0] crc_status;
 reg busy_int;
 reg [`BLKCNT_W-1:0] blkcnt_reg;
 reg [1:0] byte_alignment_reg;
-reg [`BLKSIZE_W-1:0] blksize_reg;
+//reg [`BLKSIZE_W-1:0] blksize_reg;
 reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
@@ -125,12 +125,13 @@ reg rd;
 reg we;
 wire [7:0] DAT_pos_i;
 wire [7:0] DAT_neg_i;
-reg  [7:0] DAT_neg_reg;
+(* mark_debug = "true" *) reg  [7:0] DAT_neg_reg;
 wire DAT_oe_out;
 
 //sd data input pad register
 always @(posedge sd_clk)
     DAT_dat_reg <= DAT_pos_i;
+
     
 always @(negedge sd_clk)
     DAT_neg_reg <= DAT_neg_i;
@@ -149,7 +150,8 @@ assign read_trans_active = ((state == READ_DAT) || (state == READ_WAIT) || (ddr_
 assign write_trans_active = ((state == WRITE_DAT) || (state == WRITE_BUSY) || (state == WRITE_CRC) || (state == WRITE_WAIT) || (ddr_state == DDR_WRITE_DAT) || (ddr_state == DDR_WRITE_BUSY) || (ddr_state == DDR_WRITE_CRC) || (ddr_state == DDR_WRITE_WAIT));
 assign write_next_block = (((state == WRITE_WAIT) || (ddr_state == DDR_WRITE_WAIT)) && DAT_dat_reg[0] && (next_block || ddr_next_block));
 
-assign ddr_DAT_dat_op = (ddr50_en_reg) ? ddr_DAT_dat_o : DAT_dat_o;
+assign ddr_DAT_dat_op = (ddr50_en_reg) ? ddr_DAT_pos_o : DAT_dat_o;
+assign ddr_DAT_dat_on = (ddr50_en_reg) ? ddr_DAT_neg_o : DAT_dat_o;
 assign DAT_oe_out     = (ddr50_en_reg) ? ddr_DAT_oe_o : DAT_oe_o;
 assign we_out         = (ddr50_en_reg) ? ddr_we : we;
 assign rd_out         = (ddr50_en_reg) ? ddr_rd : rd;
@@ -175,7 +177,7 @@ begin: FSM_COMBO
                 next_state <= WRITE_WAIT;
         end
         WRITE_DAT: begin
-            if (transf_cnt >= data_cycles+21 && start_bit)
+            if (transf_cnt >= data_cycles+22 && start_bit)
                 next_state <= WRITE_CRC;
             else
                 next_state <= WRITE_DAT;
@@ -261,7 +263,7 @@ begin: FSM_OUT
                 next_block <= 0;
                 blkcnt_reg <= blkcnt;
                 byte_alignment_reg <= byte_alignment;
-                blksize_reg <= blksize;
+//                blksize_reg <= blksize;
 //                data_cycles <= (bus_4bit ? (blksize << 1)/* + `BLKSIZE_W'd2 */: (blksize << 3))/*+ `BLKSIZE_W'd8)*/;
                 data_cycles <= (bus_8bit ? blksize : (bus_4bit ? (blksize << 1) : (blksize << 3)));
                 bus_4bit_reg <= bus_4bit;
@@ -536,9 +538,10 @@ reg [15:0] ddr_data_out;
 reg [15:0] ddr_data_outn;
 reg ddr_rd;
 reg ddr_we;
-reg [7:0] ddr_DAT_dat_o;
+reg [7:0] ddr_DAT_pos_o;
+reg [7:0] ddr_DAT_neg_o;
 wire [7:0] ddr_DAT_dat_op;
-reg [7:0] ddr_DAT_dat_on;
+wire [7:0] ddr_DAT_dat_on;
 reg ddr_DAT_oe_o;
 reg ddr50_en_reg;
 
@@ -554,11 +557,11 @@ always @(ddr_state or start or start_bit or  ddr_transf_cnt or ddr_data_cycles o
 begin: FSM_DDR
     case(ddr_state)
         DDR_IDLE: begin
-//            if (start == 2'b01 && ddr50_en_reg)
-//                ddr_next_state <= DDR_WRITE_WAIT;
-//            else if  (start == 2'b10 && ddr50_en_reg)
-//                ddr_next_state <= DDR_READ_WAIT;
-//            else
+            if (start == 2'b01 && ddr50_en_reg)
+                ddr_next_state <= DDR_WRITE_WAIT;
+            else if  (start == 2'b10 && ddr50_en_reg)
+                ddr_next_state <= DDR_READ_WAIT;
+            else
                 ddr_next_state <= DDR_IDLE;
         end
         DDR_WRITE_WAIT: begin
@@ -568,7 +571,7 @@ begin: FSM_DDR
                 ddr_next_state <= DDR_WRITE_WAIT;
         end
         DDR_WRITE_DAT: begin
-            if (ddr_transf_cnt >= ddr_data_cycles+21 && start_bit)
+            if (ddr_transf_cnt >= ddr_data_cycles+22 && start_bit)
                 ddr_next_state <= DDR_WRITE_CRC;
             else
                 ddr_next_state <= DDR_WRITE_DAT;
@@ -612,7 +615,7 @@ always @(posedge sd_clk or posedge rst)
 begin: FSM_DDR_P
     if (rst) begin
         ddr_state <= DDR_IDLE;
-        ddr_DAT_oe_o <= 1;
+        ddr_DAT_oe_o <= 0;
         ddr_crc_en <= 0;
         ddr_crc_rst <= 1;
         ddr_transf_cnt <= 0;
@@ -621,7 +624,7 @@ begin: FSM_DDR_P
         ddr_last_din <= 0;
         ddr_crc_c <= 0;
         ddr_crc_in <= 0;
-        ddr_DAT_dat_o <= 0;
+        ddr_DAT_pos_o <= 0;
         ddr_crc_status <= 0;
         ddr_crc_s <= 0;
         ddr_we <= 0;
@@ -641,8 +644,8 @@ begin: FSM_DDR_P
         ddr_state <= ddr_next_state;
         case(ddr_state)
             DDR_IDLE: begin
-                ddr_DAT_oe_o <= 1;
-                ddr_DAT_dat_o <= 8'b11111111;
+                ddr_DAT_oe_o <= 0;
+                ddr_DAT_pos_o <= 8'b11111111;
                 ddr_crc_en <= 0;
                 ddr_crc_rst <= 1;
                 ddr_transf_cnt <= 0;
@@ -655,8 +658,8 @@ begin: FSM_DDR_P
                 ddr_next_block <= 0;
                 ddr_blkcnt_reg <= blkcnt;
                 ddr_byte_alignment_reg <= byte_alignment;
-                ddr_blksize_reg <= blksize;
-                ddr_data_cycles <= bus_8bit ? blksize : 0;
+//                ddr_blksize_reg <= blksize/2;
+                ddr_data_cycles <= bus_8bit ? blksize/2 : 0;
                 ddr_bus_8bit_reg <= bus_8bit;
                 ddr50_en_reg <= ddr50_en;
             end
@@ -697,12 +700,12 @@ begin: FSM_DDR_P
                             data_in[24-(ddr_byte_alignment_reg << 4)]
                             };
                     end                    
-                    ddr_DAT_oe_o <= 0;
-                    ddr_DAT_dat_o <= ddr_bus_8bit_reg ? 8'h0 :8'hFE;
+                    ddr_DAT_oe_o <= 1;
+                    ddr_DAT_pos_o <= ddr_bus_8bit_reg ? 8'h0 :8'hFE;
                     ddr_data_index <= ddr_bus_8bit_reg ? {2'b0, ddr_byte_alignment_reg, 1'b1} :{ddr_byte_alignment_reg, 3'b001};
                 end
                 else if ((ddr_transf_cnt >= 2) && (ddr_transf_cnt <= ddr_data_cycles+1)) begin
-                    ddr_DAT_oe_o<= 0;
+                    ddr_DAT_oe_o<= 1;
                     if (ddr_bus_8bit_reg) begin
                         ddr_last_din <= {
                             data_in[31-(ddr_data_index[0]<<4)], 
@@ -730,28 +733,28 @@ begin: FSM_DDR_P
                         end
                     end
                     ddr_data_index <= ddr_data_index + 5'h1;
-                    ddr_DAT_dat_o <= ddr_last_din;
+                    ddr_DAT_pos_o <= ddr_last_din;
                     if (ddr_transf_cnt == ddr_data_cycles+1)
                         ddr_crc_en<=0;
                 end
                 else if (ddr_transf_cnt > ddr_data_cycles+1 & ddr_crc_c!=0) begin
                     ddr_crc_en <= 0;
                     ddr_crc_c <= ddr_crc_c - 5'h1;
-                    ddr_DAT_oe_o <= 0;
-                    ddr_DAT_dat_o[0] <= ddr_crc_out[0][ddr_crc_c-1];
+                    ddr_DAT_oe_o <= 1;
+                    ddr_DAT_pos_o[0] <= ddr_crc_out[0][ddr_crc_c-1];
                     if (bus_8bit_reg)
-                        ddr_DAT_dat_o[7:1] <= {ddr_crc_out[7][ddr_crc_c-1], ddr_crc_out[6][ddr_crc_c-1], ddr_crc_out[5][ddr_crc_c-1], ddr_crc_out[4][ddr_crc_c-1], ddr_crc_out[3][ddr_crc_c-1], ddr_crc_out[2][ddr_crc_c-1], ddr_crc_out[1][ddr_crc_c-1]};                   
+                        ddr_DAT_pos_o[7:1] <= {ddr_crc_out[7][ddr_crc_c-1], ddr_crc_out[6][ddr_crc_c-1], ddr_crc_out[5][ddr_crc_c-1], ddr_crc_out[4][ddr_crc_c-1], ddr_crc_out[3][ddr_crc_c-1], ddr_crc_out[2][ddr_crc_c-1], ddr_crc_out[1][ddr_crc_c-1]};                   
                 end
                 else if (ddr_transf_cnt == ddr_data_cycles+18) begin
-                    ddr_DAT_oe_o <= 0;
-                    ddr_DAT_dat_o <= 8'hFF;
+                    ddr_DAT_oe_o <= 1;
+                    ddr_DAT_pos_o <= 8'hFF;
                 end
                 else if (ddr_transf_cnt >= ddr_data_cycles+19) begin
-                    ddr_DAT_oe_o <= 1;
+                    ddr_DAT_oe_o <= 0;
                 end
             end
             DDR_WRITE_CRC: begin
-                ddr_DAT_oe_o <= 1;
+                ddr_DAT_oe_o <= 0;
                 if (ddr_crc_status < 4)
                     ddr_crc_s[ddr_crc_status] <= DAT_dat_reg[0];
                 ddr_crc_status <= ddr_crc_status + 4'h1;
@@ -774,7 +777,7 @@ begin: FSM_DDR_P
                 ddr_transf_cnt <= 0;
             end
             DDR_READ_WAIT: begin
-                ddr_DAT_oe_o <= 1;
+                ddr_DAT_oe_o <= 0;
                 ddr_crc_rst <= 0;
                 ddr_crc_en <= 1;
                 ddr_crc_in <= 0;
@@ -843,11 +846,13 @@ end
 always @(negedge sd_clk or posedge rst)
 begin: FSM_DDR_N
     if (rst) begin
+        ddr_DAT_neg_o <= 0;
     end
     else begin
 //        state <= next_state;
         case(state)
             DDR_IDLE: begin
+                  ddr_DAT_neg_o <= 8'b11111111;
 //                ddr_transf_cnt <= 0;
 //                ddr_crc_c <= 16;
 //                ddr_crc_status <= 0;
@@ -882,7 +887,7 @@ begin: FSM_DDR_N
 //                            data_in[24-(ddr_byte_alignment_reg << 3)]
 //                            };
                     end            
-                    ddr_DAT_dat_on <= ddr_bus_8bit_reg ? 8'h0 :(ddr_bus_4bit_reg ? 8'hF0 : 8'hFE);                           
+                    ddr_DAT_neg_o <= ddr_bus_8bit_reg ? 8'h0 :(ddr_bus_4bit_reg ? 8'hF0 : 8'hFE);                           
 //                    ddr_data_index <= ddr_bus_8bit_reg ? {2'b0, ddr_byte_alignment_reg, 1'b1} :(ddr_bus_4bit_reg ? {2'b00, ddr_byte_alignment_reg, 1'b1} : {ddr_byte_alignment_reg, 3'b001});
                 end
                 else if ((ddr_transf_cnt >= 2) && (ddr_transf_cnt <= ddr_data_cycles+1)) begin
@@ -909,7 +914,7 @@ begin: FSM_DDR_N
 //                            };
                     end
 //                    ddr_data_index <= ddr_data_index + 5'h1;
-                    ddr_DAT_dat_on <= ddr_last_din_n;
+                    ddr_DAT_neg_o <= ddr_last_din_n;
 //                    if (ddr_transf_cnt == ddr_data_cycles+1)
 //                        ddr_crc_en<=0;
                 end
@@ -917,13 +922,13 @@ begin: FSM_DDR_N
 //                    ddr_crc_en <= 0;
 //                    ddr_crc_c <= ddr_crc_c - 5'h1;
 //                    ddr_DAT_oe_o <= 0;
-                    ddr_DAT_dat_on[0] <= ddr_crc_out[0][ddr_crc_c-1];
+                    ddr_DAT_neg_o[0] <= ddr_crc_out[0][ddr_crc_c-1];
                     if (bus_8bit_reg)
-                        ddr_DAT_dat_on[7:1] <= {ddr_crc_out[7][ddr_crc_c-1], ddr_crc_out[6][ddr_crc_c-1], ddr_crc_out[5][ddr_crc_c-1], ddr_crc_out[4][ddr_crc_c-1], ddr_crc_out[3][ddr_crc_c-1], ddr_crc_out[2][ddr_crc_c-1], ddr_crc_out[1][ddr_crc_c-1]};                   
+                        ddr_DAT_neg_o[7:1] <= {ddr_crc_out[7][ddr_crc_c-1], ddr_crc_out[6][ddr_crc_c-1], ddr_crc_out[5][ddr_crc_c-1], ddr_crc_out[4][ddr_crc_c-1], ddr_crc_out[3][ddr_crc_c-1], ddr_crc_out[2][ddr_crc_c-1], ddr_crc_out[1][ddr_crc_c-1]};                   
                 end
                 else if (ddr_transf_cnt == ddr_data_cycles+18) begin
 //                    ddr_DAT_oe_o <= 0;
-                    ddr_DAT_dat_on <= 8'hFF;
+                    ddr_DAT_neg_o <= 8'hFF;
                 end
 //                else if (ddr_transf_cnt >= ddr_data_cycles+19) begin
 //                    ddr_DAT_oe_o <= 1;
