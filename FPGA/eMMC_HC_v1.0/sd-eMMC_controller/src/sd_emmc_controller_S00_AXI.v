@@ -91,8 +91,8 @@
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
-		input wire buff_read_en,
-		input wire buff_writ_en,
+//		input wire buff_read_en,
+//		input wire buff_writ_en,
 		input wire write_trans_active,
 		input wire read_trans_active,
 		input wire dat_line_act,
@@ -156,15 +156,21 @@
 	//interrupt register
     reg [31:0] cmd_int_reg;
     reg [11:0] blk_size_cnt = 0;
-    reg [11:0] blk_size_cn  = 0;
+//    reg [11:0] blk_size_cn  = 0;
     reg [15:0] blk_count_cnt = 0;
-	wire     buff_read_en_int;
-	wire     buff_write_en_int;
+//	wire     buff_read_en_int;
+//	wire     buff_write_en_int;
 	wire cmd_compl_int;
 	reg  cmd_int_rst_reg;
 	reg  cmd_start_reg;
 	reg  [7:0]ACMDErrorStatus;
-     
+	reg arg_sel;
+    reg cmd_sel;
+	reg acmd23_int_rst;
+	reg cc_int_sel;
+	reg start_cmd_reg1;
+	reg autocmderror;
+				     
     //SD-eMMC host controller registers
 	assign software_reset_o    = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
@@ -273,8 +279,8 @@
 	end       
 
 	assign slv_reg_wren = axi_wready && S_AXI_WVALID && axi_awready && S_AXI_AWVALID;
-	assign buff_read_en_int = ((dat_int_st[5] && buff_read_en) | (dat_int_st[0] && buff_read_en));
-	assign buff_write_en_int = ((dat_int_st[5] && start_tx_fifo_i) | (dat_int_st[0] && !buff_read_en && start_tx_fifo_i) | (!buff_read_en && start_tx_fifo_i && cmd_int_st[0])); // have to be changed for the SD fifo status
+//	assign buff_read_en_int = ((dat_int_st[5] && buff_read_en) | (dat_int_st[0] && buff_read_en));
+//	assign buff_write_en_int = ((dat_int_st[5] && start_tx_fifo_i) | (dat_int_st[0] && !buff_read_en && start_tx_fifo_i) | (!buff_read_en && start_tx_fifo_i && cmd_int_st[0])); // have to be changed for the SD fifo status
 
 	always @( posedge S_AXI_ACLK )
 	begin
@@ -305,7 +311,7 @@
 	      cmd_int_rst_reg <= 0;
 	      dat_int_rst <= 0;
 	      blk_size_cnt <= 0;
-	      blk_size_cn  <= 0;
+//	      blk_size_cn  <= 0;
           blk_count_cnt <= 0;
 	    end
 	  else begin
@@ -509,21 +515,21 @@
 	      end
 	      
           // Error and Normal Interrupt registers 0x30
-          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], autocmderror, 1'b0, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 10'b0000000000, buff_read_en_int, buff_write_en_int, 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_compl_int});
+          slv_reg12 <= ((~slv_reg12_1[28:0]) & {dat_int_st[4], 2'b00, dma_int[1], autocmderror, 1'b0, dat_int_st[1], dat_int_st[3:2], cmd_int_st[4], cmd_int_st[1], cmd_int_st[3:2], 12'b000000000000, /*buff_read_en_int, buff_write_en_int,*/ 2'b00, (dma_int[0] | cmd_int_st[`INT_CMD_DC]), cmd_compl_int});
           // Internal sd clock stable signal
           slv_reg11[1] <= Internal_clk_stable;
           slv_reg9 [24] <= 1'b1;
           slv_reg9 [23:20] <= {4{~dat_line_act}};
           slv_reg9 [19:16] <= 4'b1111;
-          slv_reg9 [11] <= (buff_read_en && (blk_size_cnt != slv_reg1[11:0]));
-          slv_reg9 [10] <= (start_tx_fifo_i && (blk_size_cn != slv_reg1[11:0]));
+          slv_reg9 [11] <= 1'b0; /*(buff_read_en && (blk_size_cnt != slv_reg1[11:0]));*/
+          slv_reg9 [10] <= 1'b0; /*(start_tx_fifo_i && (blk_size_cn != slv_reg1[11:0]));*/
           slv_reg9 [8] <= write_trans_active;
           slv_reg9 [9] <= read_trans_active;
           slv_reg9 [2] <= dat_line_act;
           slv_reg9 [1] <= (command_inh_dat | read_trans_active);
           slv_reg9 [0] <= slv_reg9 [0] && !com_inh_cmd;
-          if (buff_write_en_int)
-              blk_size_cn <= 0;
+//          if (buff_write_en_int)
+//              blk_size_cn <= 0;
 	  end
 	  
 	end    
@@ -678,15 +684,10 @@
 	end    
 	
 	reg [1:0] acmd23state;
-	reg acmd23_int_rst;
-	reg arg_sel;
-	reg cmd_sel;
-	reg cc_int_sel;
-	reg autocmderror;
-	reg start_cmd_reg1;
-	parameter [1:0] ACMDE = 2'b00, // AutoCMD23 Enable wait state
-	                ACMDC = 2'b01, // AutoCMD23 Completion wait state
-	                ACMDS = 2'b10; // Associated CMDx Send state
+
+	localparam [1:0] ACMDE = 2'b00, // AutoCMD23 Enable wait state
+	                 ACMDC = 2'b01, // AutoCMD23 Completion wait state
+	                 ACMDS = 2'b10; // Associated CMDx Send state
 	
 	always@(posedge S_AXI_ACLK)
 	begin: AUTOCMD23

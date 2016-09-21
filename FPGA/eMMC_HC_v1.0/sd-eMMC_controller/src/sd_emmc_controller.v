@@ -106,8 +106,8 @@
     wire [31:0] data_out_tx_fifo;
     wire start_tx_fifo;
     wire start_rx_fifo;
-    wire tx_fifo_empty;
-    wire tx_fifo_full;
+//    wire tx_fifo_empty;
+//    wire tx_fifo_full;
     wire rx_fifo_full;
     wire sd_data_busy;
     wire data_busy;
@@ -170,9 +170,9 @@
     wire [28:0] int_signal_en_reg;
 
     // Present state register
-    wire tx_fifo_full_axi_clk;
-    wire rx_fifo_empty_sd_clk;
-    wire rx_fifo_empty_axi_clk;
+//    wire tx_fifo_full_axi_clk;
+//    wire rx_fifo_empty_sd_clk;
+//    wire rx_fifo_empty_axi_clk;
     wire rd_trans_act_axi_clk;
     wire rd_trans_act_sd_clk;
     wire wr_trans_act_axi_clk;
@@ -319,8 +319,8 @@
             .timeout_contr_wire(data_timeout_axi_clk),
             .sd_dat_bus_width(controll_setting_axi_clk),   
             .sd_dat_bus_width_8bit(controll_setting_8bit_axi_clk),   
-            .buff_read_en(!rx_fifo_empty_axi_clk),
-            .buff_writ_en(!tx_fifo_full_axi_clk),
+//            .buff_read_en(!rx_fifo_empty_axi_clk),
+//            .buff_writ_en(!tx_fifo_full_axi_clk),
             .write_trans_active(wr_trans_act_axi_clk),
             .read_trans_active(rd_trans_act_axi_clk),
             .dat_line_act(data_line_active_axi_clk),
@@ -397,8 +397,8 @@
         .d_read_o         (d_read),
         .start_tx_fifo_o  (start_tx_fifo),
         .start_rx_fifo_o  (start_rx_fifo),
-        .tx_fifo_empty_i  (tx_fifo_empty),
-        .tx_fifo_full_i   (tx_fifo_full),
+//        .tx_fifo_empty_i  (tx_fifo_empty),
+//        .tx_fifo_full_i   (tx_fifo_full),
         .rx_fifo_full_i   (rx_fifo_full),
         .xfr_complete_i   (!data_busy),
         .crc_ok_i         (data_crc_ok),
@@ -433,7 +433,7 @@
         .start_write(start_write_sd_clk),
         .write_next_block(next_block_st)
         );
-
+/*
     sd_fifo_filler sd_fifo_filler0(
         .wb_clk    (s00_axi_aclk),
         .rst       (!s00_axi_aresetn |
@@ -458,7 +458,7 @@
         .wb_empty_o  (rx_fifo_empty_sd_clk),
         .fifo_reset(fifo_reset)
         );
-
+*/
     sd_data_xfer_trig sd_data_xfer_trig0 (
         .sd_clk                (SD_CLK),
         .rst                   (!s00_axi_aresetn |
@@ -469,6 +469,22 @@
         .start_tx_o            (data_start_tx),
         .start_rx_o            (data_start_rx)
         );
+        
+    fifo18Kb fifo18Kb_inst(
+        .aclk(s00_axi_aclk),
+        .sd_clk(SD_CLK),
+        .rst(!s00_axi_aresetn |
+             soft_rst_dat_sd_clk),
+        .axi_data_in    (write_dat_fifo),
+        .sd_data_in     (data_in_rx_fifo),
+        .sd_data_out    (data_out_tx_fifo),
+        .axi_data_out   (read_fifo_out),
+        .sd_rd_en       (rd_fifo),
+        .axi_rd_en      (fifo_data_read_ready),
+        .axi_wr_en      (fifo_data_write_ready),
+        .sd_wr_en       (we_fifo),
+        .sd_full_o      (rx_fifo_full)
+    );
 
     edge_detect soft_reset_edge_cmd(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_axi_clk[0]), .rise(soft_rst_cmd_axi_clk), .fall());
     edge_detect sotf_reset_edge_dat(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_axi_clk[1]), .rise(soft_rst_dat_axi_clk), .fall());
@@ -497,8 +513,8 @@
     bistable_domain_cross #(1) controll_setting_8bit_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_8bit_axi_clk, SD_CLK, controll_setting_8bit_sd_clk);
     bistable_domain_cross #(`INT_CMD_SIZE) cmd_int_status_cross(!s00_axi_aresetn, SD_CLK, cmd_int_status_sd_clk, s00_axi_aclk, cmd_int_status_axi_clk);
     
-    bistable_domain_cross #(1) buffer_read_enable_cross(!s00_axi_aresetn, SD_CLK, rx_fifo_empty_sd_clk, s00_axi_aclk, rx_fifo_empty_axi_clk);
-    bistable_domain_cross #(1) buffer_write_enable_cross(!s00_axi_aresetn, SD_CLK, tx_fifo_full, s00_axi_aclk, tx_fifo_full_axi_clk);
+//    bistable_domain_cross #(1) buffer_read_enable_cross(!s00_axi_aresetn, SD_CLK, rx_fifo_empty_sd_clk, s00_axi_aclk, rx_fifo_empty_axi_clk);
+//    bistable_domain_cross #(1) buffer_write_enable_cross(!s00_axi_aresetn, SD_CLK, tx_fifo_full, s00_axi_aclk, tx_fifo_full_axi_clk);
     bistable_domain_cross #(1) read_trans_act_cross(!s00_axi_aresetn, SD_CLK, rd_trans_act_sd_clk, s00_axi_aclk, rd_trans_act_axi_clk);
     bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
     bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);

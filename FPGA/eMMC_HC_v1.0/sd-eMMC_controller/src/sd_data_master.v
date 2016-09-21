@@ -60,8 +60,8 @@ module sd_data_master (
            //To fifo filler
            output reg start_tx_fifo_o,
            output reg start_rx_fifo_o,
-           input tx_fifo_empty_i,
-           input tx_fifo_full_i,
+//           input tx_fifo_empty_i,
+//           input tx_fifo_full_i,
            input rx_fifo_full_i,
            //TODO: should be dependent on rx_fifo_empty_i signal (wishbone read all data case)
            //SD-DATA_Host
@@ -86,7 +86,7 @@ parameter DATA_TRANSFER = 3'b100;
 
 reg trans_done;
 
-always @(state or start_tx_i or start_rx_i or tx_fifo_full_i or xfr_complete_i or trans_done)
+always @(state or start_tx_i or start_rx_i or xfr_complete_i or trans_done)
 begin: FSM_COMBO
     case(state)
         IDLE: begin

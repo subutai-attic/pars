@@ -126,21 +126,21 @@ wire next_data_word;
 wire write_resp_error;
 wire read_resp_error;
 
-parameter IDLE             = 4'b0000;
-parameter MEM2CARD         = 4'b0001;
-parameter MEM2CARD_WAIT    = 4'b0010;
-parameter CARD2MEM_WAIT    = 4'b0011;
-parameter CARD2MEM_ACT     = 4'b0100;
+localparam IDLE             = 4'b0000;
+localparam MEM2CARD         = 4'b0001;
+localparam MEM2CARD_WAIT    = 4'b0010;
+localparam CARD2MEM_WAIT    = 4'b0011;
+localparam CARD2MEM_ACT     = 4'b0100;
 
-parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
+localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
                                   // (1) After Power on reset or software reset.
                                   // (2) All descriptor data transfers are completed.
                                   //If a new ADMA2 operation is started by writing Command register, go to ST_FDS state. 
-                ST_FDS  = 3'b001, //State Fetch Descriptor. In this state ADMA2 fetches a descriptor line 
-                                  //and set parameters in internal registers.
-                ST_CADR = 3'b010, //State Change Address. In this state Link operation loads another Descriptor address
-                                  //to ADMA System Address register.
-                ST_TFR  = 3'b011; //State Transfer Data. In this state data transfer of one descriptor line is executed 
+                 ST_FDS  = 3'b001, //State Fetch Descriptor. In this state ADMA2 fetches a descriptor line 
+                                   //and set parameters in internal registers.
+                 ST_CADR = 3'b010, //State Change Address. In this state Link operation loads another Descriptor address
+                                   //to ADMA System Address register.
+                 ST_TFR  = 3'b011; //State Transfer Data. In this state data transfer of one descriptor line is executed 
                                   //between system memory and SD card.
                 
   assign m_axi_arsize	     = 3'b010;
