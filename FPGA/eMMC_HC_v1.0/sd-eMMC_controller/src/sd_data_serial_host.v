@@ -330,7 +330,7 @@ begin: FSM_OUT
                             data_in[25-(data_index[1:0]<<3)], 
                             data_in[24-(data_index[1:0]<<3)]
                             };
-                        if (data_index[1:0] == 2'h1/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
+                        if (data_index[1:0] == 2'h2/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
                             rd <= 1;
                         end
                     end
