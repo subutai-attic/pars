@@ -137,7 +137,7 @@ assign read_trans_active = ((state == READ_DAT) || (state == READ_WAIT));
 assign write_trans_active = ((state == WRITE_DAT) || (state == WRITE_BUSY) || (state == WRITE_CRC) || (state == WRITE_WAIT));
 assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_reg[0] && next_block);
 
-always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block)
+always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block or start_write)
 begin: FSM_COMBO
     case(state)
         IDLE: begin
