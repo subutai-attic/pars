@@ -95,7 +95,7 @@ reg crc_rst;
 wire [15:0] crc_out [7:0];
 reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-reg [SIZE-1:0] state;
+(* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;
@@ -114,7 +114,7 @@ wire start_bit;
 reg [4:0] crc_c;
 reg [7:0] last_din;
 reg [3:0] crc_s ;
-reg [4:0] data_index;
+(* mark_debug = "true" *) reg [4:0] data_index;
 reg [31:0] data_out;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
@@ -347,7 +347,7 @@ begin: FSM_OUT
                             data_in[29-(data_index[2:0]<<2)], 
                             data_in[28-(data_index[2:0]<<2)]
                             };
-                        if (data_index[2:0] == 3'h5/*not 7 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
+                        if (data_index[2:0] == 3'h6/*not 7 - read delay !!!*/ && transf_cnt <= data_cycles-1) begin
                             rd <= 1;
                         end
                     end

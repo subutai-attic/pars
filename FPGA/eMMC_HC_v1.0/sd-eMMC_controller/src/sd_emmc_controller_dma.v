@@ -40,7 +40,7 @@ module  sd_emmc_controller_dma (
             input wire xfer_compl,
             input wire is_we_en,
             input wire is_rd_en, 
-            output reg start_write,
+            (* mark_debug = "true" *)output reg start_write,
             input wire ser_next_blk,
             input wire [1:0] write_timeout,
             
