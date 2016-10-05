@@ -722,7 +722,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>039c346d</spirit:value>
+            <spirit:value>96b002c0</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -737,7 +737,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>3990531d</spirit:value>
+            <spirit:value>6a8a262c</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1872,6 +1872,10 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
+        <spirit:name>src/IDDR.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>src/fifo18kb.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
@@ -1936,11 +1940,15 @@
       <spirit:file>
         <spirit:name>src/sd_emmc_controller.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_be881986</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_dab30183</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
+      <spirit:file>
+        <spirit:name>src/IDDR.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
       <spirit:file>
         <spirit:name>src/fifo18kb.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
@@ -2058,8 +2066,8 @@
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>sd_emmc_controller_v1_0</xilinx:displayName>
-      <xilinx:coreRevision>388</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-09-30T09:18:55Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>396</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-10-05T11:21:21Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/azamat/Git/pars/FPGA/eMMC_HC_v1.0/sd-eMMC_controller</xilinx:tag>
@@ -2070,7 +2078,7 @@
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="4900e219"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="12497fc4"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="8e98f91a"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="8035635b"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="605fe57b"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="e041517e"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="15a214e0"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="dda63129"/>

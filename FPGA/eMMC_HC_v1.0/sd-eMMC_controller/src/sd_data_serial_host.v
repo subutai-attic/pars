@@ -64,8 +64,8 @@ module sd_data_serial_host(
            output reg we,
            //tristate data
            output reg DAT_oe_o,
-           output reg[7:0] DAT_dat_o,
-           input [7:0] DAT_dat_i,
+           (* mark_debug = "true" *) output reg[7:0] DAT_dat_o,
+           (* mark_debug = "true" *) input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
@@ -80,11 +80,12 @@ module sd_data_serial_host(
            output write_trans_active,
 //           output next_block,
            input start_write,
-           output wire write_next_block
+           output wire write_next_block,
+           (* mark_debug = "true" *) input wire [2:0] UHSMode
        );
        
 
-reg [7:0] DAT_dat_reg;
+(* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
 reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
@@ -113,9 +114,11 @@ reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
 reg [7:0] last_din;
-reg [3:0] crc_s ;
+reg [3:0] crc_s;
 (* mark_debug = "true" *) reg [4:0] data_index;
-reg [31:0] data_out;
+(* mark_debug = "true" *) reg [31:0] data_out;
+wire [7:0] iddrQ1;
+wire [7:0] iddrQ2;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
 
@@ -129,6 +132,14 @@ generate
         sd_crc_16 CRC_16_i (crc_in[i],crc_en, sd_clk, crc_rst, crc_out[i]);
     end
 endgenerate
+
+IDDR_p IDDR_p_inst(
+  .reset(rst),
+  .clock(sd_clk),
+  .in_ddr(DAT_dat_i),
+  .iddr_Q1(iddrQ1),
+  .iddr_Q2(iddrQ2)
+);
 
 assign busy = (state != IDLE);
 assign start_bit = !DAT_dat_reg[0];
@@ -420,35 +431,35 @@ begin: FSM_OUT
                 if (transf_cnt < data_cycles) begin
                     if (bus_8bit_reg) begin
                         we <= (data_index[1:0] == 3 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-(data_index[1:0]<<3)] <= DAT_dat_reg[7];
-                        data_out[30-(data_index[1:0]<<3)] <= DAT_dat_reg[6];
-                        data_out[29-(data_index[1:0]<<3)] <= DAT_dat_reg[5];
-                        data_out[28-(data_index[1:0]<<3)] <= DAT_dat_reg[4];
-                        data_out[27-(data_index[1:0]<<3)] <= DAT_dat_reg[3];
-                        data_out[26-(data_index[1:0]<<3)] <= DAT_dat_reg[2];
-                        data_out[25-(data_index[1:0]<<3)] <= DAT_dat_reg[1];
-                        data_out[24-(data_index[1:0]<<3)] <= DAT_dat_reg[0];
+                        data_out[31-(data_index[1:0]<<3)] <= iddrQ1[7];//DAT_dat_reg[7];
+                        data_out[30-(data_index[1:0]<<3)] <= iddrQ1[6];//DAT_dat_reg[6];
+                        data_out[29-(data_index[1:0]<<3)] <= iddrQ1[5];//DAT_dat_reg[5];
+                        data_out[28-(data_index[1:0]<<3)] <= iddrQ1[4];//DAT_dat_reg[4];
+                        data_out[27-(data_index[1:0]<<3)] <= iddrQ1[3];//DAT_dat_reg[3];
+                        data_out[26-(data_index[1:0]<<3)] <= iddrQ1[2];//DAT_dat_reg[2];
+                        data_out[25-(data_index[1:0]<<3)] <= iddrQ1[1];//DAT_dat_reg[1];
+                        data_out[24-(data_index[1:0]<<3)] <= iddrQ1[0];//DAT_dat_reg[0];
                     end
                     else if (bus_4bit_reg) begin
                         we <= (data_index[2:0] == 7 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-(data_index[2:0]<<2)] <= DAT_dat_reg[3];
-                        data_out[30-(data_index[2:0]<<2)] <= DAT_dat_reg[2];
-                        data_out[29-(data_index[2:0]<<2)] <= DAT_dat_reg[1];
-                        data_out[28-(data_index[2:0]<<2)] <= DAT_dat_reg[0];
+                        data_out[31-(data_index[2:0]<<2)] <= iddrQ1[3];//DAT_dat_reg[3];
+                        data_out[30-(data_index[2:0]<<2)] <= iddrQ1[2];//DAT_dat_reg[2];
+                        data_out[29-(data_index[2:0]<<2)] <= iddrQ1[1];//DAT_dat_reg[1];
+                        data_out[28-(data_index[2:0]<<2)] <= iddrQ1[0];//DAT_dat_reg[0];
                     end
                     else begin
                         we <= (data_index == 31 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-data_index] <= DAT_dat_reg[0];
+                        data_out[31-data_index] <= iddrQ1[0];//DAT_dat_reg[0];
                     end
                     data_index <= data_index + 5'h1;
-                    crc_in <= DAT_dat_reg;
+                    crc_in <= iddrQ1;//DAT_dat_reg;
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
                 else if (transf_cnt <= data_cycles+16) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
-                    last_din <= DAT_dat_reg;
+                    last_din <= iddrQ1;//DAT_dat_reg;
                     we<=0;
                     if (transf_cnt > data_cycles) begin
                         crc_c <= crc_c - 5'h1;

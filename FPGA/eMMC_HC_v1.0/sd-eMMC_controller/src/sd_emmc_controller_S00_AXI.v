@@ -104,7 +104,8 @@
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
 		output wire blk_gap_req,
-		input wire cc_int_puls
+		input wire cc_int_puls,
+		output wire [2:0] UHSModSel
 	);
     
 	// AXI4LITE signals
@@ -142,7 +143,7 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg12_1;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg13;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg14;
-//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg16;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
@@ -191,6 +192,7 @@
     assign cmd_compl_int       = cc_int_sel ? 1'b0 : cmd_int_st[`INT_CMD_CC];
     assign cmd_int_rst         = acmd23_int_rst | cmd_int_rst_reg;
     assign cmd_start           = start_cmd_reg1 | cmd_start_reg;
+    assign UHSModSel          = slv_reg15[18:16];
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -302,7 +304,7 @@
 	      slv_reg12_1 <= 0;
 	      slv_reg13 <= 0;
 	      slv_reg14 <= 0;
-//	      slv_reg15 <= 0;
+	      slv_reg15 <= 0;
 //	      slv_reg16 <= 0;
 //	      slv_reg17 <= 0;
 //	      slv_reg18 <= 0;
@@ -445,13 +447,13 @@
 	                // Slave register 14
 	                slv_reg14[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
-//	          5'h0F:
-//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-//	                // Respective byte enables are asserted as per write strobes 
-//	                // Slave register 15
-//	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-//	              end  
+	          5'h0F:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 15
+	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
 //	          5'h10:
 //	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 //	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -503,7 +505,7 @@
 	                      slv_reg12_1 <= slv_reg12_1;
 	                      slv_reg13 <= slv_reg13;
 	                      slv_reg14 <= slv_reg14;
-//	                      slv_reg15 <= slv_reg15;
+	                      slv_reg15 <= slv_reg15;
 //	                      slv_reg16 <= slv_reg16;
 //	                      slv_reg17 <= slv_reg17;
 //	                      slv_reg18 <= slv_reg18;
@@ -651,9 +653,9 @@
 	        5'h0C   : reg_data_out <= (slv_reg12 & slv_reg13);
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
-	        5'h0F   : reg_data_out <= ACMDErrorStatus; //slv_reg15;
+	        5'h0F   : reg_data_out <= {slv_reg15[31:16],8'h00,ACMDErrorStatus};
 	        5'h10   : reg_data_out <= 32'h012C32B2;    //slv_reg16; Capabilities register
-	        5'h11   : reg_data_out <= 0;               //slv_reg17;
+	        5'h11   : reg_data_out <= 32'h00000005;    //slv_reg17; Capabilities register
 	        5'h12   : reg_data_out <= 0;               //slv_reg18;
 	        5'h13   : reg_data_out <= 0;               //slv_reg19;
 	        5'h16   : reg_data_out <= slv_reg22;

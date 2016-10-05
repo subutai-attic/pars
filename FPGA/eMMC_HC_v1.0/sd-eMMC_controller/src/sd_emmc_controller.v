@@ -204,7 +204,10 @@
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
-//    assign maxi_wlast = M_AXI_WLAST;
+    
+    // UHS mode
+    wire [2:0] UHSModSel_axi_clk;
+    wire [2:0] UHSModSel_sd_clk;
     
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(M_AXI_ACLK),
@@ -332,7 +335,8 @@
             .dma_int(dma_int),
             .adma_sys_addr(system_addr),
             .blk_gap_req(stop_blk_gap_req),
-            .cc_int_puls(cmd_cmplt_axi_puls)
+            .cc_int_puls(cmd_cmplt_axi_puls),
+            .UHSModSel(UHSModSel_axi_clk)
         );
 
     // Clock divider
@@ -430,8 +434,9 @@
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
 //        .next_block(next_block_st),
-        .start_write(start_write_sd_clk),
-        .write_next_block(next_block_st)
+        .start_write    (start_write_sd_clk),
+        .write_next_block(next_block_st),
+        .UHSMode        (UHSModSel_sd_clk)
         );
 /*
     sd_fifo_filler sd_fifo_filler0(
@@ -512,9 +517,6 @@
     bistable_domain_cross #(1) controll_setting_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_axi_clk, SD_CLK, controll_setting_sd_clk);
     bistable_domain_cross #(1) controll_setting_8bit_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_8bit_axi_clk, SD_CLK, controll_setting_8bit_sd_clk);
     bistable_domain_cross #(`INT_CMD_SIZE) cmd_int_status_cross(!s00_axi_aresetn, SD_CLK, cmd_int_status_sd_clk, s00_axi_aclk, cmd_int_status_axi_clk);
-    
-//    bistable_domain_cross #(1) buffer_read_enable_cross(!s00_axi_aresetn, SD_CLK, rx_fifo_empty_sd_clk, s00_axi_aclk, rx_fifo_empty_axi_clk);
-//    bistable_domain_cross #(1) buffer_write_enable_cross(!s00_axi_aresetn, SD_CLK, tx_fifo_full, s00_axi_aclk, tx_fifo_full_axi_clk);
     bistable_domain_cross #(1) read_trans_act_cross(!s00_axi_aresetn, SD_CLK, rd_trans_act_sd_clk, s00_axi_aclk, rd_trans_act_axi_clk);
     bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
     bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
@@ -522,11 +524,10 @@
     bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, command_inhibit_cmd_sd_clk, s00_axi_aclk, command_inhibit_cmd_axi_clk);
     bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
     bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
-    
     bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);
     bistable_domain_cross #(2) dma_addr_reg_cross(!s00_axi_aresetn, s00_axi_aclk, 0, SD_CLK, dma_addr_sd_clk);
     bistable_domain_cross #(`INT_DATA_SIZE) data_int_status_reg_cross(!s00_axi_aresetn, SD_CLK, data_int_status_sd_clk, s00_axi_aclk, data_int_status_axi_clk);
-    
+    bistable_domain_cross #(3) UHSModSel_cross(!s00_axi_aresetn, s00_axi_aclk, UHSModSel_axi_clk, SD_CLK, UHSModSel_sd_clk);
     
     assign interrupt = |(int_status_reg & int_status_en_reg & int_signal_en_reg);
     
