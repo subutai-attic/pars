@@ -90,7 +90,7 @@ reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
-reg [7:0] crc_in;
+reg [15:0] crc_in;
 reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [7:0];
@@ -119,6 +119,8 @@ reg [3:0] crc_s;
 (* mark_debug = "true" *) reg [31:0] data_out;
 wire [7:0] iddrQ1;
 wire [7:0] iddrQ2;
+reg [7:0] iddrQ1_reg;
+reg [7:0] iddrQ2_reg;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
 
@@ -129,7 +131,13 @@ always @(posedge sd_clk)
 genvar i;
 generate
     for(i=0; i<8; i=i+1) begin: CRC_16_gen
-        sd_crc_16 CRC_16_i (crc_in[i],crc_en, sd_clk, crc_rst, crc_out[i]);
+        sd_crc_16 CRC_16_i(
+          crc_in[i],
+          crc_en,
+          sd_clk,
+          crc_rst,
+          crc_out[i]
+          );
     end
 endgenerate
 
@@ -141,6 +149,10 @@ IDDR_p IDDR_p_inst(
   .iddr_Q2(iddrQ2)
 );
 
+always @(posedge sd_clk)begin
+  iddrQ1_reg <= iddrQ1;
+  iddrQ2_reg <= iddrQ2;
+end
 assign busy = (state != IDLE);
 assign start_bit = !DAT_dat_reg[0];
 assign sd_data_busy = !DAT_dat_reg[0];
@@ -430,6 +442,27 @@ begin: FSM_OUT
             READ_DAT: begin
                 if (transf_cnt < data_cycles) begin
                     if (bus_8bit_reg) begin
+                      if (UHSMode == 3'b100) begin
+                        we <= (data_index[0] == 1'b1 || (transf_cnt == data_cycles-1 && !blkcnt_reg));
+                        data_out[31-(data_index[0] << 4)] <= iddrQ1_reg[7];
+                        data_out[30-(data_index[0] << 4)] <= iddrQ1_reg[6];
+                        data_out[29-(data_index[0] << 4)] <= iddrQ1_reg[5];
+                        data_out[28-(data_index[0] << 4)] <= iddrQ1_reg[4];
+                        data_out[27-(data_index[0] << 4)] <= iddrQ1_reg[3];
+                        data_out[26-(data_index[0] << 4)] <= iddrQ1_reg[2];
+                        data_out[25-(data_index[0] << 4)] <= iddrQ1_reg[1];
+                        data_out[24-(data_index[0] << 4)] <= iddrQ1_reg[0];
+
+                        data_out[23-(data_index[0] << 4)] <= iddrQ2_reg[7];
+                        data_out[22-(data_index[0] << 4)] <= iddrQ2_reg[6];
+                        data_out[21-(data_index[0] << 4)] <= iddrQ2_reg[5];
+                        data_out[20-(data_index[0] << 4)] <= iddrQ2_reg[4];
+                        data_out[19-(data_index[0] << 4)] <= iddrQ2_reg[3];
+                        data_out[18-(data_index[0] << 4)] <= iddrQ2_reg[2];
+                        data_out[17-(data_index[0] << 4)] <= iddrQ2_reg[1];
+                        data_out[16-(data_index[0] << 4)] <= iddrQ2_reg[0];
+                      end
+                      else begin
                         we <= (data_index[1:0] == 3 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
                         data_out[31-(data_index[1:0]<<3)] <= iddrQ1[7];//DAT_dat_reg[7];
                         data_out[30-(data_index[1:0]<<3)] <= iddrQ1[6];//DAT_dat_reg[6];
@@ -439,6 +472,7 @@ begin: FSM_OUT
                         data_out[26-(data_index[1:0]<<3)] <= iddrQ1[2];//DAT_dat_reg[2];
                         data_out[25-(data_index[1:0]<<3)] <= iddrQ1[1];//DAT_dat_reg[1];
                         data_out[24-(data_index[1:0]<<3)] <= iddrQ1[0];//DAT_dat_reg[0];
+                      end
                     end
                     else if (bus_4bit_reg) begin
                         we <= (data_index[2:0] == 7 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
@@ -452,7 +486,10 @@ begin: FSM_OUT
                         data_out[31-data_index] <= iddrQ1[0];//DAT_dat_reg[0];
                     end
                     data_index <= data_index + 5'h1;
-                    crc_in <= iddrQ1;//DAT_dat_reg;
+                    if (UHSMode == 3'b100)
+                      crc_in <= iddrQ1;
+                    else
+                      crc_in <= iddrQ1;//DAT_dat_reg;
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
