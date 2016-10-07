@@ -8,7 +8,7 @@
         )
         (
         //SD interface
-        output wire SD_CLK,
+        output wire SD_CLK_O,
         output wire sd_cmd_o,
         input wire sd_cmd_i,
         output wire sd_cmd_t,
@@ -208,6 +208,26 @@
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
 //    assign maxi_wlast = M_AXI_WLAST;
     
+    wire clk;
+    wire SD_CLK;
+    
+   ODDR #(
+      .DDR_CLK_EDGE("OPPOSITE_EDGE"), // "OPPOSITE_EDGE" or "SAME_EDGE" 
+      .INIT(1'b0),    // Initial value of Q: 1'b0 or 1'b1
+      .SRTYPE("SYNC") // Set/Reset type: "SYNC" or "ASYNC" 
+   ) ODDR_inst (
+      .Q   (clk),      // 1-bit DDR output
+      .C   (SD_CLK),    // 1-bit clock input
+      .CE  (1'b1),   // 1-bit clock enable input
+      .D1  (1'b1), // 1-bit data input (positive edge)
+      .D2  (1'b0), // 1-bit data input (negative edge)
+      .R   (1'b0),    // 1-bit reset
+      .S   (1'b0)    // 1-bit set
+   );
+
+    OBUF OBUF_inst (.I (clk), .O (SD_CLK_O));
+
+
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(M_AXI_ACLK),
             .reset(M_AXI_ARESETN),

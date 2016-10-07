@@ -226,7 +226,7 @@
             <spirit:name>CLK</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>SD_CLK</spirit:name>
+            <spirit:name>SD_CLK_O</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
       </spirit:portMaps>
@@ -258,7 +258,7 @@
             <spirit:name>CLK</spirit:name>
           </spirit:logicalPort>
           <spirit:physicalPort>
-            <spirit:name>SD_CLK</spirit:name>
+            <spirit:name>SD_CLK_O</spirit:name>
           </spirit:physicalPort>
         </spirit:portMap>
         <spirit:portMap>
@@ -701,7 +701,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>93635db1</spirit:value>
+            <spirit:value>b510f294</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -719,7 +719,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>7778a5c1</spirit:value>
+            <spirit:value>32365020</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -740,7 +740,7 @@
     </spirit:views>
     <spirit:ports>
       <spirit:port>
-        <spirit:name>SD_CLK</spirit:name>
+        <spirit:name>SD_CLK_O</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -1900,7 +1900,7 @@
       <spirit:file>
         <spirit:name>src/sd_emmc_controller.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_1f6c8ab3</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_5622554f</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -2055,8 +2055,8 @@
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>sd_emmc_controller_v1_0</xilinx:displayName>
-      <xilinx:coreRevision>414</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-09-19T10:35:01Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>455</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-10-07T09:33:39Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/baktiiar/workspace/github/pars/FPGA/eMMC_HC_v1.0/sd-eMMC_controller</xilinx:tag>
@@ -2064,11 +2064,11 @@
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2016.2</xilinx:xilinxVersion>
-      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="cfedca5e"/>
+      <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="7b37a9b2"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="12497fc4"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="8e98f91a"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="617429b3"/>
-      <xilinx:checksum xilinx:scope="ports" xilinx:value="38c88029"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="fa31ad14"/>
+      <xilinx:checksum xilinx:scope="ports" xilinx:value="0e4973c6"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="15a214e0"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="dda63129"/>
     </xilinx:packagingInfo>

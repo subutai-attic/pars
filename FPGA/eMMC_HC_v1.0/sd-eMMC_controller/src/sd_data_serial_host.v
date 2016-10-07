@@ -123,8 +123,8 @@ reg [4:0] data_index;
 reg [31:0] data_out;
 reg rd;
 reg we;
-wire [7:0] DAT_pos_i;
-wire [7:0] DAT_neg_i;
+(* mark_debug = "true" *) wire [7:0] DAT_pos_i;
+(* mark_debug = "true" *) wire [7:0] DAT_neg_i;
 (* mark_debug = "true" *) reg  [7:0] DAT_neg_reg;
 wire DAT_oe_out;
 
@@ -155,7 +155,7 @@ assign ddr_DAT_dat_on = (ddr50_en_reg) ? ddr_DAT_neg_o : DAT_dat_o;
 assign DAT_oe_out     = (ddr50_en_reg) ? ddr_DAT_oe_o : DAT_oe_o;
 assign we_out         = (ddr50_en_reg) ? ddr_we : we;
 assign rd_out         = (ddr50_en_reg) ? ddr_rd : rd;
-assign data_out_o [31:0] = (ddr50_en_reg) ? ({ddr_data_out[7:0], ddr_data_outn[7:0], ddr_data_out[15:8], ddr_data_outn[15:8]}) : ({data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]});
+assign data_out_o [31:0] = (ddr50_en_reg) ? ({ddr_data_outn[7:0], ddr_data_out[7:0], ddr_data_outn[15:8], ddr_data_out[15:8]}) : ({data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]});
 assign crc_ok_out     = (ddr50_en_reg) ? ddr_crc_ok : crc_ok;
 
 
@@ -510,7 +510,7 @@ reg ddr_bus_8bit_reg;
 reg [7:0] ddr_crc_in;
 reg ddr_crc_en;
 reg ddr_crc_rst;
-wire [15:0] ddr_crc_out [7:0];
+(* mark_debug = "true" *) wire [15:0] ddr_crc_out [7:0];
 (* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] ddr_transf_cnt;
 parameter DDR_SIZE = 6;
 (* mark_debug = "true" *) reg [DDR_SIZE-1:0] ddr_state;
@@ -529,8 +529,8 @@ reg [1:0] ddr_byte_alignment_reg;
 reg [`BLKSIZE_W-1:0] ddr_blksize_reg;
 reg ddr_next_block;
 reg [4:0] ddr_crc_c;
-reg ddr_crc_ok;
-reg [7:0] ddr_last_din;
+(* mark_debug = "true" *) reg ddr_crc_ok;
+(* mark_debug = "true" *) reg [7:0] ddr_last_din;
 reg [7:0] ddr_last_din_n;
 reg [3:0] ddr_crc_s ;
 (* mark_debug = "true" *) reg [4:0] ddr_data_index;
@@ -843,14 +843,14 @@ begin: FSM_DDR_P
     end                
 end 
 
-always @(negedge sd_clk or posedge rst)
+always @(posedge sd_clk or posedge rst)
 begin: FSM_DDR_N
     if (rst) begin
         ddr_DAT_neg_o <= 0;
     end
     else begin
 //        state <= next_state;
-        case(state)
+        case(ddr_state)
             DDR_IDLE: begin
                   ddr_DAT_neg_o <= 8'b11111111;
 //                ddr_transf_cnt <= 0;

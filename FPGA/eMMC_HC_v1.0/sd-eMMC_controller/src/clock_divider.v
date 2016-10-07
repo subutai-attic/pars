@@ -30,8 +30,8 @@ module sd_clock_divider(
 
 reg [7:0] clk_div;
 reg SD_CLK_O;
+wire Clk;
 assign sd_clk = SD_CLK_O;
-
 
 always @ (posedge AXI_CLOCK or posedge AXI_RST)
 begin
