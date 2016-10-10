@@ -21,7 +21,8 @@
 
 
 module IODDR(
-    input      wire	    Clk, 
+    input      wire	        Clk, 
+    input      wire	        Clk90,     
     input      wire         Reset,
     input      wire         WriteData_posEdge,
     input      wire         WriteData_negEdge,
@@ -91,7 +92,7 @@ IDDR #(
 ) IDDR_Ins (
 .Q1         ( ReadData_posEdge ),       // 1-bit output for positive edge of clock
 .Q2         ( ReadData_negEdge ),       // 1-bit output for negative edge of clock
-.C          ( Clk ),                    // 1-bit clock input
+.C          ( Clk90 ),                    // 1-bit clock input
 .CE         ( 1 ),                      // 1-bit clock enable input
 .D          ( ddrInput ),               // 1-bit DDR data input
 .R          ( Reset ),                  // 1-bit reset
