@@ -86,7 +86,7 @@ module sd_data_serial_host(
        
 
 (* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
-reg [`BLKSIZE_W-1+3:0] data_cycles;
+(* mark_debug = "true" *) reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
@@ -94,7 +94,7 @@ reg [15:0] crc_in;
 reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [7:0];
-reg [`BLKSIZE_W-1+4:0] transf_cnt;
+(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
 (* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
@@ -119,10 +119,12 @@ reg [3:0] crc_s;
 (* mark_debug = "true" *) reg [31:0] data_out;
 wire [7:0] iddrQ1;
 wire [7:0] iddrQ2;
-reg [7:0] iddrQ1_reg;
-reg [7:0] iddrQ2_reg;
+wire DDR50;
+//reg [7:0] iddrQ1_reg;
+//reg [7:0] iddrQ2_reg;
 
-assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]}; 
+assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
+assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
 
 //sd data input pad register
 always @(posedge sd_clk)
@@ -149,10 +151,11 @@ IDDR_p IDDR_p_inst(
   .iddr_Q2(iddrQ2)
 );
 
-always @(posedge sd_clk)begin
-  iddrQ1_reg <= iddrQ1;
-  iddrQ2_reg <= iddrQ2;
-end
+//always @(posedge sd_clk)begin
+//  iddrQ1_reg <= iddrQ1;
+//  iddrQ2_reg <= iddrQ2;
+//end
+
 assign busy = (state != IDLE);
 assign start_bit = !DAT_dat_reg[0];
 assign sd_data_busy = !DAT_dat_reg[0];
@@ -198,7 +201,7 @@ begin: FSM_COMBO
                 next_state <= WRITE_BUSY;
         end
         READ_WAIT: begin
-            if (start_bit)
+            if (start_bit || ((UHSMode == 3'b100)&& ~DAT_dat_i[0]))
                 next_state <= READ_DAT;
             else
                 next_state <= READ_WAIT;
@@ -440,27 +443,27 @@ begin: FSM_OUT
                 data_index <= 0;//bus_4bit_reg ? (byte_alignment_reg << 1) : (byte_alignment_reg << 3);
             end
             READ_DAT: begin
-                if (transf_cnt < data_cycles) begin
+                if (!DDR50 && transf_cnt < data_cycles || transf_cnt < data_cycles >> 1) begin
                     if (bus_8bit_reg) begin
-                      if (UHSMode == 3'b100) begin
+                      if (DDR50) begin
                         we <= (data_index[0] == 1'b1 || (transf_cnt == data_cycles-1 && !blkcnt_reg));
-                        data_out[31-(data_index[0] << 4)] <= iddrQ1_reg[7];
-                        data_out[30-(data_index[0] << 4)] <= iddrQ1_reg[6];
-                        data_out[29-(data_index[0] << 4)] <= iddrQ1_reg[5];
-                        data_out[28-(data_index[0] << 4)] <= iddrQ1_reg[4];
-                        data_out[27-(data_index[0] << 4)] <= iddrQ1_reg[3];
-                        data_out[26-(data_index[0] << 4)] <= iddrQ1_reg[2];
-                        data_out[25-(data_index[0] << 4)] <= iddrQ1_reg[1];
-                        data_out[24-(data_index[0] << 4)] <= iddrQ1_reg[0];
+                        data_out[31-(data_index[0] << 4)] <= iddrQ1[7];
+                        data_out[30-(data_index[0] << 4)] <= iddrQ1[6];
+                        data_out[29-(data_index[0] << 4)] <= iddrQ1[5];
+                        data_out[28-(data_index[0] << 4)] <= iddrQ1[4];
+                        data_out[27-(data_index[0] << 4)] <= iddrQ1[3];
+                        data_out[26-(data_index[0] << 4)] <= iddrQ1[2];
+                        data_out[25-(data_index[0] << 4)] <= iddrQ1[1];
+                        data_out[24-(data_index[0] << 4)] <= iddrQ1[0];
 
-                        data_out[23-(data_index[0] << 4)] <= iddrQ2_reg[7];
-                        data_out[22-(data_index[0] << 4)] <= iddrQ2_reg[6];
-                        data_out[21-(data_index[0] << 4)] <= iddrQ2_reg[5];
-                        data_out[20-(data_index[0] << 4)] <= iddrQ2_reg[4];
-                        data_out[19-(data_index[0] << 4)] <= iddrQ2_reg[3];
-                        data_out[18-(data_index[0] << 4)] <= iddrQ2_reg[2];
-                        data_out[17-(data_index[0] << 4)] <= iddrQ2_reg[1];
-                        data_out[16-(data_index[0] << 4)] <= iddrQ2_reg[0];
+                        data_out[23-(data_index[0] << 4)] <= iddrQ2[7];
+                        data_out[22-(data_index[0] << 4)] <= iddrQ2[6];
+                        data_out[21-(data_index[0] << 4)] <= iddrQ2[5];
+                        data_out[20-(data_index[0] << 4)] <= iddrQ2[4];
+                        data_out[19-(data_index[0] << 4)] <= iddrQ2[3];
+                        data_out[18-(data_index[0] << 4)] <= iddrQ2[2];
+                        data_out[17-(data_index[0] << 4)] <= iddrQ2[1];
+                        data_out[16-(data_index[0] << 4)] <= iddrQ2[0];
                       end
                       else begin
                         we <= (data_index[1:0] == 3 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
@@ -493,7 +496,7 @@ begin: FSM_OUT
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
-                else if (transf_cnt <= data_cycles+16) begin
+                else if (transf_cnt <= data_cycles + 16 || DDR50 && transf_cnt <= data_cycles >> 1 + 32) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
                     last_din <= iddrQ1;//DAT_dat_reg;
