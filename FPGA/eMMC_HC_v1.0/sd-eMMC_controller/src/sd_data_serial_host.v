@@ -120,11 +120,13 @@ reg [3:0] crc_s;
 wire [7:0] iddrQ1;
 wire [7:0] iddrQ2;
 wire DDR50;
+wire [9:0] DataCycleDiv2;
 //reg [7:0] iddrQ1_reg;
 //reg [7:0] iddrQ2_reg;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
 assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
+assign DataCycleDiv2 = DDR50 ? data_cycles >> 1 : 10'h000;
 
 //sd data input pad register
 always @(posedge sd_clk)
@@ -201,13 +203,13 @@ begin: FSM_COMBO
                 next_state <= WRITE_BUSY;
         end
         READ_WAIT: begin
-            if (start_bit || ((UHSMode == 3'b100)&& ~DAT_dat_i[0]))
+            if (start_bit || (DDR50 & ~DAT_dat_i[0]))
                 next_state <= READ_DAT;
             else
                 next_state <= READ_WAIT;
         end
         READ_DAT: begin
-            if (transf_cnt == data_cycles+17 && next_block && crc_ok)
+            if ((transf_cnt == DataCycleDiv2+33 || !DDR50 && transf_cnt == data_cycles+17) && next_block && crc_ok)
                 next_state <= READ_WAIT;
             else if (transf_cnt == data_cycles+17)
                 next_state <= IDLE;
@@ -443,7 +445,7 @@ begin: FSM_OUT
                 data_index <= 0;//bus_4bit_reg ? (byte_alignment_reg << 1) : (byte_alignment_reg << 3);
             end
             READ_DAT: begin
-                if (!DDR50 && transf_cnt < data_cycles || transf_cnt < data_cycles >> 1) begin
+                if (!DDR50 && transf_cnt < data_cycles || transf_cnt < DataCycleDiv2) begin
                     if (bus_8bit_reg) begin
                       if (DDR50) begin
                         we <= (data_index[0] == 1'b1 || (transf_cnt == data_cycles-1 && !blkcnt_reg));
@@ -496,7 +498,7 @@ begin: FSM_OUT
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
-                else if (transf_cnt <= data_cycles + 16 || DDR50 && transf_cnt <= data_cycles >> 1 + 32) begin
+                else if (transf_cnt <= data_cycles + 16 || DDR50 && transf_cnt <= DataCycleDiv2 + 32) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
                     last_din <= iddrQ1;//DAT_dat_reg;
