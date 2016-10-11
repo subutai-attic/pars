@@ -12,11 +12,10 @@
         output wire sd_cmd_o,
         input wire sd_cmd_i,
         output wire sd_cmd_t,
-        inout [7:0] sd_dat,
-//        output wire [7:0] sd_dat_o,
-//        input wire [7:0] sd_dat_i,
-//        output wire sd_dat_t,
-        
+        output wire [7:0] sd_dat_o,
+        input wire [7:0] sd_dat_i,
+        output wire sd_dat_t,
+        output wire REMMC,
         // Interupt pinout 
         output wire interrupt,
 
@@ -88,6 +87,7 @@
     //SD clock
     wire [7:0]  divisor;
     wire int_clk_stbl;
+    wire SD_CLK90;
 
     wire go_idle;
     wire cmd_start_axi_clk;
@@ -206,9 +206,9 @@
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
+    assign REMMC = M_AXI_ARESETN;
 //    assign maxi_wlast = M_AXI_WLAST;
     
-    wire SD_CLK90;
     
 
 
@@ -425,10 +425,9 @@
         .rd_out         (rd_fifo),
         .data_out_o     (data_in_rx_fifo),
         .we_out         (we_fifo),
-        .DAT_port       (sd_dat),
-//        .DAT_oe_out     (sd_dat_t),
-//        .DAT_dat_out    (sd_dat_o),
-//        .DAT_dat_i      (sd_dat_i),
+        .DAT_oe_out     (sd_dat_t),
+        .DAT_dat_out    (sd_dat_o),
+        .DAT_dat_i      (sd_dat_i),
         .blksize        (block_size_sd_clk),
         .bus_4bit       (controll_setting_sd_clk),
         .bus_8bit       (controll_setting_8bit_sd_clk),

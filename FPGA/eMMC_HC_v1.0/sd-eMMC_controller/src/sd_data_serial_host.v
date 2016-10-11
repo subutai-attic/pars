@@ -64,10 +64,9 @@ module sd_data_serial_host(
            output wire [31:0] data_out_o,
            output wire we_out,
            //tristate data
-           inout [7:0] DAT_port,
-//           output wire DAT_oe_out,
-//           output wire [7:0] DAT_dat_out,
-//           input [7:0] DAT_dat_i,
+           output wire DAT_oe_out,
+           output wire [7:0] DAT_dat_out,
+           input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
@@ -127,7 +126,55 @@ reg we;
 (* mark_debug = "true" *) wire [7:0] DAT_pos_i;
 (* mark_debug = "true" *) wire [7:0] DAT_neg_i;
 (* mark_debug = "true" *) reg  [7:0] DAT_neg_reg;
-wire DAT_oe_out;
+wire [7:0] ddr_DAT_dat_op;
+wire [7:0] ddr_DAT_dat_on;
+
+
+// DDR variables
+reg [`BLKSIZE_W-1+3:0] ddr_data_cycles;
+reg ddr_bus_4bit_reg;
+reg ddr_bus_8bit_reg;
+//CRC16
+reg [7:0] ddr_crc_in;
+reg ddr_crc_en;
+reg ddr_crc_rst;
+(* mark_debug = "true" *) wire [15:0] ddr_crc_out [7:0];
+reg [7:0] ddrn_crc_in;
+wire [15:0] ddrn_crc_out [7:0];
+
+(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] ddr_transf_cnt;
+parameter DDR_SIZE = 6;
+(* mark_debug = "true" *) reg [DDR_SIZE-1:0] ddr_state;
+reg [DDR_SIZE-1:0] ddr_next_state;
+parameter DDR_IDLE       = 6'b000001;
+parameter DDR_WRITE_DAT  = 6'b000010;
+parameter DDR_WRITE_WAIT  = 6'b000011;
+parameter DDR_WRITE_CRC  = 6'b000100;
+parameter DDR_WRITE_BUSY = 6'b001000;
+parameter DDR_READ_WAIT  = 6'b010000;
+parameter DDR_READ_DAT   = 6'b100000;
+reg [3:0] ddr_crc_status;
+reg ddr_busy_int;
+reg [`BLKCNT_W-1:0] ddr_blkcnt_reg;
+reg [1:0] ddr_byte_alignment_reg;
+reg [`BLKSIZE_W-1:0] ddr_blksize_reg;
+reg ddr_next_block;
+reg [4:0] ddr_crc_c;
+(* mark_debug = "true" *) reg ddr_crc_ok;
+(* mark_debug = "true" *) reg [7:0] ddr_last_din;
+reg [7:0] ddrn_last_din;
+reg [7:0] ddr_last_din_n;
+reg [3:0] ddr_crc_s ;
+(* mark_debug = "true" *) reg [4:0] ddr_data_index;
+(* mark_debug = "true" *) reg [15:0] ddr_data_out;
+(* mark_debug = "true" *) reg [15:0] ddr_data_outn;
+reg ddr_rd;
+reg ddr_we;
+reg [7:0] ddr_DAT_pos_o;
+reg [7:0] ddr_DAT_neg_o;
+reg ddr_DAT_oe_o;
+reg ddr50_en_reg;
+
 
 //sd data input pad register
 always @(posedge sd_clk)
@@ -153,7 +200,7 @@ assign write_next_block = (((state == WRITE_WAIT) || (ddr_state == DDR_WRITE_WAI
 
 assign ddr_DAT_dat_op = (ddr50_en_reg) ? ddr_DAT_pos_o : DAT_dat_o;
 assign ddr_DAT_dat_on = (ddr50_en_reg) ? ddr_DAT_neg_o : DAT_dat_o;
-assign DAT_oe_out     = (ddr50_en_reg) ? ddr_DAT_oe_o : DAT_oe_o;
+assign DAT_oe_out     = (ddr50_en_reg) ? ~ddr_DAT_oe_o : ~DAT_oe_o;
 assign we_out         = (ddr50_en_reg) ? ddr_we : we;
 assign rd_out         = (ddr50_en_reg) ? ddr_rd : rd;
 assign data_out_o [31:0] = (ddr50_en_reg) ? ({ddr_data_outn[7:0], ddr_data_out[7:0], ddr_data_outn[15:8], ddr_data_out[15:8]}) : ({data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]});
@@ -504,48 +551,7 @@ begin: FSM_OUT
     end
 end
 
-reg [`BLKSIZE_W-1+3:0] ddr_data_cycles;
-reg ddr_bus_4bit_reg;
-reg ddr_bus_8bit_reg;
-//CRC16
-reg [7:0] ddr_crc_in;
-reg ddr_crc_en;
-reg ddr_crc_rst;
-(* mark_debug = "true" *) wire [15:0] ddr_crc_out [7:0];
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] ddr_transf_cnt;
-parameter DDR_SIZE = 6;
-(* mark_debug = "true" *) reg [DDR_SIZE-1:0] ddr_state;
-reg [DDR_SIZE-1:0] ddr_next_state;
-parameter DDR_IDLE       = 6'b000001;
-parameter DDR_WRITE_DAT  = 6'b000010;
-parameter DDR_WRITE_WAIT  = 6'b000011;
-parameter DDR_WRITE_CRC  = 6'b000100;
-parameter DDR_WRITE_BUSY = 6'b001000;
-parameter DDR_READ_WAIT  = 6'b010000;
-parameter DDR_READ_DAT   = 6'b100000;
-reg [3:0] ddr_crc_status;
-reg ddr_busy_int;
-reg [`BLKCNT_W-1:0] ddr_blkcnt_reg;
-reg [1:0] ddr_byte_alignment_reg;
-reg [`BLKSIZE_W-1:0] ddr_blksize_reg;
-reg ddr_next_block;
-reg [4:0] ddr_crc_c;
-(* mark_debug = "true" *) reg ddr_crc_ok;
-(* mark_debug = "true" *) reg [7:0] ddr_last_din;
-reg [7:0] ddr_last_din_n;
-reg [3:0] ddr_crc_s ;
-(* mark_debug = "true" *) reg [4:0] ddr_data_index;
-(* mark_debug = "true" *) reg [15:0] ddr_data_out;
-(* mark_debug = "true" *) reg [15:0] ddr_data_outn;
-reg ddr_rd;
-reg ddr_we;
-reg [7:0] ddr_DAT_pos_o;
-reg [7:0] ddr_DAT_neg_o;
-wire [7:0] ddr_DAT_dat_op;
-wire [7:0] ddr_DAT_dat_on;
-reg ddr_DAT_oe_o;
-reg ddr50_en_reg;
-
+// DDR posedge Data
 genvar j;
 generate
     for(j=0; j<8; j=j+1) begin: CRC_16_ddr_p
@@ -553,6 +559,13 @@ generate
     end
 endgenerate
 
+// DDR negedge Data
+genvar k;
+generate
+    for(k=0; k<8; k=k+1) begin: CRC_16_ddr_n
+        sd_crc_16 CRC_16_ddr_n (ddrn_crc_in[k],ddr_crc_en, sd_clk, ddr_crc_rst, ddrn_crc_out[k]);
+    end
+endgenerate
 
 always @(ddr_state or start or start_bit or  ddr_transf_cnt or ddr_data_cycles or ddr_crc_status or ddr_crc_ok or ddr_busy_int or ddr_next_block)
 begin: FSM_DDR
@@ -619,12 +632,13 @@ begin: FSM_DDR_P
         ddr_DAT_oe_o <= 0;
         ddr_crc_en <= 0;
         ddr_crc_rst <= 1;
+        ddr_crc_in <= 0;
+        ddrn_crc_in <= 0;
         ddr_transf_cnt <= 0;
         ddr_crc_c <= 15;
         ddr_rd <= 0;
         ddr_last_din <= 0;
         ddr_crc_c <= 0;
-        ddr_crc_in <= 0;
         ddr_DAT_pos_o <= 0;
         ddr_DAT_neg_o <= 0;
         ddr_crc_status <= 0;
@@ -783,6 +797,7 @@ begin: FSM_DDR_P
                 ddr_crc_rst <= 0;
                 ddr_crc_en <= 1;
                 ddr_crc_in <= 0;
+                ddrn_crc_in <= 0;
                 ddr_crc_c <= 15;// end
                 ddr_next_block <= 0;
                 ddr_transf_cnt <= 0;
@@ -813,6 +828,7 @@ begin: FSM_DDR_P
                     end
                     ddr_data_index <= ddr_data_index + 5'h1;
                     ddr_crc_in <= DAT_dat_reg;
+                    ddrn_crc_in <= DAT_neg_reg;
                     ddr_crc_ok <= 1;
                     ddr_transf_cnt <= ddr_transf_cnt + 16'h1;
                 end
@@ -820,6 +836,7 @@ begin: FSM_DDR_P
                     ddr_transf_cnt <= ddr_transf_cnt + 16'h1;
                     ddr_crc_en <= 0;
                     ddr_last_din <= DAT_dat_reg;
+                    ddrn_last_din <= DAT_neg_reg;
                     ddr_we<=0;
                     if (ddr_transf_cnt > ddr_data_cycles) begin
                         ddr_crc_c <= ddr_crc_c - 5'h1;
@@ -859,10 +876,10 @@ IODDR IODDR_Ins_0 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[0] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[0] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[0] ),
         .ReadData_negEdge       ( DAT_neg_i[0] ),
-        .DDRPORT                ( DAT_port[0] ) 
+        .DDRPORT_I              ( DAT_dat_i[0] ),
+        .DDRPORT_O              ( DAT_dat_out[0] ) 
     ); 
 
 IODDR IODDR_Ins_1 (
@@ -871,10 +888,10 @@ IODDR IODDR_Ins_1 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[1] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[1] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[1] ),
         .ReadData_negEdge       ( DAT_neg_i[1] ),
-        .DDRPORT                ( DAT_port[1] ) 
+        .DDRPORT_I              ( DAT_dat_i[1] ),
+        .DDRPORT_O              ( DAT_dat_out[1] ) 
     );     
 
 IODDR IODDR_Ins_2 (
@@ -883,10 +900,10 @@ IODDR IODDR_Ins_2 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[2] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[2] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[2] ),
         .ReadData_negEdge       ( DAT_neg_i[2] ),
-        .DDRPORT                ( DAT_port[2] ) 
+        .DDRPORT_I              ( DAT_dat_i[2] ),
+        .DDRPORT_O              ( DAT_dat_out[2] ) 
     );  
 
 IODDR IODDR_Ins_3 (
@@ -895,10 +912,10 @@ IODDR IODDR_Ins_3 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[3] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[3] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[3] ),
         .ReadData_negEdge       ( DAT_neg_i[3] ),
-        .DDRPORT                ( DAT_port[3] ) 
+        .DDRPORT_I              ( DAT_dat_i[3] ),
+        .DDRPORT_O              ( DAT_dat_out[3] ) 
     );  
             
 IODDR IODDR_Ins_4 (
@@ -907,10 +924,10 @@ IODDR IODDR_Ins_4 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[4] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[4] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[4] ),
         .ReadData_negEdge       ( DAT_neg_i[4] ),
-        .DDRPORT                ( DAT_port[4] ) 
+        .DDRPORT_I              ( DAT_dat_i[4] ),
+        .DDRPORT_O              ( DAT_dat_out[4] )
     );  
                 
 IODDR IODDR_Ins_5 (
@@ -919,10 +936,10 @@ IODDR IODDR_Ins_5 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[5] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[5] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[5] ),
         .ReadData_negEdge       ( DAT_neg_i[5] ),
-        .DDRPORT                ( DAT_port[5] ) 
+        .DDRPORT_I              ( DAT_dat_i[5] ),
+        .DDRPORT_O              ( DAT_dat_out[5] )
     );  
                     
 IODDR IODDR_Ins_6 (
@@ -931,10 +948,10 @@ IODDR IODDR_Ins_6 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[6] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[6] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[6] ),
         .ReadData_negEdge       ( DAT_neg_i[6] ),
-        .DDRPORT                ( DAT_port[6] ) 
+        .DDRPORT_I              ( DAT_dat_i[6] ),
+        .DDRPORT_O              ( DAT_dat_out[6] )
     );  
         
 IODDR IODDR_Ins_7 (
@@ -943,10 +960,10 @@ IODDR IODDR_Ins_7 (
         .Reset                  ( rst ),
         .WriteData_posEdge      ( ddr_DAT_dat_op[7] ),
         .WriteData_negEdge      ( ddr_DAT_dat_on[7] ),
-        .out_en                 ( DAT_oe_out ),
         .ReadData_posEdge       ( DAT_pos_i[7] ),
         .ReadData_negEdge       ( DAT_neg_i[7] ),
-        .DDRPORT                ( DAT_port[7] ) 
+        .DDRPORT_I              ( DAT_dat_i[7] ),
+        .DDRPORT_O              ( DAT_dat_out[7] )
     );  
                     
 endmodule

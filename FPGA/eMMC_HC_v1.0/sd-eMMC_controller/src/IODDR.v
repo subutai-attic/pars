@@ -26,35 +26,11 @@ module IODDR(
     input      wire         Reset,
     input      wire         WriteData_posEdge,
     input      wire         WriteData_negEdge,
-    input      wire         out_en,
     output     wire         ReadData_posEdge,
     output     wire         ReadData_negEdge,
-    inout      wire         DDRPORT
+    input      wire         DDRPORT_I,
+    output     wire         DDRPORT_O
 ); 
-
-wire         ddrOutput; 
-(* mark_debug = "true" *) wire         ddrInput;
-
-// the main output will be over DDRPORT 
-
-//assign DDRPORT = ( out_en ) ? ddrOutput : 1'bz; 
-//assign ddrInput = ( out_en ) ? 1'bz : DDRPORT;
-
-//   // IOBUF: Single-ended Bi-directional Buffer
-//   //        All devices
-//   // Xilinx HDL Language Template, version 2016.2
-   
-   IOBUF #(
-      .DRIVE(12),               // Specify the output drive strength
-      .IBUF_LOW_PWR("TRUE"),    // Low Power - "TRUE", High Performance = "FALSE" 
-      .IOSTANDARD("DEFAULT"),   // Specify the I/O standard
-      .SLEW("SLOW")             // Specify the output slew rate
-   ) IOBUF_inst (
-      .O(ddrInput),             // Buffer output
-      .IO(DDRPORT),             // Buffer inout port (connect directly to top-level port)
-      .I(ddrOutput),            // Buffer input
-      .T(~out_en)               // 3-state enable input, high=input, low=output
-   );
 
 ///////////////////////////////////////////////
 //
@@ -67,7 +43,7 @@ ODDR #(
   .INIT         ( 1'b0 ),               // Initial value of Q: 1'b0 or 1'b1endmodule
   .SRTYPE       ( "SYNC" )              // Set/Reset type: "SYNC" or "ASYNC" 
 ) ODDR_inst (
-  .Q        ( ddrOutput ),              // 1-bit DDR output
+  .Q        ( DDRPORT_O ),              // 1-bit DDR output
   .C        ( Clk ),                    // 1-bit clock input
   .CE       ( 1 ),                      // 1-bit clock enable input
   .D1       ( WriteData_posEdge ),      // 1-bit data input (positive edge)
@@ -94,7 +70,7 @@ IDDR #(
 .Q2         ( ReadData_negEdge ),       // 1-bit output for negative edge of clock
 .C          ( Clk90 ),                    // 1-bit clock input
 .CE         ( 1 ),                      // 1-bit clock enable input
-.D          ( ddrInput ),               // 1-bit DDR data input
+.D          ( DDRPORT_I ),               // 1-bit DDR data input
 .R          ( Reset ),                  // 1-bit reset
 .S          ( 0 )                       // 1-bit set
 );
