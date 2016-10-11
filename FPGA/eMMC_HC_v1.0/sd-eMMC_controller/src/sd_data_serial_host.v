@@ -840,21 +840,21 @@ begin: FSM_DDR_P
                     ddr_we<=0;
                     if (ddr_transf_cnt > ddr_data_cycles) begin
                         ddr_crc_c <= ddr_crc_c - 5'h1;
-                        if  (ddr_crc_out[0][ddr_crc_c] != ddr_last_din[0])
+                        if  (ddr_crc_out[0][ddr_crc_c] != ddr_last_din[0] && ddrn_crc_out[0][ddr_crc_c] != ddrn_last_din[0]) 
                             ddr_crc_ok <= 0;
-                        if  (ddr_crc_out[1][ddr_crc_c] != ddr_last_din[1] && bus_8bit_reg)
+                        if  (ddr_crc_out[1][ddr_crc_c] != ddr_last_din[1] && bus_8bit_reg && ddrn_crc_out[1][ddr_crc_c] != ddrn_last_din[1])
                             ddr_crc_ok<=0;
-                        if  (ddr_crc_out[2][ddr_crc_c] != ddr_last_din[2] && bus_8bit_reg)
+                        if  (ddr_crc_out[2][ddr_crc_c] != ddr_last_din[2] && bus_8bit_reg && ddrn_crc_out[2][ddr_crc_c] != ddrn_last_din[2])
                             ddr_crc_ok <= 0;
-                        if  (ddr_crc_out[3][ddr_crc_c] != ddr_last_din[3] && bus_8bit_reg)
+                        if  (ddr_crc_out[3][ddr_crc_c] != ddr_last_din[3] && bus_8bit_reg && ddrn_crc_out[3][ddr_crc_c] != ddrn_last_din[3])
                             ddr_crc_ok <= 0;
-                        if  (ddr_crc_out[4][ddr_crc_c] != ddr_last_din[4] && bus_8bit_reg)
+                        if  (ddr_crc_out[4][ddr_crc_c] != ddr_last_din[4] && bus_8bit_reg && ddrn_crc_out[4][ddr_crc_c] != ddrn_last_din[4])
                             ddr_crc_ok <= 0;
-                        if  (ddr_crc_out[5][ddr_crc_c] != ddr_last_din[5] && bus_8bit_reg)
+                        if  (ddr_crc_out[5][ddr_crc_c] != ddr_last_din[5] && bus_8bit_reg && ddrn_crc_out[4][ddr_crc_c] != ddrn_last_din[4])
                             ddr_crc_ok <= 0;
-                        if  (ddr_crc_out[6][ddr_crc_c] != ddr_last_din[6] && bus_8bit_reg)
+                        if  (ddr_crc_out[6][ddr_crc_c] != ddr_last_din[6] && bus_8bit_reg && ddrn_crc_out[6][ddr_crc_c] != ddrn_last_din[6])
                             ddr_crc_ok <= 0;
-                        if  (ddr_crc_out[7][ddr_crc_c] != ddr_last_din[7] && bus_8bit_reg)
+                        if  (ddr_crc_out[7][ddr_crc_c] != ddr_last_din[7] && bus_8bit_reg && ddrn_crc_out[7][ddr_crc_c] != ddrn_last_din[7])
                             ddr_crc_ok <= 0;
                         if (ddr_crc_c == 0) begin
                             ddr_next_block <= ((ddr_blkcnt_reg - `BLKCNT_W'h1) != 0);
