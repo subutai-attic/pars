@@ -75,7 +75,7 @@ module sd_data_serial_host(
            input [1:0] byte_alignment,
            output sd_data_busy,
            output busy,
-           output reg crc_ok,
+           (* mark_debug = "true" *) output reg crc_ok,
            output read_trans_active,
            output write_trans_active,
 //           output next_block,
@@ -85,12 +85,12 @@ module sd_data_serial_host(
        );
        
 
-(* mark_debug = "true" *) reg [7:0] DAT_dat_reg;
+reg [7:0] DAT_dat_reg;
 (* mark_debug = "true" *) reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
-reg [15:0] crc_in;
+(* mark_debug = "true" *) reg [15:0] crc_in;
 reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [7:0];
@@ -110,7 +110,7 @@ reg busy_int;
 reg [`BLKCNT_W-1:0] blkcnt_reg;
 reg [1:0] byte_alignment_reg;
 reg [`BLKSIZE_W-1:0] blksize_reg;
-reg next_block;
+(* mark_debug = "true" *) reg next_block;
 wire start_bit;
 reg [4:0] crc_c;
 reg [7:0] last_din;
@@ -121,12 +121,13 @@ wire [7:0] iddrQ1;
 wire [7:0] iddrQ2;
 wire DDR50;
 wire [9:0] DataCycleDiv2;
+reg [7:0] last_dinDDR;
 //reg [7:0] iddrQ1_reg;
 //reg [7:0] iddrQ2_reg;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
 assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
-assign DataCycleDiv2 = DDR50 ? data_cycles >> 1 : 10'h000;
+assign DataCycleDiv2 = data_cycles >> 1;
 
 //sd data input pad register
 always @(posedge sd_clk)
@@ -134,7 +135,7 @@ always @(posedge sd_clk)
 
 genvar i;
 generate
-    for(i=0; i<8; i=i+1) begin: CRC_16_gen
+    for(i=0; i<16; i=i+1) begin: CRC_16_gen
         sd_crc_16 CRC_16_i(
           crc_in[i],
           crc_en,
@@ -209,10 +210,12 @@ begin: FSM_COMBO
                 next_state <= READ_WAIT;
         end
         READ_DAT: begin
-            if ((transf_cnt == DataCycleDiv2+33 || !DDR50 && transf_cnt == data_cycles+17) && next_block && crc_ok)
+            if (DDR50 && transf_cnt == DataCycleDiv2+17 || transf_cnt == data_cycles+17) begin
+              if(next_block && crc_ok)
                 next_state <= READ_WAIT;
-            else if (transf_cnt == data_cycles+17)
+              else
                 next_state <= IDLE;
+            end
             else
                 next_state <= READ_DAT;
         end
@@ -234,6 +237,7 @@ begin: FSM_OUT
         crc_c <= 15;
         rd <= 0;
         last_din <= 0;
+        last_dinDDR <= 0;
         crc_c <= 0;
         crc_in <= 0;
         DAT_dat_o <= 0;
@@ -491,17 +495,21 @@ begin: FSM_OUT
                         data_out[31-data_index] <= iddrQ1[0];//DAT_dat_reg[0];
                     end
                     data_index <= data_index + 5'h1;
-                    if (UHSMode == 3'b100)
-                      crc_in <= iddrQ1;
+                    if (DDR50) begin
+                      crc_in[7:0] <= iddrQ1;
+                      crc_in[15:8] <= iddrQ2;
+                    end
                     else
                       crc_in <= iddrQ1;//DAT_dat_reg;
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
-                else if (transf_cnt <= data_cycles + 16 || DDR50 && transf_cnt <= DataCycleDiv2 + 32) begin
+                else if (!DDR50 && transf_cnt <= data_cycles + 16 || transf_cnt <= DataCycleDiv2 + 16) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
                     last_din <= iddrQ1;//DAT_dat_reg;
+                    if (DDR50)
+                      last_dinDDR <= iddrQ2;
                     we<=0;
                     if (transf_cnt > data_cycles) begin
                         crc_c <= crc_c - 5'h1;
@@ -521,11 +529,28 @@ begin: FSM_OUT
                             crc_ok <= 0;
                         if  (crc_out[7][crc_c] != last_din[7] && bus_8bit_reg)
                             crc_ok <= 0;
+                        if  (crc_out[8][crc_c] != last_dinDDR[0] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[9][crc_c] != last_dinDDR[1] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[10][crc_c] != last_dinDDR[2] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[11][crc_c] != last_dinDDR[3] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[12][crc_c] != last_dinDDR[4] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[13][crc_c] != last_dinDDR[5] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[14][crc_c] != last_dinDDR[6] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
+                        if  (crc_out[15][crc_c] != last_dinDDR[7] && bus_8bit_reg && DDR50)
+                            crc_ok <= 0;
                         if (crc_c == 0) begin
                             next_block <= ((blkcnt_reg - `BLKCNT_W'h1) != 0);
                             blkcnt_reg <= blkcnt_reg - `BLKCNT_W'h1;
                             byte_alignment_reg <= 0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
                             crc_rst <= 1;
+                            last_dinDDR <= 0;
                         end
                     end
                 end
