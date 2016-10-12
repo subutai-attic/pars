@@ -65,7 +65,7 @@ module sd_data_serial_host(
            //tristate data
            output reg DAT_oe_o,
            (* mark_debug = "true" *) output reg[7:0] DAT_dat_o,
-           (* mark_debug = "true" *) input [7:0] DAT_dat_i,
+           input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
@@ -86,14 +86,14 @@ module sd_data_serial_host(
        
 
 reg [7:0] DAT_dat_reg;
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+3:0] data_cycles;
+reg [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
-(* mark_debug = "true" *) reg [15:0] crc_in;
+reg [15:0] crc_in;
 reg crc_en;
 reg crc_rst;
-wire [15:0] crc_out [7:0];
+wire [15:0] crc_out [15:0];
 (* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
 (* mark_debug = "true" *) reg [SIZE-1:0] state;
@@ -511,7 +511,7 @@ begin: FSM_OUT
                     if (DDR50)
                       last_dinDDR <= iddrQ2;
                     we<=0;
-                    if (transf_cnt > data_cycles) begin
+                    if (transf_cnt > data_cycles || DDR50 && transf_cnt > DataCycleDiv2) begin
                         crc_c <= crc_c - 5'h1;
                         if  (crc_out[0][crc_c] != last_din[0])
                             crc_ok <= 0;
