@@ -431,7 +431,7 @@ begin: FSM_OUT
                 next_block <= ((blkcnt_reg - `BLKCNT_W'h1) != 0);
                 if (next_state != WRITE_BUSY) begin
                     blkcnt_reg <= blkcnt_reg - `BLKCNT_W'h1;
-                    byte_alignment_reg <=  0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
+                    byte_alignment_reg <=  0;
                     crc_rst <= 1;
                     crc_c <= 16;
                     crc_status <= 0;
@@ -443,10 +443,10 @@ begin: FSM_OUT
                 crc_rst <= 0;
                 crc_en <= 1;
                 crc_in <= 0;
-                crc_c <= 15;// end
+                crc_c <= 15;
                 next_block <= 0;
                 transf_cnt <= 0;
-                data_index <= 0;//bus_4bit_reg ? (byte_alignment_reg << 1) : (byte_alignment_reg << 3);
+                data_index <= 0;
             end
             READ_DAT: begin
                 if (!DDR50 && transf_cnt < data_cycles || transf_cnt < DataCycleDiv2) begin
@@ -473,41 +473,39 @@ begin: FSM_OUT
                       end
                       else begin
                         we <= (data_index[1:0] == 3 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-(data_index[1:0]<<3)] <= iddrQ1[7];//DAT_dat_reg[7];
-                        data_out[30-(data_index[1:0]<<3)] <= iddrQ1[6];//DAT_dat_reg[6];
-                        data_out[29-(data_index[1:0]<<3)] <= iddrQ1[5];//DAT_dat_reg[5];
-                        data_out[28-(data_index[1:0]<<3)] <= iddrQ1[4];//DAT_dat_reg[4];
-                        data_out[27-(data_index[1:0]<<3)] <= iddrQ1[3];//DAT_dat_reg[3];
-                        data_out[26-(data_index[1:0]<<3)] <= iddrQ1[2];//DAT_dat_reg[2];
-                        data_out[25-(data_index[1:0]<<3)] <= iddrQ1[1];//DAT_dat_reg[1];
-                        data_out[24-(data_index[1:0]<<3)] <= iddrQ1[0];//DAT_dat_reg[0];
+                        data_out[31-(data_index[1:0]<<3)] <= iddrQ1[7];
+                        data_out[30-(data_index[1:0]<<3)] <= iddrQ1[6];
+                        data_out[29-(data_index[1:0]<<3)] <= iddrQ1[5];
+                        data_out[28-(data_index[1:0]<<3)] <= iddrQ1[4];
+                        data_out[27-(data_index[1:0]<<3)] <= iddrQ1[3];
+                        data_out[26-(data_index[1:0]<<3)] <= iddrQ1[2];
+                        data_out[25-(data_index[1:0]<<3)] <= iddrQ1[1];
+                        data_out[24-(data_index[1:0]<<3)] <= iddrQ1[0];
                       end
                     end
                     else if (bus_4bit_reg) begin
                         we <= (data_index[2:0] == 7 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-(data_index[2:0]<<2)] <= iddrQ1[3];//DAT_dat_reg[3];
-                        data_out[30-(data_index[2:0]<<2)] <= iddrQ1[2];//DAT_dat_reg[2];
-                        data_out[29-(data_index[2:0]<<2)] <= iddrQ1[1];//DAT_dat_reg[1];
-                        data_out[28-(data_index[2:0]<<2)] <= iddrQ1[0];//DAT_dat_reg[0];
+                        data_out[31-(data_index[2:0]<<2)] <= iddrQ1[3];
+                        data_out[30-(data_index[2:0]<<2)] <= iddrQ1[2];
+                        data_out[29-(data_index[2:0]<<2)] <= iddrQ1[1];
+                        data_out[28-(data_index[2:0]<<2)] <= iddrQ1[0];
                     end
                     else begin
                         we <= (data_index == 31 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-data_index] <= iddrQ1[0];//DAT_dat_reg[0];
+                        data_out[31-data_index] <= iddrQ1[0];
                     end
                     data_index <= data_index + 5'h1;
-                    if (DDR50) begin
-                      crc_in[7:0] <= iddrQ1;
-                      crc_in[15:8] <= iddrQ2;
-                    end
+                    if (DDR50)
+                      crc_in <= {iddrQ2,iddrQ1};
                     else
-                      crc_in <= iddrQ1;//DAT_dat_reg;
+                      crc_in <= iddrQ1;
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
                 else if (!DDR50 && transf_cnt <= data_cycles + 16 || transf_cnt <= DataCycleDiv2 + 16) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
-                    last_din <= iddrQ1;//DAT_dat_reg;
+                    last_din <= iddrQ1;
                     if (DDR50)
                       last_dinDDR <= iddrQ2;
                     we<=0;
@@ -548,7 +546,7 @@ begin: FSM_OUT
                         if (crc_c == 0) begin
                             next_block <= ((blkcnt_reg - `BLKCNT_W'h1) != 0);
                             blkcnt_reg <= blkcnt_reg - `BLKCNT_W'h1;
-                            byte_alignment_reg <= 0;//byte_alignment_reg + blksize_reg[1:0] + 2'b1;
+                            byte_alignment_reg <= 0;
                             crc_rst <= 1;
                             last_dinDDR <= 0;
                         end
