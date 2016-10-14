@@ -6,8 +6,8 @@ module IDDR_p(
     input [7:0] in_ddr,
 //    output reg [31:0] fifo_data_out,
 //    output reg fifo_wr_en,
-    (* mark_debug = "true" *) output wire [7:0] iddr_Q1,
-    (* mark_debug = "true" *) output wire [7:0] iddr_Q2
+    output wire [7:0] iddr_Q1,
+    output wire [7:0] iddr_Q2
     );
           
   IDDR #(

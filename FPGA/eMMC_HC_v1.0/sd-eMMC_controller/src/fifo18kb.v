@@ -4,13 +4,13 @@ module fifo18Kb(
     input aclk,
     input sd_clk,
     input rst,
-    (* mark_debug = "true" *)input [31:0] axi_data_in,
+    input [31:0] axi_data_in,
     input [31:0] sd_data_in,
-    (* mark_debug = "true" *)output [31:0] sd_data_out,
+    output [31:0] sd_data_out,
     output [31:0] axi_data_out,
-    (* mark_debug = "true" *)input sd_rd_en,
+    input sd_rd_en,
     input axi_rd_en,
-    (* mark_debug = "true" *)input axi_wr_en,
+    input axi_wr_en,
     input sd_wr_en,
     output sd_full_o
     );

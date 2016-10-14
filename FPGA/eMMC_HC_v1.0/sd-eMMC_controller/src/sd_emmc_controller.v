@@ -153,7 +153,6 @@
     wire [`INT_CMD_SIZE-1:0] cmd_int_status_sd_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_status_sd_clk;
     wire [`BLKCNT_W-1:0] block_count_sd_clk;
-    wire [1:0] dma_addr_sd_clk;
     
     //Software Reset
     wire soft_rst_cmd_axi_clk;
@@ -427,7 +426,6 @@
         .bus_8bit       (controll_setting_8bit_sd_clk),
         .blkcnt         (block_count_sd_clk),
         .start          ({d_read, d_write}),
-        .byte_alignment (dma_addr_sd_clk),
         .sd_data_busy   (sd_data_busy),
         .busy           (data_busy),
         .crc_ok         (data_crc_ok),
@@ -525,7 +523,6 @@
     bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
     bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
     bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);
-    bistable_domain_cross #(2) dma_addr_reg_cross(!s00_axi_aresetn, s00_axi_aclk, 0, SD_CLK, dma_addr_sd_clk);
     bistable_domain_cross #(`INT_DATA_SIZE) data_int_status_reg_cross(!s00_axi_aresetn, SD_CLK, data_int_status_sd_clk, s00_axi_aclk, data_int_status_axi_clk);
     bistable_domain_cross #(3) UHSModSel_cross(!s00_axi_aresetn, s00_axi_aclk, UHSModSel_axi_clk, SD_CLK, UHSModSel_sd_clk);
     
