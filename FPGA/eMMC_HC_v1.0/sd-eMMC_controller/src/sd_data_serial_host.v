@@ -84,7 +84,7 @@ module sd_data_serial_host(
        
 
 reg [7:0] DAT_dat_reg;
-reg [`BLKSIZE_W-1+3:0] data_cycles;
+wire [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
@@ -117,16 +117,13 @@ reg [31:0] data_out;
 wire [7:0] iddrQ1;
 wire [7:0] iddrQ2;
 wire DDR50;
-wire [9:0] DataCycleDiv2;
 reg [7:0] last_dinDDR;
 (* mark_debug = "true" *) reg [15:0] d1d2_reg;
-//(* mark_debug = "true" *) reg [7:0] d2_reg;
-//wire [7:0] OQ;
 
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
 assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
-assign DataCycleDiv2 = data_cycles >> 1;
+assign data_cycles = (bus_8bit && DDR50) ? blksize >> 1 : (bus_8bit && !DDR50) ? blksize : bus_4bit ? blksize << 1 : blksize << 3;
 
 //sd data input pad register
 always @(posedge sd_clk)
@@ -212,7 +209,7 @@ begin: FSM_COMBO
                 next_state <= READ_WAIT;
         end
         READ_DAT: begin
-            if (DDR50 && transf_cnt == DataCycleDiv2+17 || transf_cnt == data_cycles+17) begin
+            if (transf_cnt == data_cycles+17) begin
               if(next_block && crc_ok)
                 next_state <= READ_WAIT;
               else
@@ -251,7 +248,7 @@ begin: FSM_OUT
         data_index <= 0;
         next_block <= 0;
         blkcnt_reg <= 0;
-        data_cycles <= 0;
+//        data_cycles <= 0;
         bus_4bit_reg <= 0;
         bus_8bit_reg <= 0;
     end
@@ -272,7 +269,7 @@ begin: FSM_OUT
                 next_block <= 0;
                 blkcnt_reg <= blkcnt;
                 blksize_reg <= blksize;
-                data_cycles <= (bus_8bit ? blksize : (bus_4bit ? (blksize << 1) : (blksize << 3)));
+//                data_cycles <= (bus_8bit ? blksize : (bus_4bit ? (blksize << 1) : (blksize << 3)));
                 bus_4bit_reg <= bus_4bit;
                 bus_8bit_reg <= bus_8bit;
                 d1d2_reg <= 16'hffff;
@@ -452,7 +449,7 @@ begin: FSM_OUT
                 data_index <= 0;
             end
             READ_DAT: begin
-                if (!DDR50 && transf_cnt < data_cycles || transf_cnt < DataCycleDiv2) begin
+                if (transf_cnt < data_cycles) begin
                     if (bus_8bit_reg) begin
                       if (DDR50) begin
                         we <= (data_index[0] == 1'b1 || (transf_cnt == data_cycles-1 && !blkcnt_reg));
@@ -505,14 +502,14 @@ begin: FSM_OUT
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
-                else if (!DDR50 && transf_cnt <= data_cycles + 16 || transf_cnt <= DataCycleDiv2 + 16) begin
+                else if (transf_cnt <= data_cycles + 16) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
                     last_din <= iddrQ1;
                     if (DDR50)
                       last_dinDDR <= iddrQ2;
                     we<=0;
-                    if (transf_cnt > data_cycles || DDR50 && transf_cnt > DataCycleDiv2) begin
+                    if (transf_cnt > data_cycles) begin
                         crc_c <= crc_c - 5'h1;
                         if  (crc_out[0][crc_c] != last_din[0])
                             crc_ok <= 0;
