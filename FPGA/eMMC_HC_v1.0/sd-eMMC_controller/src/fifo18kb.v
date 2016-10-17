@@ -25,6 +25,8 @@ module fifo18Kb(
   wire parity_out5;
   wire parity_out6;
   wire parity_out7;
+  (* mark_debug = "true" *) wire epmty0;
+  (* mark_debug = "true" *) wire full0;
 
 //  wire sd_clk;
 
@@ -62,8 +64,8 @@ assign sd_dip = {parity_out4,parity_out5,parity_out6,parity_out7};
   // Status: 1-bit (each) output: Flags and other FIFO status outputs
   .ALMOSTEMPTY(),              // 1-bit output: Almost empty flag
   .ALMOSTFULL(),                // 1-bit output: Almost full flag
-  .EMPTY(),                          // 1-bit output: Empty flag
-  .FULL(),                            // 1-bit output: Full flag
+  .EMPTY(epmty0),                          // 1-bit output: Empty flag
+  .FULL(full0),                            // 1-bit output: Full flag
   .RDCOUNT(),                      // 12-bit output: Read count
   .RDERR(),                          // 1-bit output: Read error
   .WRCOUNT(),                      // 12-bit output: Write count

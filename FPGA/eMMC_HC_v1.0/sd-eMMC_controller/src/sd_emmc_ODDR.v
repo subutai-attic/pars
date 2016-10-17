@@ -9,15 +9,7 @@ module ODDR_p(
   output [7:0] oq
   );
 
-//  reg fifo_dat_rd_ready;
-//  reg [7:0] d1_reg;
-//  reg [7:0] d2_reg;
-//  wire [7:0] d1_wire;
-//  wire [7:0] d2_wire;
-
-//  assign d1_wire = d1_reg;
-//  assign d2_wire = d2_reg;
-  
+ 
   ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
