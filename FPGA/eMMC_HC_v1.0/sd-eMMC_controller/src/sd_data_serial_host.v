@@ -289,40 +289,12 @@ begin: FSM_OUT
                   d1d2_reg <= bus_8bit_reg ? 16'h0000 :(bus_4bit_reg ? 16'hF0F0 : 16'hFEFE);
                   data_index <= 5'h01;
                   if (bus_8bit_reg) begin
-                    last_din <= {
-                        data_in[31],
-                        data_in[30],
-                        data_in[29],
-                        data_in[28],
-                        data_in[27], 
-                        data_in[26], 
-                        data_in[25], 
-                        data_in[24]
-                        };
-                    crc_in <= {
-                        data_in[31], 
-                        data_in[30], 
-                        data_in[29], 
-                        data_in[28],
-                        data_in[27], 
-                        data_in[26], 
-                        data_in[25], 
-                        data_in[24]
-                        };
+                    last_din <= data_in[31:24];
+                    crc_in <= data_in[31:24];
                   end
                   else if (bus_4bit_reg) begin
-                    last_din <= {4'hF,
-                        data_in[31], 
-                        data_in[30], 
-                        data_in[29], 
-                        data_in[28]
-                        };
-                    crc_in <= {4'hF,
-                        data_in[31], 
-                        data_in[30], 
-                        data_in[29], 
-                        data_in[28]
-                        };
+                    last_din <= {4'hF,data_in[31:28]};
+                    crc_in <= {4'hF,data_in[31:28]};
                   end
                   else begin
                     last_din <= {7'h7F, data_in[31]};
