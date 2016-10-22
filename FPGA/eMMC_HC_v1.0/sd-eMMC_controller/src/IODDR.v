@@ -39,12 +39,12 @@ module IODDR(
 ///////////////////////////////////////////////
 
 ODDR #(
-  .DDR_CLK_EDGE ( "OPPOSITE_EDGE" ),    // "OPPOSITE_EDGE" or "SAME_EDGE"     );
+  .DDR_CLK_EDGE ( "SAME_EDGE" ),    // "OPPOSITE_EDGE" or "SAME_EDGE"     );
   .INIT         ( 1'b0 ),               // Initial value of Q: 1'b0 or 1'b1endmodule
   .SRTYPE       ( "SYNC" )              // Set/Reset type: "SYNC" or "ASYNC" 
 ) ODDR_inst (
   .Q        ( DDRPORT_O ),              // 1-bit DDR output
-  .C        ( Clk ),                    // 1-bit clock input
+  .C        ( Clk90 ),                    // 1-bit clock input
   .CE       ( 1 ),                      // 1-bit clock enable input
   .D1       ( WriteData_posEdge ),      // 1-bit data input (positive edge)
   .D2       ( WriteData_negEdge ),      // 1-bit data input (negative edge)
@@ -52,11 +52,6 @@ ODDR #(
   .S        ( 0 )                       // 1-bit set
 );
 
-//always @(posedge Clk)
-//ReadData_posEdge <= ddrInput;
-
-//always @(negedge Clk)
-//ReadData_negEdge <= ddrInput;
 /////////////////////////////////////////////////
 ////
 //// DDR Input 
@@ -68,7 +63,7 @@ IDDR #(
 ) IDDR_Ins (
 .Q1         ( ReadData_posEdge ),       // 1-bit output for positive edge of clock
 .Q2         ( ReadData_negEdge ),       // 1-bit output for negative edge of clock
-.C          ( Clk90 ),                    // 1-bit clock input
+.C          ( Clk ),                    // 1-bit clock input
 .CE         ( 1 ),                      // 1-bit clock enable input
 .D          ( DDRPORT_I ),               // 1-bit DDR data input
 .R          ( Reset ),                  // 1-bit reset

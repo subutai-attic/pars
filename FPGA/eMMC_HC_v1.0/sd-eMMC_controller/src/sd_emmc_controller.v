@@ -15,7 +15,7 @@
         output wire [7:0] sd_dat_o,
         input wire [7:0] sd_dat_i,
         output wire sd_dat_t,
-        output wire REMMC,
+//        output wire REMMC,
         // Interupt pinout 
         output wire interrupt,
 
@@ -206,7 +206,7 @@
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
-    assign REMMC = M_AXI_ARESETN;
+//    assign REMMC = M_AXI_ARESETN;
 //    assign maxi_wlast = M_AXI_WLAST;
     
     

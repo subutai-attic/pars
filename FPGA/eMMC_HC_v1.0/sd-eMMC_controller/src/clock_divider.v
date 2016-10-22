@@ -61,7 +61,6 @@ begin
  if (~AXI_RST) begin
     div <=8'b0000_0000;
     SD_CLK_90  <= 0;
-    Internal_clk_stable <= 1'b0;
  end
  else if (div == DIVISOR)begin
     div  <= 0;
