@@ -207,6 +207,7 @@
     // UHS mode
     wire [2:0] UHSModSel_axi_clk;
     wire [2:0] UHSModSel_sd_clk;
+    wire sd_clk90;
     
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(M_AXI_ACLK),
@@ -344,7 +345,8 @@
             .sd_clk(SD_CLK),
             .DIVISOR(divisor),
             .AXI_RST(s00_axi_aresetn/* & int_clk_en*/),
-            .Internal_clk_stable(int_clk_stbl)
+            .Internal_clk_stable(int_clk_stbl),
+            .sd_clk90(sd_clk90)
         );
 
     sd_cmd_master sd_cmd_master0(
@@ -412,6 +414,7 @@
 
     sd_data_serial_host sd_data_serial_host0(
         .sd_clk         (SD_CLK),
+        .sd_clk90       (sd_clk90),
         .rst            (!s00_axi_aresetn | 
                         soft_rst_dat_sd_clk ),
         .data_in        (data_out_tx_fifo),

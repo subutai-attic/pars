@@ -25,12 +25,16 @@ module sd_clock_divider(
     output wire sd_clk,
     input wire [7:0] DIVISOR,
     input AXI_RST,
-    output reg Internal_clk_stable
+    output reg Internal_clk_stable,
+    output wire sd_clk90
     );
 
 reg [7:0] clk_div;
 reg SD_CLK_O;
+reg [7:0] div;
+reg SD_CLK_90;
 assign sd_clk = SD_CLK_O;
+assign sd_clk90 = SD_CLK_90;
 
 
 always @ (posedge AXI_CLOCK or posedge AXI_RST)
@@ -52,5 +56,21 @@ begin
  end
 end
 
+
+always @ (negedge AXI_CLOCK or posedge AXI_RST)
+begin
+ if (~AXI_RST) begin
+    div <=8'b0000_0000;
+    SD_CLK_90  <= 0;
+ end
+ else if (div == DIVISOR)begin
+    div  <= 0;
+    SD_CLK_90 <=  ~SD_CLK_90;
+ end 
+ else begin
+    div  <= div + 1;
+    SD_CLK_90 <=  SD_CLK_90;
+ end
+end
 
 endmodule

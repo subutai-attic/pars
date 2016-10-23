@@ -55,6 +55,7 @@
 
 module sd_data_serial_host(
            input sd_clk,
+           input sd_clk90,
            input rst,
            //Tx Fifo
            (* mark_debug = "true" *) input [31:0] data_in,
@@ -65,7 +66,7 @@ module sd_data_serial_host(
            //tristate data
            output reg DAT_oe_o,
            output [7:0] DAT_dat_o,
-           input [7:0] DAT_dat_i,
+           (* mark_debug = "true" *) input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
@@ -84,7 +85,7 @@ module sd_data_serial_host(
        
 
 reg [7:0] DAT_dat_reg;
-wire [`BLKSIZE_W-1+3:0] data_cycles;
+(* mark_debug = "true" *) wire [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
@@ -114,9 +115,9 @@ wire start_bit;
 (* mark_debug = "true" *) reg [3:0] crc_s;
 (* mark_debug = "true" *) reg [4:0] data_index;
 reg [31:0] data_out;
-wire [7:0] iddrQ1;
-wire [7:0] iddrQ2;
-wire DDR50;
+(* mark_debug = "true" *) wire [7:0] iddrQ1;
+(* mark_debug = "true" *) wire [7:0] iddrQ2;
+(* mark_debug = "true" *) wire DDR50;
 reg [7:0] last_dinDDR;
 (* mark_debug = "true" *) reg [15:0] d1d2_reg;
 
@@ -152,7 +153,7 @@ IDDR_p IDDR_p_inst(
 
 ODDR_p ODDR_p_inst(
   .reset(rst),
-  .clock(sd_clk),
+  .clock(sd_clk90),
   .d1_wire(d1d2_reg[7:0]),
   .d2_wire(d1d2_reg[15:8]),
   .oq(DAT_dat_o)
@@ -289,12 +290,26 @@ begin: FSM_OUT
                   d1d2_reg <= bus_8bit_reg ? 16'h0000 :(bus_4bit_reg ? 16'hF0F0 : 16'hFEFE);
                   data_index <= 5'h01;
                   if (bus_8bit_reg) begin
-                    last_din <= data_in[31:24];
-                    crc_in <= data_in[31:24];
+                    if (DDR50) begin
+                      last_din <= data_in[31:24];
+                      last_dinDDR <= data_in[23:16];
+                      crc_in <= data_in[31:16];
+                      rd <= 1'b1;
+                    end
+                    else begin
+                      last_din <= data_in[31:24];
+                      crc_in <= data_in[31:24];
+                    end
                   end
                   else if (bus_4bit_reg) begin
-                    last_din <= {4'hF,data_in[31:28]};
-                    crc_in <= {4'hF,data_in[31:28]};
+                    if (DDR50) begin
+                      last_din <= {4'hF, data_in[31:24]};
+                      last_dinDDR <= {4'hF, data_in[23:16]};
+                    end
+                    else begin
+                      last_din <= {4'hF,data_in[31:28]};
+                      crc_in <= {4'hF,data_in[31:28]};
+                    end
                   end
                   else begin
                     last_din <= {7'h7F, data_in[31]};
@@ -303,11 +318,51 @@ begin: FSM_OUT
                 end
                 else if ((transf_cnt >= 1) && (transf_cnt <= data_cycles)) begin
                     data_index <= data_index + 1;
-                    d1d2_reg <= {2{last_din}};
                     if (bus_8bit_reg) begin
-//                      if(DDR50) begin
-//                      end
-//                      else begin
+                      if(DDR50) begin
+                        d1d2_reg <= {last_din, last_dinDDR};                      
+                        last_din <= {
+                            data_in[31-(data_index[0]<<4)], 
+                            data_in[30-(data_index[0]<<4)], 
+                            data_in[29-(data_index[0]<<4)], 
+                            data_in[28-(data_index[0]<<4)],
+                            data_in[27-(data_index[0]<<4)], 
+                            data_in[26-(data_index[0]<<4)], 
+                            data_in[25-(data_index[0]<<4)], 
+                            data_in[24-(data_index[0]<<4)]
+                            };
+                        last_dinDDR <= {
+                            data_in[23-(data_index[0]<<4)],
+                            data_in[22-(data_index[0]<<4)],
+                            data_in[21-(data_index[0]<<4)],
+                            data_in[20-(data_index[0]<<4)],
+                            data_in[19-(data_index[0]<<4)], 
+                            data_in[18-(data_index[0]<<4)], 
+                            data_in[17-(data_index[0]<<4)], 
+                            data_in[16-(data_index[0]<<4)]
+                            };
+                        crc_in <= {
+                            data_in[31-(data_index[0]<<4)], 
+                            data_in[30-(data_index[0]<<4)], 
+                            data_in[29-(data_index[0]<<4)], 
+                            data_in[28-(data_index[0]<<4)],
+                            data_in[27-(data_index[0]<<4)], 
+                            data_in[26-(data_index[0]<<4)], 
+                            data_in[25-(data_index[0]<<4)], 
+                            data_in[24-(data_index[0]<<4)],
+                            data_in[23-(data_index[0]<<4)], 
+                            data_in[22-(data_index[0]<<4)], 
+                            data_in[21-(data_index[0]<<4)], 
+                            data_in[20-(data_index[0]<<4)],
+                            data_in[19-(data_index[0]<<4)], 
+                            data_in[18-(data_index[0]<<4)], 
+                            data_in[17-(data_index[0]<<4)], 
+                            data_in[16-(data_index[0]<<4)]
+                            };
+                        rd <= (data_index[0] == 1'b0/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1);
+                      end
+                      else begin
+                        d1d2_reg <= {2{last_din}};
                         last_din <= {
                             data_in[31-(data_index[1:0]<<3)], 
                             data_in[30-(data_index[1:0]<<3)], 
@@ -328,8 +383,9 @@ begin: FSM_OUT
                             data_in[25-(data_index[1:0]<<3)], 
                             data_in[24-(data_index[1:0]<<3)]
                             };
-                        if (data_index[1:0] == 2'h2/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1)
-                            rd <= 1;
+                        rd <= (data_index[1:0] == 2'h2/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1);
+//                            rd <= 1;
+                      end
                     end
                     else if (bus_4bit_reg) begin
                         last_din <= {4'hF,
@@ -356,10 +412,30 @@ begin: FSM_OUT
                     if (transf_cnt == data_cycles)
                         crc_en<=0;
                 end
-                else if (transf_cnt <= data_cycles + 16) begin
+                else if (transf_cnt <= data_cycles +16) begin
                     crc_c <= crc_c - 1;
-//                    DAT_oe_o <= 0;
                     if (bus_8bit_reg)
+                      if(DDR50)begin
+                        d1d2_reg <= {
+                          crc_out[15][crc_c],
+                          crc_out[14][crc_c],
+                          crc_out[13][crc_c],
+                          crc_out[12][crc_c],
+                          crc_out[11][crc_c],
+                          crc_out[10][crc_c],
+                          crc_out[9][crc_c],
+                          crc_out[8][crc_c],
+                          crc_out[7][crc_c],
+                          crc_out[6][crc_c],
+                          crc_out[5][crc_c],
+                          crc_out[4][crc_c],
+                          crc_out[3][crc_c],
+                          crc_out[2][crc_c],
+                          crc_out[1][crc_c],
+                          crc_out[0][crc_c]
+                          };
+                      end
+                      else begin
                         d1d2_reg <= {2{
                           crc_out[7][crc_c],
                           crc_out[6][crc_c],
@@ -370,6 +446,7 @@ begin: FSM_OUT
                           crc_out[1][crc_c],
                           crc_out[0][crc_c]
                           }};
+                      end
                     else if (bus_4bit_reg)
                         d1d2_reg <= {2{4'hF,
                           crc_out[3][crc_c],

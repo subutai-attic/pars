@@ -10,7 +10,7 @@ module ODDR_p(
   );
 
  
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst0 (
@@ -23,7 +23,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
   
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst1 (
@@ -36,7 +36,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
 
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst2 (
@@ -49,7 +49,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
 
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst3 (
@@ -62,7 +62,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
 
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst4 (
@@ -75,7 +75,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
 
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst5 (
@@ -88,7 +88,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
 
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst6 (
@@ -101,7 +101,7 @@ module ODDR_p(
   .S(1'b0)                                    // 1-bit set
   );
 
-  ODDR  #(.DDR_CLK_EDGE("OPPOSITE_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
+  ODDR  #(.DDR_CLK_EDGE("SAME_EDGE"),  // "SAME_EDGE" or "OPPOSITE_EDGE"
   .INIT(1'b1),                             // Initial value of    Q:1'b0 or 1'b1
   .SRTYPE("SYNC")                          // Set/Reset type: "SYNC" or "ASYNC"
   ) ODDR_inst7 (
