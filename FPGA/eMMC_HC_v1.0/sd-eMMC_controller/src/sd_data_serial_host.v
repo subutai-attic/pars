@@ -269,7 +269,6 @@ begin: FSM_OUT
                 next_block <= 0;
                 blkcnt_reg <= blkcnt;
                 blksize_reg <= blksize;
-//                data_cycles <= (bus_8bit ? blksize : (bus_4bit ? (blksize << 1) : (blksize << 3)));
                 bus_4bit_reg <= bus_4bit;
                 bus_8bit_reg <= bus_8bit;
                 d1d2_reg <= 16'hffff;
@@ -292,7 +291,7 @@ begin: FSM_OUT
                     if (DDR50) begin
                       last_din <= data_in[31:24];
                       last_dinDDR <= data_in[23:16];
-                      crc_in <= data_in[31:16];
+                      crc_in <= {data_in[23:16], data_in[31:24]};
                       rd <= 1'b1;
                     end
                     else begin
@@ -319,7 +318,7 @@ begin: FSM_OUT
                     data_index <= data_index + 1;
                     if (bus_8bit_reg) begin
                       if(DDR50) begin
-                        d1d2_reg <= {last_din, last_dinDDR};                      
+                        d1d2_reg <= {last_dinDDR, last_din};                      
                         last_din <= {
                             data_in[31-(data_index[0]<<4)], 
                             data_in[30-(data_index[0]<<4)], 
@@ -341,14 +340,6 @@ begin: FSM_OUT
                             data_in[16-(data_index[0]<<4)]
                             };
                         crc_in <= {
-                            data_in[31-(data_index[0]<<4)], 
-                            data_in[30-(data_index[0]<<4)], 
-                            data_in[29-(data_index[0]<<4)], 
-                            data_in[28-(data_index[0]<<4)],
-                            data_in[27-(data_index[0]<<4)], 
-                            data_in[26-(data_index[0]<<4)], 
-                            data_in[25-(data_index[0]<<4)], 
-                            data_in[24-(data_index[0]<<4)],
                             data_in[23-(data_index[0]<<4)], 
                             data_in[22-(data_index[0]<<4)], 
                             data_in[21-(data_index[0]<<4)], 
@@ -356,7 +347,16 @@ begin: FSM_OUT
                             data_in[19-(data_index[0]<<4)], 
                             data_in[18-(data_index[0]<<4)], 
                             data_in[17-(data_index[0]<<4)], 
-                            data_in[16-(data_index[0]<<4)]
+                            data_in[16-(data_index[0]<<4)],
+
+                            data_in[31-(data_index[0]<<4)], 
+                            data_in[30-(data_index[0]<<4)], 
+                            data_in[29-(data_index[0]<<4)], 
+                            data_in[28-(data_index[0]<<4)],
+                            data_in[27-(data_index[0]<<4)], 
+                            data_in[26-(data_index[0]<<4)], 
+                            data_in[25-(data_index[0]<<4)], 
+                            data_in[24-(data_index[0]<<4)]
                             };
                         rd <= (data_index[0] == 1'b0/*not 3 - read delay !!!*/ && transf_cnt <= data_cycles-1);
                       end
