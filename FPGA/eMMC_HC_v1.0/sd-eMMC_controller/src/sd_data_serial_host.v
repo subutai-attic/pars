@@ -58,15 +58,15 @@ module sd_data_serial_host(
            input sd_clk90,
            input rst,
            //Tx Fifo
-           (* mark_debug = "true" *) input [31:0] data_in,
-           (* mark_debug = "true" *) output reg rd,
+           input [31:0] data_in,
+           output reg rd,
            //Rx Fifo
            output wire [31:0] data_out_o,
            output reg we,
            //tristate data
            output reg DAT_oe_o,
            output [7:0] DAT_dat_o,
-           (* mark_debug = "true" *) input [7:0] DAT_dat_i,
+           input [7:0] DAT_dat_i,
            //Controll signals
            input [`BLKSIZE_W-1:0] blksize,
            input bus_4bit,
@@ -75,27 +75,27 @@ module sd_data_serial_host(
            input [1:0] start,
            output sd_data_busy,
            output busy,
-           (* mark_debug = "true" *) output reg crc_ok,
+           output reg crc_ok,
            output read_trans_active,
            output write_trans_active,
            input start_write,
            output wire write_next_block,
-           (* mark_debug = "true" *) input wire [2:0] UHSMode
+           input wire [2:0] UHSMode
        );
        
 
 reg [7:0] DAT_dat_reg;
-(* mark_debug = "true" *) wire [`BLKSIZE_W-1+3:0] data_cycles;
+wire [`BLKSIZE_W-1+3:0] data_cycles;
 reg bus_4bit_reg;
 reg bus_8bit_reg;
 //CRC16
-(* mark_debug = "true" *) reg [15:0] crc_in;
-(* mark_debug = "true" *) reg crc_en;
+reg [15:0] crc_in;
+reg crc_en;
 reg crc_rst;
 wire [15:0] crc_out [15:0];
-(* mark_debug = "true" *) reg [`BLKSIZE_W-1+4:0] transf_cnt;
+reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-(* mark_debug = "true" *) reg [SIZE-1:0] state;
+reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;
@@ -108,18 +108,18 @@ reg [3:0] crc_status;
 reg busy_int;
 reg [`BLKCNT_W-1:0] blkcnt_reg;
 reg [`BLKSIZE_W-1:0] blksize_reg;
-(* mark_debug = "true" *) reg next_block;
+reg next_block;
 wire start_bit;
-(* mark_debug = "true" *) reg [4:0] crc_c;
-(* mark_debug = "true" *) reg [7:0] last_din;
-(* mark_debug = "true" *) reg [3:0] crc_s;
-(* mark_debug = "true" *) reg [4:0] data_index;
+reg [4:0] crc_c;
+reg [7:0] last_din;
+reg [3:0] crc_s;
+reg [4:0] data_index;
 reg [31:0] data_out;
-(* mark_debug = "true" *) wire [7:0] iddrQ1;
-(* mark_debug = "true" *) wire [7:0] iddrQ2;
-(* mark_debug = "true" *) wire DDR50;
+wire [7:0] iddrQ1;
+wire [7:0] iddrQ2;
+wire DDR50;
 reg [7:0] last_dinDDR;
-(* mark_debug = "true" *) reg [15:0] d1d2_reg;
+reg [15:0] d1d2_reg;
 
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};

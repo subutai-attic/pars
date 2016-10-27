@@ -25,8 +25,8 @@ module fifo18Kb(
   wire parity_out5;
   wire parity_out6;
   wire parity_out7;
-  (* mark_debug = "true" *) wire epmty0;
-  (* mark_debug = "true" *) wire full0;
+  wire epmty0;
+  wire full0;
 
 //  wire sd_clk;
 
