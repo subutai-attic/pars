@@ -150,6 +150,7 @@
     wire [`BLKSIZE_W-1:0] block_size_sd_clk;
     wire controll_setting_sd_clk;
     wire controll_setting_8bit_sd_clk;
+    wire ddr_en;
     wire [`INT_CMD_SIZE-1:0] cmd_int_status_sd_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_status_sd_clk;
     wire [`BLKCNT_W-1:0] block_count_sd_clk;
@@ -322,6 +323,7 @@
             .timeout_contr_wire(data_timeout_axi_clk),
             .sd_dat_bus_width(controll_setting_axi_clk),   
             .sd_dat_bus_width_8bit(controll_setting_8bit_axi_clk),   
+            .ddr_en(ddr_en),
 //            .buff_read_en(!rx_fifo_empty_axi_clk),
 //            .buff_writ_en(!tx_fifo_full_axi_clk),
             .write_trans_active(wr_trans_act_axi_clk),
@@ -418,26 +420,28 @@
         .rst            (!s00_axi_aresetn | 
                         soft_rst_dat_sd_clk ),
         .data_in        (data_out_tx_fifo),
-        .rd             (rd_fifo),
-        .data_out_o       (data_in_rx_fifo),
-        .we             (we_fifo),
-        .DAT_oe_o       (sd_dat_t),
-        .DAT_dat_o      (sd_dat_o),
+        .rd_out         (rd_fifo),
+        .data_out_o     (data_in_rx_fifo),
+        .we_out         (we_fifo),
+        .DAT_oe_out     (sd_dat_t),
+        .DAT_dat_out      (sd_dat_o),
         .DAT_dat_i      (sd_dat_i),
         .blksize        (block_size_sd_clk),
         .bus_4bit       (controll_setting_sd_clk),
         .bus_8bit       (controll_setting_8bit_sd_clk),
+        .ddr50_en       (ddr_en),
         .blkcnt         (block_count_sd_clk),
         .start          ({d_read, d_write}),
+        .byte_alignment (2'b00),
         .sd_data_busy   (sd_data_busy),
         .busy           (data_busy),
-        .crc_ok         (data_crc_ok),
+        .crc_ok_out     (data_crc_ok),
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
 //        .next_block(next_block_st),
         .start_write    (start_write_sd_clk),
-        .write_next_block(next_block_st),
-        .UHSMode        (UHSModSel_sd_clk)
+        .write_next_block(next_block_st)
+//        .UHSMode        (UHSModSel_sd_clk)
         );
 /*
     sd_fifo_filler sd_fifo_filler0(

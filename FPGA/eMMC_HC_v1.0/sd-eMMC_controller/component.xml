@@ -722,7 +722,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>fc257d49</spirit:value>
+            <spirit:value>aa5330a4</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -737,7 +737,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>536e1359</spirit:value>
+            <spirit:value>08d622dc</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1872,7 +1872,11 @@
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagesynthesis_view_fileset</spirit:name>
       <spirit:file>
-        <spirit:name>src/sd_emmc_ODDR.v</spirit:name>
+        <spirit:name>src/fifo18kb.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sd_crc_16.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
@@ -1880,7 +1884,7 @@
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>src/fifo18kb.v</spirit:name>
+        <spirit:name>src/sd_emmc_ODDR.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
@@ -1888,10 +1892,6 @@
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
-        <spirit:name>src/sd_crc_16.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-      </spirit:file>
-      <spirit:file>
         <spirit:name>src/sd_data_xfer_trig.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
@@ -1901,10 +1901,6 @@
       </spirit:file>
       <spirit:file>
         <spirit:name>src/sd_emmc_controller_S00_AXI.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/sd_data_serial_host.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
@@ -1942,21 +1938,17 @@
         <spirit:isIncludeFile>true</spirit:isIncludeFile>
       </spirit:file>
       <spirit:file>
+        <spirit:name>src/sd_data_serial_hostBaha.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
         <spirit:name>src/sd_emmc_controller.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_e8dbee8d</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_f0692830</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
       <spirit:name>xilinx_anylanguagebehavioralsimulation_view_fileset</spirit:name>
-      <spirit:file>
-        <spirit:name>src/sd_emmc_ODDR.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/IDDR.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-      </spirit:file>
       <spirit:file>
         <spirit:name>src/fifo18kb.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
@@ -1964,7 +1956,14 @@
       <spirit:file>
         <spirit:name>src/sd_crc_16.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/IDDR.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sd_emmc_ODDR.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>src/sd_data_xfer_trig.v</spirit:name>
@@ -1978,11 +1977,6 @@
       </spirit:file>
       <spirit:file>
         <spirit:name>src/sd_emmc_controller_dma.v</spirit:name>
-        <spirit:fileType>verilogSource</spirit:fileType>
-        <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>src/sd_data_serial_host.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
       </spirit:file>
@@ -2031,6 +2025,10 @@
         <spirit:name>src/sd_emmc_controller.v</spirit:name>
         <spirit:fileType>verilogSource</spirit:fileType>
         <spirit:userFileType>USED_IN_ipstatic</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/sd_data_serial_hostBaha.v</spirit:name>
+        <spirit:fileType>verilogSource</spirit:fileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>src/sd_crc_7.v</spirit:name>
@@ -2074,8 +2072,8 @@
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>sd_emmc_controller_v1_0</xilinx:displayName>
-      <xilinx:coreRevision>484</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-11-16T04:57:54Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>494</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-11-18T03:27:39Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/azamat/Git/pars/FPGA/eMMC_HC_v1.0/sd-eMMC_controller</xilinx:tag>
@@ -2086,7 +2084,7 @@
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="4900e219"/>
       <xilinx:checksum xilinx:scope="addressSpaces" xilinx:value="12497fc4"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="8e98f91a"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="63e13554"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="d129b042"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="e041517e"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="15a214e0"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="dda63129"/>
