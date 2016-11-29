@@ -169,28 +169,12 @@ begin
                 start_rx_fifo_o <= 0;
                 start_tx_fifo_o <= 1;
                 tx_cycle <= 1;
-//                if (tx_fifo_full_i == 1)
                     d_write_o <= 1;
             end
             DATA_TRANSFER: begin
                 d_read_o <= 0;
                 d_write_o <= 0;
                 watchdog <= watchdog + `DATA_TIMEOUT_W'd1;
-//                int_status_o[`INT_DATA_BRE] <= (next_block || (crc_ok_i & xfr_complete_i & !trans_done)) ? 1 : int_status_o[`INT_DATA_BRE];
-
-//                if (tx_cycle) begin
-//                    if (tx_fifo_empty_i) begin
-//                        if (!trans_done) begin
-//                            int_status_o[`INT_DATA_CFE] <= 1;
-//                            int_status_o[`INT_DATA_EI] <= 1;
-//                        end
-//                        trans_done <= 1;
-//                        //stop sd_data_serial_host
-//                        d_write_o <= 1;
-//                        d_read_o <= 1;
-//                    end
-//                end
-//                else begin
                     if (rx_fifo_full_i) begin
                         if (!trans_done) begin
                             int_status_o[`INT_DATA_CFE] <= 1;
@@ -201,7 +185,6 @@ begin
                         d_write_o <= 1;
                         d_read_o <= 1;
                     end
-//                end
                 if (timeout_reg && watchdog >= timeout_reg) begin
                     int_status_o[`INT_DATA_CTE] <= 1;
                     int_status_o[`INT_DATA_EI] <= 1;
