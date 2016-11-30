@@ -85,28 +85,28 @@ assign reset_fifo = !en_rx_i & fifo_reset;
 
 // synchronous simple 32 bits fifo keeping data for the cpu to write into eMMC 
 data_write data_writeDDReMMC_I (
-	.wr_clk		(wb_clk),      				// input wire clk
+	.wr_clk		(wb_clk),      				           // input wire clk
     .rd_clk     (sd_clk),
     .rst        (rst | reset_fifo),                    // input wire srst
-	.din		(write_fifo_in),      	// input wire [31 : 0] din
-	.wr_en		(fifo_data_write_ready),  		// input wire wr_en
-	.rd_en		(rd_i),  			// input wire rd_en
-	.dout		(dat_o),    			// output wire [31 : 0] dout
-	.full		(wb_full_o),    					// output wire full
-	.empty		(sd_empty_o)  					// output wire empty
+	.din		(write_fifo_in),      	               // input wire [31 : 0] din
+	.wr_en		(fifo_data_write_ready),  		       // input wire wr_en
+	.rd_en		(rd_i),  			                   // input wire rd_en
+	.dout		(dat_o),    			               // output wire [31 : 0] dout
+	.full		(wb_full_o),    					   // output wire full
+	.empty		(sd_empty_o)  					       // output wire empty
 );
 
 // synchronous simple 32 bits fifo keeping data for the cpu to read from eMMC
 data_read data_read_eMMC_DDR_I (
-	.wr_clk		(sd_clk),      				// input wire clk
+	.wr_clk		(sd_clk),      				           // input wire clk
 	.rd_clk     (wb_clk),
-	.rst		(rst | reset_fifo),    				// input wire srst
-	.din		(dat_i),      	// input wire [31 : 0] din
-	.wr_en		(wr_i),  		// input wire wr_en
-	.rd_en		(fifo_rd),  			// input wire rd_en
-	.dout		(read_fifo_out),    			// output wire [31 : 0] dout
-	.full		(sd_full_o),    					// output wire full
-	.empty		(wb_empty_o)  					// output wire empty
+	.rst		(rst | reset_fifo),    				   // input wire srst
+	.din		(dat_i),      	                       // input wire [31 : 0] din
+	.wr_en		(wr_i),  		                       // input wire wr_en
+	.rd_en		(fifo_rd),  			               // input wire rd_en
+	.dout		(read_fifo_out),    			       // output wire [31 : 0] dout
+	.full		(sd_full_o),    					   // output wire full
+	.empty		(wb_empty_o)  					       // output wire empty
 );
 
 endmodule
