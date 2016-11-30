@@ -242,7 +242,7 @@ begin
                             else response_0_o <= response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
-                            response_3_o <= {8'h00, response_i1[119:96]};
+                            response_3_o <= {8'h00, response_i[119:96]};
                             response_2_o <= response_i[95:64];
                             response_1_o <= response_i[63:32];
                             response_0_o <= response_i[31:0];

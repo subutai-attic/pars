@@ -387,10 +387,10 @@
         .cmd_o        (cmd),
         .response_i   (cmd_response),
         .response_i1   (cmd_response1),        
-        .crc_ok_i     (cmd_crc_ok1 ),
-        .index_ok_i   (cmd_index_ok1),
+        .crc_ok_i     (cmd_crc_ok && cmd_crc_ok1),
+        .index_ok_i   (cmd_index_ok && cmd_index_ok1),
         .busy_i       (sd_data_busy),
-        .finish_i     (cmd_finish1 ),
+        .finish_i     (cmd_finish && cmd_finish1),
         .argument_i   (argument_sd_clk),
         .command_i    (command_sd_clk),
         .int_status_o (cmd_int_status_sd_clk),
@@ -534,7 +534,7 @@
         .tx_fifo_empty_i  (tx_fifo_empty1),
         .tx_fifo_full_i   (tx_fifo_full1),
         .rx_fifo_full_i   (rx_fifo_full1),
-        .xfr_complete_i   (!data_busy),
+        .xfr_complete_i   (!data_busy1),
         .crc_ok_i         (data_crc_ok1),
         .int_status_o     (data_int_status_sd_clk1),
         .int_status_rst_i (data_int_rst_sd_clk),
@@ -635,7 +635,7 @@
     bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
     bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
     bistable_domain_cross #(1) command_inh_dat_cross(!s00_axi_aresetn, SD_CLK, sd_data_busy, s00_axi_aclk, command_inhibit_dat_axi_clk);
-    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, ( command_inhibit_cmd_sd_clk1), s00_axi_aclk, command_inhibit_cmd_axi_clk);
+    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, ( command_inhibit_cmd_sd_clk && command_inhibit_cmd_sd_clk1), s00_axi_aclk, command_inhibit_cmd_axi_clk);
     bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
     bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
     
