@@ -574,9 +574,9 @@
         .rst       (!s00_axi_aresetn |
                     soft_rst_dat_sd_clk ),
         .read_fifo_out (read_fifo_out1),
-        .write_fifo_in (write_dat_fifo1),
-        .fifo_data_read_ready (fifo_data_read_ready1),
-        .fifo_data_write_ready(fifo_data_write_ready1),
+        .write_fifo_in (write_dat_fifo),
+        .fifo_data_read_ready (fifo_data_read_ready),
+        .fifo_data_write_ready(fifo_data_write_ready),
         .en_rx_i   (start_rx_fifo1),
         .en_tx_i   (start_tx_fifo1),
         .sd_clk    (SD_CLK),
