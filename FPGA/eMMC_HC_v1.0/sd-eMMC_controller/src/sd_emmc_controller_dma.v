@@ -1,22 +1,23 @@
 `timescale 1ns / 1ps 
 `include "sd_defines.h"
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Cricital-Factor LLC
+// Engineer: Azamat Beksadaev, Bahtiar Kukanov
 // 
 // Create Date: 02/24/2016 01:37:27 AM
-// Design Name: 
-// Module Name: sd_emmc_controller_dma
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
+// Design Name: ADMA (Advanced Direct Memory Access)
+// Module Name: emmc_controller_adma
+// Project Name: eMMC Host Controller
+// Target Devices: Xilinx ZYNQ 7000
+// Tool Versions: Vivado 2016.2
+// Description: This ADMA used to transfer data between System Memory and eMMC cards. From system memory side it uses Master AXI interface from eMMC side data exchanged over the FIFO buffer. 
+//              This ADMA meets the requirements of the "SD Host Controller Simplified Specification Version 3.00". In particular chapter 1.13.
+//              The ADMA based on SDMA that controlled by "sdma_contr_reg".
 // Dependencies: 
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments:
+// Additional Comments: 
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -119,6 +120,7 @@ reg [3:0] write_index;
 reg burst_tx;
 reg axi_bready;
 reg m_axi_rready_reg;
+reg [16:0] rd_dat_words;
 wire Tran;
 wire Link;
 wire stop_trans;
@@ -439,7 +441,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
       */
       reg [1:0] start_dat_trans;
       reg [2:0] next_state;
-      reg [16:0] rd_dat_words;
       reg TFC;
       reg a;
       reg trans_act;
