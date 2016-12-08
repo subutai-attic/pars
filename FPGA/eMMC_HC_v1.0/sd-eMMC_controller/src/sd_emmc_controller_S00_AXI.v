@@ -91,7 +91,6 @@
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
-		output wire ddr_en,
 //		input wire buff_read_en,
 //		input wire buff_writ_en,
 		input wire write_trans_active,
@@ -194,7 +193,6 @@
     assign cmd_int_rst         = acmd23_int_rst | cmd_int_rst_reg;
     assign cmd_start           = start_cmd_reg1 | cmd_start_reg;
     assign UHSModSel          = slv_reg15[18:16];
-    assign ddr_en = slv_reg15[18];
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
