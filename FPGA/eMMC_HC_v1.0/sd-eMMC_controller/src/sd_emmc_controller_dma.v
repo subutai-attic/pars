@@ -48,7 +48,7 @@ module  sd_emmc_controller_dma (
             input wire cmd_compl_puls,
             
             // FIFO Filler
-            output reg fifo_dat_rd_ready,
+            output wire fifo_dat_rd_ready,
             output wire fifo_dat_wr_ready_o,
             input wire [31:0] read_fifo_data,
             output reg fifo_rst,
@@ -149,6 +149,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
   assign m_axi_awlen	     = sdma_contr_reg[`BurstLen];
   assign m_axi_awsize	     = 3'b010;
   assign stop_trans          = state == IDLE ? 1'b1 : 1'b0;
+  assign fifo_dat_rd_ready   = m_axi_wready & m_axi_wvalid;
   assign fifo_dat_wr_ready_o = sdma_contr_reg[`DatTarg] ? 1'b0 : m_axi_rready;
   assign m_axi_araddr        = sdma_contr_reg[`AddrSel] ? descriptor_pointer_reg : descriptor_line [63:32];
   assign m_axi_arlen         = sdma_contr_reg[`BurstLen];
@@ -231,7 +232,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         m_axi_awvalid <= 0;
         m_axi_wvalid <= 0;
         data_cycle <= 0;
-        fifo_dat_rd_ready <= 0;
+//        fifo_dat_rd_ready <= 0;
         addr_accepted <= 0;
         m_axi_arvalid <= 0;
         fifo_rst <= 0;
@@ -241,7 +242,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
         case (state)
           IDLE: begin
                    data_cycle <= 0;
-                   fifo_dat_rd_ready <= 0;
+//                   fifo_dat_rd_ready <= 0;
                    data_write_disable <= 0;
                    we_counter_reset <= 1;
                    rd_counter_reset <= 1;
@@ -261,7 +262,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                 end
           CARD2MEM_WAIT: begin
                        fifo_rst <= 0;
-                       fifo_dat_rd_ready <= 1'b0;
+//                       fifo_dat_rd_ready <= 1'b0;
                        if (we_counter >= (data_cycle + 16)) begin
                          state <= CARD2MEM_ACT;
                        end
@@ -275,6 +276,7 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                       we_counter_reset <= 1'b1;
                       case (addr_accepted)
                           1'b0: begin 
+//                                  fifo_dat_rd_ready <= 1'b0;
                                   if (m_axi_awvalid && m_axi_awready) begin
                                     m_axi_awvalid <= 1'b0;
                                     addr_accepted <= 1'b1;
@@ -288,24 +290,25 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                           1'b1: begin
                                   if (next_data_word) begin
                                     data_cycle <= data_cycle + 1;
-                                    fifo_dat_rd_ready <= 1'b1;
-                                    m_axi_wvalid <= 1'b0;
-                                    data_write_disable <= 1'b1;
+//                                    fifo_dat_rd_ready <= 1'b1;
+//                                    m_axi_wvalid <= 1'b0;
+//                                    data_write_disable <= 1'b1;
                                   end
-                                  else if (data_write_disable) begin
-                                    fifo_dat_rd_ready <= 1'b0;
-                                    m_axi_wvalid <= 1'b0;
-                                    data_write_disable <= 1'b0;
-                                  end
+//                                  else if (data_write_disable) begin
+//                                    fifo_dat_rd_ready <= 1'b0;
+//                                    m_axi_wvalid <= 1'b0;
+//                                    data_write_disable <= 1'b0;
+//                                  end
                                   else begin
                                     m_axi_wvalid <= 1'b1;
+//                                    fifo_dat_rd_ready <= 1'b0;
                                   end
                                   if (m_axi_wlast & m_axi_wvalid) begin
                                     state <= CARD2MEM_WAIT;
                                     m_axi_wvalid <= 1'b0;
                                     addr_accepted <= 1'b0;
-                                    fifo_dat_rd_ready <= 1'b1;
-                                    data_write_disable <= 1'b0;
+//                                    fifo_dat_rd_ready <= 1'b1;
+//                                    data_write_disable <= 1'b0;
                                     burst_tx <= 1'b1;
                                   end
                                 end

@@ -91,6 +91,7 @@
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
+		output wire ddr_en,
 		input wire buff_read_en,
 		input wire buff_writ_en,
 		input wire write_trans_active,
@@ -142,7 +143,7 @@
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg12_1;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg13;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg14;
-//	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg16;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg17;
 //	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg18;
@@ -168,7 +169,7 @@
     //SD-eMMC host controller registers
 	assign software_reset_o    = slv_reg11[24] ? 2'b11 : ( slv_reg11 [25] ? 2'b01 : ( slv_reg11 [26] ? 2'b10 : 2'b00 )); // software reset
 	assign timeout_contr_wire  = 1'b1  << slv_reg11[19:16] << 4'hD;          // Data timeout register
-	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >>1 will decrease it
+	assign clock_divisor       = slv_reg11[15:8] >> 1;                     // Clock_divisor  shift >> 1 will decrease it
 	assign command_o           = cmd_sel ? 14'h171a : slv_reg3 [29:16];    // CMD_INDEX choose.
 	assign argument_o          = arg_sel ? slv_reg0 : slv_reg2;            // CMD_Argument choose. Either Arg1 or Arg2  
 	assign block_size_o        = slv_reg1 [11:0];                          // Block size register
@@ -185,6 +186,7 @@
     assign cmd_compl_int       = cc_int_sel ? 1'b0 : cmd_int_st[`INT_CMD_CC];
     assign cmd_int_rst         = acmd23_int_rst | cmd_int_rst_reg;
     assign cmd_start           = start_cmd_reg1 | cmd_start_reg;
+    assign ddr_en              = slv_reg15[18];
 	
 	// I/O Connections assignments
 	assign S_AXI_AWREADY	= axi_awready;
@@ -296,7 +298,7 @@
 	      slv_reg12_1 <= 0;
 	      slv_reg13 <= 0;
 	      slv_reg14 <= 0;
-//	      slv_reg15 <= 0;
+	      slv_reg15 <= 0;
 //	      slv_reg16 <= 0;
 //	      slv_reg17 <= 0;
 //	      slv_reg18 <= 0;
@@ -439,13 +441,13 @@
 	                // Slave register 14
 	                slv_reg14[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
-//	          5'h0F:
-//	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-//	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-//	                // Respective byte enables are asserted as per write strobes 
-//	                // Slave register 15
-//	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-//	              end  
+	          5'h0F:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 15
+	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
 //	          5'h10:
 //	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
 //	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
@@ -497,7 +499,7 @@
 	                      slv_reg12_1 <= slv_reg12_1;
 	                      slv_reg13 <= slv_reg13;
 	                      slv_reg14 <= slv_reg14;
-//	                      slv_reg15 <= slv_reg15;
+	                      slv_reg15 <= slv_reg15;
 //	                      slv_reg16 <= slv_reg16;
 //	                      slv_reg17 <= slv_reg17;
 //	                      slv_reg18 <= slv_reg18;
@@ -645,9 +647,9 @@
 	        5'h0C   : reg_data_out <= (slv_reg12 & slv_reg13);
 	        5'h0D   : reg_data_out <= slv_reg13;
 	        5'h0E   : reg_data_out <= slv_reg14;
-	        5'h0F   : reg_data_out <= ACMDErrorStatus; //slv_reg15;
-	        5'h10   : reg_data_out <= 32'h012C32B2;    //slv_reg16; Capabilities register
-	        5'h11   : reg_data_out <= 0;               //slv_reg17;
+	        5'h0F   : reg_data_out <= {slv_reg15[31:16],8'b0,ACMDErrorStatus}; //slv_reg15;
+	        5'h10   : reg_data_out <= 32'h012C32B2;    //slv_reg16; Capabilities register 
+	        5'h11   : reg_data_out <= 32'h5;           //slv_reg17; Capabilities register
 	        5'h12   : reg_data_out <= 0;               //slv_reg18;
 	        5'h13   : reg_data_out <= 0;               //slv_reg19;
 	        5'h16   : reg_data_out <= slv_reg22;

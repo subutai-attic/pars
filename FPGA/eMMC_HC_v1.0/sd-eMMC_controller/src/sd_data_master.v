@@ -218,6 +218,8 @@ begin
                         if (!trans_done) begin
                             int_status_o[`INT_DATA_CCRCE] <= 1;
                             int_status_o[`INT_DATA_EI] <= 1;
+                            d_write_o <= 1;
+                            d_read_o <= 1;
                         end
                     end
                     else if (crc_ok_i) begin //Data Line free
