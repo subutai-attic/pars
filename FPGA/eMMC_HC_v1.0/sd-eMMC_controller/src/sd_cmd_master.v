@@ -239,6 +239,14 @@ begin
                             if (response_i[119:88] == response_i1[119:88]) begin
                                 response_0_o <= response_i[119:88];
                             end
+                            else if(((cmd_o[37:32] != 40) || (cmd_o[37:32] != 39)) && (response_i[7:1] != 7'b1111111) && (response_i1[7:1] != 7'b1111111)) begin
+                                if((|response_i[119:107]) || (|response_i[104:103])) begin
+                                    response_0_o <= response_i[119:88];
+                                end
+                                else if((|response_i1[119:107]) || (|response_i1[104:103])) begin
+                                    response_0_o <= response_i1[119:88];
+                                end
+                            end
                             else response_0_o <= response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
