@@ -53,21 +53,21 @@ module sd_fifo_filler(
            input fifo_reset,
            
            // AXI Signals
-           (* mark_debug = "true" *) output [31:0] read_fifo_out,                     //wbm_dat_o,         
-           (* mark_debug = "true" *) input  [31:0] write_fifo_in,                     //wbm_dat_i,
-           (* mark_debug = "true" *) input  fifo_data_read_ready,                     //input from axi
-           (* mark_debug = "true" *) input  fifo_data_write_ready,
+           output [31:0] read_fifo_out,                     //wbm_dat_o,         
+           input  [31:0] write_fifo_in,                     //wbm_dat_i,
+           input  fifo_data_read_ready,                     //input from axi
+           input  fifo_data_write_ready,
            
            // Data Master Control signals
            input  en_rx_i,
            input  en_tx_i,
            
            //Data Serial signals
-           (* mark_debug = "true" *) input  sd_clk,
-           (* mark_debug = "true" *) input  [31:0] dat_i,
-           (* mark_debug = "true" *) output [31:0] dat_o,
-           (* mark_debug = "true" *) input  wr_i,
-           (* mark_debug = "true" *) input  rd_i,
+           input  sd_clk,
+           input  [31:0] dat_i,
+           output [31:0] dat_o,
+           input  wr_i,
+           input  rd_i,
            
            //Signals for Data Master Control
            output sd_full_o,
@@ -76,7 +76,7 @@ module sd_fifo_filler(
            output wb_empty_o
        );
 
-(* mark_debug = "true" *) wire reset_fifo;
+wire reset_fifo;
 wire fifo_rd;
 
 assign fifo_rd = !wb_empty_o & fifo_data_read_ready;

@@ -91,7 +91,7 @@
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
-		(* mark_debug = "true" *) output wire ddr_en,
+		output wire ddr_en,
 		input wire buff_read_en,
 		input wire buff_writ_en,
 		input wire write_trans_active,

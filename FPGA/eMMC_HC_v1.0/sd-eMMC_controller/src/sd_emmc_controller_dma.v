@@ -93,7 +93,7 @@ module  sd_emmc_controller_dma (
             input wire [1:0] m_axi_rresp
         );
 
-(* mark_debug = "true" *) reg [3:0] state;
+reg [3:0] state;
 reg [16:0] data_cycle;
 reg [16:0] we_counter;
 reg [16:0] rd_counter;
