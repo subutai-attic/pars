@@ -15,7 +15,7 @@ The SD/eMMC HC provides the following features:
 - 4-bit SD card or/and  8-bit eMMC card mode (does not support SPI mode)
 - Hardware interrupt for data and command transactions
 - 32-bit AXI Interface
-- 50 MGh clock, Single Data Rate (SDR)
+- 50 MGh clock, Single Data Rate (SDR) or/and Double Data Rate (DDR)
 - ADMA2 support
 - AutoCMD23 feature support
 - Compatible with Linux distributed Arasan SDHCI driver
