@@ -70,9 +70,9 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-`include "sd_defines.h"
+`include "defines.h"
 
-module sd_data_serial_host(
+module data_serial(
            input sd_clk,
            input sd_clk90,
            input rst,
@@ -157,7 +157,7 @@ always @(negedge sd_clk)
 genvar i;
 generate
     for(i=0; i<16; i=i+1) begin: CRC_16_gen
-        sd_crc_16 CRC_16_i(
+        crc_16 CRC_16_i(
           crc_in[i],
           crc_en,
           sd_clk,

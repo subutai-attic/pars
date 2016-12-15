@@ -1,6 +1,6 @@
 `timescale 1 ns / 1 ps
-`include "sd_defines.h"
-	module sd_emmc_controller_S00_AXI #
+`include "defines.h"
+	module S00_AXI_controller #
 	(
 		// Width of S_AXI data bus
 		parameter integer C_S_AXI_DATA_WIDTH	= 32,

@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps 
-`include "sd_defines.h"
+`include "defines.h"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Optimal-Dynamics LLC
 // Engineer: Azamat Beksadaev, Baktiiar Kukanov
@@ -7,7 +7,7 @@
 // Create Date: 02/24/2016 01:37:27 AM
 // Design Name: ADMA (Advanced Direct Memory Access)
 // Module Name: emmc_controller_adma
-// Project Name: eMMC Host Controller
+// Project Name: RAID0 Controller
 // Target Devices: Xilinx ZYNQ 7000
 // Tool Versions: Vivado 2016.2
 // Description: This ADMA used to transfer data between System Memory and eMMC cards. From system memory side it uses Master AXI interface from eMMC side data exchanged over the FIFO buffer. 
@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module  sd_emmc_controller_dma (
+module  dma_controller (
             input  wire clock,
             input  wire reset,
 
@@ -278,6 +278,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                       we_counter_reset <= 1'b1;
                       case (addr_accepted)
                           1'b0: begin 
+//                                  fifo_dat_rd_ready <= 1'b0;
                                   if (m_axi_awvalid && m_axi_awready) begin
                                     m_axi_awvalid <= 1'b0;
                                     addr_accepted <= 1'b1;
@@ -302,6 +303,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
 //                                  end
                                   else begin
                                     m_axi_wvalid <= 1'b1;
+//                                    fifo_dat_rd_ready <= 1'b0;
                                   end
                                   if (m_axi_wlast & m_axi_wvalid) begin
                                     state <= CARD2MEM_WAIT;

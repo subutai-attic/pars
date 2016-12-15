@@ -1,13 +1,13 @@
 `timescale 1 ns / 1 ps
-`include "sd_defines.h"
-        module sd_emmc_controller #
+`include "defines.h"
+        module RAID0_controller #
         (
- 		        // Parameters of Axi Slave Bus Interface S00_AXI
+ 		// Parameters of Axi Slave Bus Interface S00_AXI
                 parameter integer C_S00_AXI_DATA_WIDTH    = 32,
                 parameter integer C_S00_AXI_ADDR_WIDTH    = 32
         )
         (
-        //SD interface
+        //eMMC1 interface
         output wire SD_CLK,
         output wire sd_cmd_o,
         input wire sd_cmd_i,
@@ -15,6 +15,14 @@
         output wire [7:0] sd_dat_o,
         input wire [7:0] sd_dat_i,
         output wire sd_dat_t,
+        
+        // eMMC2 interface
+//        output wire sd_cmd1_o,
+//        input wire sd_cmd1_i,
+//        output wire sd_cmd1_t,
+//        output wire [7:0] sd_dat1_o,
+//        input wire [7:0] sd_dat1_i,
+//        output wire sd_dat1_t,
         
         // Interupt pinout 
         output wire interrupt,
@@ -99,6 +107,11 @@
     wire cmd_crc_ok;
     wire cmd_index_ok;
     wire cmd_finish;
+    // eMMC2
+    wire [119:0] cmd1_response;
+    wire cmd1_crc_ok;
+    wire cmd1_index_ok;
+    wire cmd1_finish;
 
     wire d_write;
     wire d_read;
@@ -179,6 +192,7 @@
     wire command_inhibit_dat_axi_clk;
     wire data_line_active_axi_clk;
     wire command_inhibit_cmd_sd_clk;
+    wire command1_inhibit_cmd_sd_clk;
     wire command_inhibit_cmd_axi_clk;
     
     // Transfer mode register
@@ -209,7 +223,7 @@
     wire [2:0] UHSModSel_sd_clk;
     wire sd_clk90;
     
-        sd_emmc_controller_dma sd_emmc_controller_dma_inst(
+        dma_controller dma_controller_inst(
             .clock(M_AXI_ACLK),
             .reset(M_AXI_ARESETN),
             .is_we_en(we_fifo),
@@ -273,10 +287,10 @@
         );
         
         // Instantiation of Axi Bus Interface S00_AXI
-        sd_emmc_controller_S00_AXI # ( 
+        S00_AXI_controller # ( 
             .C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
             .C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
-        ) sd_emmc_controller_S00_AXI_inst (
+        ) S00_AXI_controller_inst (
             .S_AXI_ACLK(s00_axi_aclk),
             .S_AXI_ARESETN(s00_axi_aresetn),
             .S_AXI_AWADDR(s00_axi_awaddr),
@@ -340,7 +354,7 @@
         );
 
     // Clock divider
-        sd_clock_divider sd_clock_divider_i (
+        clock_divider clock_divider_i (
             .AXI_CLOCK(s00_axi_aclk),
             .sd_clk(SD_CLK),
             .DIVISOR(divisor),
@@ -349,7 +363,7 @@
             .sd_clk90(sd_clk90)
         );
 
-    sd_cmd_master sd_cmd_master0(
+    cmd_master cmd_master0(
         .sd_clk       (SD_CLK),
         .rst          (!s00_axi_aresetn | 
                         soft_rst_cmd_sd_clk),
@@ -373,7 +387,7 @@
         .response_3_o (response_3_sd_clk)
         );
 
-    sd_mmc_cmd_serial_host cmd_serial_host0(
+    cmd_serial cmd_serial0(
         .sd_clk     (SD_CLK),
         .rst        (!s00_axi_aresetn | 
                      soft_rst_cmd_sd_clk |
@@ -391,7 +405,24 @@
         .command_inhibit_cmd (command_inhibit_cmd_sd_clk)
         );
 
-    sd_data_master sd_data_master0(
+    cmd_serial cmd_serial1(
+        .sd_clk     (SD_CLK),
+        .rst        (!s00_axi_aresetn | 
+                     soft_rst_cmd_sd_clk |
+                     go_idle),
+        .setting_i  (cmd_setting),
+        .cmd_i      (cmd),
+        .start_i    (cmd_start_tx),
+        .finish_o   (cmd1_finish),
+        .response_o (cmd1_response),
+        .crc_ok_o   (cmd1_crc_ok),
+        .index_ok_o (cmd1_index_ok),
+        .cmd_dat_i  (sd_cmd1_i),
+        .cmd_out_o  (sd_cmd1_o),
+        .cmd_oe_o   (sd_cmd1_t),
+        .command_inhibit_cmd (command1_inhibit_cmd_sd_clk)
+        );
+    data_master data_master0(
         .sd_clk           (SD_CLK),
         .rst              (!s00_axi_aresetn | 
                            soft_rst_dat_sd_clk ),
@@ -412,7 +443,7 @@
         .start_write(start_write_sd_clk)
         );
 
-    sd_data_serial_host sd_data_serial_host0(
+    data_serial data_serial0(
         .sd_clk         (SD_CLK),
         .sd_clk90       (sd_clk90),
         .rst            (!s00_axi_aresetn | 
@@ -465,7 +496,7 @@
         .fifo_reset(fifo_reset)
         );
 */
-    sd_data_xfer_trig sd_data_xfer_trig0 (
+    data_xfer_trig data_xfer_trig0 (
         .sd_clk                (SD_CLK),
         .rst                   (!s00_axi_aresetn |
                                 soft_rst_dat_sd_clk ),
