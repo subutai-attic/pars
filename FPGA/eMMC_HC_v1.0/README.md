@@ -16,6 +16,7 @@ The SD/eMMC HC provides the following features:
 - Hardware interrupt for data and command transactions
 - 32-bit AXI Interface
 - 50 MGh clock, Single Data Rate (SDR)
+- 50 MGh clock, Double Data Rate (DDR)
 - ADMA2 support
 - AutoCMD23 feature support
 - Compatible with Linux distributed Arasan SDHCI driver
