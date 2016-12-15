@@ -1,3 +1,22 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Optimal Dynamics LLC
+// Engineer: Azamat Beksadaev, Baktiiar Kukanov 
+// 
+// Create Date: 10/02/2015 11:41:32 AM
+// Design Name: 
+// Module Name: data_serial
+// Project Name: RAID 0 Controller
+// Target Devices: Xilinx ZYNQ 7000
+// Tool Versions: Vivado 2016.2
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// AXI SD-eMMC Card Controller IP Core                          ////
@@ -120,18 +139,21 @@ wire [7:0] iddrQ2;
 wire DDR50;
 reg [7:0] last_dinDDR;
 reg [15:0] d1d2_reg;
-wire DDRReadStart;
-
+//wire DDRReadStart;
+reg [7:0] DAT_dat_regn;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
 assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
 assign data_cycles = (bus_8bit && DDR50) ? blksize >> 1 : (bus_8bit && !DDR50) ? blksize : bus_4bit ? blksize << 1 : blksize << 3;
-assign DDRReadStart = DDR50 && ~iddrQ1[0] && (state == READ_WAIT);
+//assign DDRReadStart = DDR50 && ~DAT_dat_reg[0] && (state == READ_WAIT);
 
 //sd data input pad register
 always @(posedge sd_clk)
-    DAT_dat_reg <= DAT_dat_i;
+    DAT_dat_reg <= iddrQ1;
 
+//sd data input pad register
+always @(negedge sd_clk)
+    DAT_dat_regn <= iddrQ2;
 genvar i;
 generate
     for(i=0; i<16; i=i+1) begin: CRC_16_gen
@@ -166,9 +188,9 @@ assign start_bit = !DAT_dat_reg[0];
 assign sd_data_busy = !DAT_dat_reg[0];
 assign read_trans_active = ((state == READ_DAT) || (state == READ_WAIT));
 assign write_trans_active = ((state == WRITE_DAT) || (state == WRITE_BUSY) || (state == WRITE_CRC) || (state == WRITE_WAIT));
-assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_i[0] && next_block);
+assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_reg[0] && next_block);
 
-always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block or start_write or DDRReadStart)
+always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block or start_write)
 begin: FSM_COMBO
     case(state)
         IDLE: begin
@@ -180,7 +202,7 @@ begin: FSM_COMBO
                 next_state <= IDLE;
         end
         WRITE_WAIT: begin
-            if (start_write && DAT_dat_i[0])
+            if (start_write && DAT_dat_reg[0])
                 next_state <= WRITE_DAT;
             else
                 next_state <= WRITE_WAIT;
@@ -206,7 +228,7 @@ begin: FSM_COMBO
                 next_state <= WRITE_BUSY;
         end
         READ_WAIT: begin
-            if (start_bit || DDRReadStart)
+            if (start_bit)
                 next_state <= READ_DAT;
             else
                 next_state <= READ_WAIT;
@@ -503,61 +525,61 @@ begin: FSM_OUT
                     if (bus_8bit_reg) begin
                       if (DDR50) begin
                         we <= (data_index[0] == 1'b1 || (transf_cnt == data_cycles-1 && !blkcnt_reg));
-                        data_out[31-(data_index[0] << 4)] <= iddrQ1[7];
-                        data_out[30-(data_index[0] << 4)] <= iddrQ1[6];
-                        data_out[29-(data_index[0] << 4)] <= iddrQ1[5];
-                        data_out[28-(data_index[0] << 4)] <= iddrQ1[4];
-                        data_out[27-(data_index[0] << 4)] <= iddrQ1[3];
-                        data_out[26-(data_index[0] << 4)] <= iddrQ1[2];
-                        data_out[25-(data_index[0] << 4)] <= iddrQ1[1];
-                        data_out[24-(data_index[0] << 4)] <= iddrQ1[0];
+                        data_out[31-(data_index[0] << 4)] <= DAT_dat_reg[7];
+                        data_out[30-(data_index[0] << 4)] <= DAT_dat_reg[6];
+                        data_out[29-(data_index[0] << 4)] <= DAT_dat_reg[5];
+                        data_out[28-(data_index[0] << 4)] <= DAT_dat_reg[4];
+                        data_out[27-(data_index[0] << 4)] <= DAT_dat_reg[3];
+                        data_out[26-(data_index[0] << 4)] <= DAT_dat_reg[2];
+                        data_out[25-(data_index[0] << 4)] <= DAT_dat_reg[1];
+                        data_out[24-(data_index[0] << 4)] <= DAT_dat_reg[0];
 
-                        data_out[23-(data_index[0] << 4)] <= iddrQ2[7];
-                        data_out[22-(data_index[0] << 4)] <= iddrQ2[6];
-                        data_out[21-(data_index[0] << 4)] <= iddrQ2[5];
-                        data_out[20-(data_index[0] << 4)] <= iddrQ2[4];
-                        data_out[19-(data_index[0] << 4)] <= iddrQ2[3];
-                        data_out[18-(data_index[0] << 4)] <= iddrQ2[2];
-                        data_out[17-(data_index[0] << 4)] <= iddrQ2[1];
-                        data_out[16-(data_index[0] << 4)] <= iddrQ2[0];
+                        data_out[23-(data_index[0] << 4)] <= DAT_dat_regn[7];
+                        data_out[22-(data_index[0] << 4)] <= DAT_dat_regn[6];
+                        data_out[21-(data_index[0] << 4)] <= DAT_dat_regn[5];
+                        data_out[20-(data_index[0] << 4)] <= DAT_dat_regn[4];
+                        data_out[19-(data_index[0] << 4)] <= DAT_dat_regn[3];
+                        data_out[18-(data_index[0] << 4)] <= DAT_dat_regn[2];
+                        data_out[17-(data_index[0] << 4)] <= DAT_dat_regn[1];
+                        data_out[16-(data_index[0] << 4)] <= DAT_dat_regn[0];
                       end
                       else begin
                         we <= (data_index[1:0] == 3 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-(data_index[1:0]<<3)] <= iddrQ1[7];
-                        data_out[30-(data_index[1:0]<<3)] <= iddrQ1[6];
-                        data_out[29-(data_index[1:0]<<3)] <= iddrQ1[5];
-                        data_out[28-(data_index[1:0]<<3)] <= iddrQ1[4];
-                        data_out[27-(data_index[1:0]<<3)] <= iddrQ1[3];
-                        data_out[26-(data_index[1:0]<<3)] <= iddrQ1[2];
-                        data_out[25-(data_index[1:0]<<3)] <= iddrQ1[1];
-                        data_out[24-(data_index[1:0]<<3)] <= iddrQ1[0];
+                        data_out[31-(data_index[1:0]<<3)] <= DAT_dat_reg[7];
+                        data_out[30-(data_index[1:0]<<3)] <= DAT_dat_reg[6];
+                        data_out[29-(data_index[1:0]<<3)] <= DAT_dat_reg[5];
+                        data_out[28-(data_index[1:0]<<3)] <= DAT_dat_reg[4];
+                        data_out[27-(data_index[1:0]<<3)] <= DAT_dat_reg[3];
+                        data_out[26-(data_index[1:0]<<3)] <= DAT_dat_reg[2];
+                        data_out[25-(data_index[1:0]<<3)] <= DAT_dat_reg[1];
+                        data_out[24-(data_index[1:0]<<3)] <= DAT_dat_reg[0];
                       end
                     end
                     else if (bus_4bit_reg) begin
                         we <= (data_index[2:0] == 7 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-(data_index[2:0]<<2)] <= iddrQ1[3];
-                        data_out[30-(data_index[2:0]<<2)] <= iddrQ1[2];
-                        data_out[29-(data_index[2:0]<<2)] <= iddrQ1[1];
-                        data_out[28-(data_index[2:0]<<2)] <= iddrQ1[0];
+                        data_out[31-(data_index[2:0]<<2)] <= DAT_dat_reg[3];
+                        data_out[30-(data_index[2:0]<<2)] <= DAT_dat_reg[2];
+                        data_out[29-(data_index[2:0]<<2)] <= DAT_dat_reg[1];
+                        data_out[28-(data_index[2:0]<<2)] <= DAT_dat_reg[0];
                     end
                     else begin
                         we <= (data_index == 31 || (transf_cnt == data_cycles-1  && !blkcnt_reg));
-                        data_out[31-data_index] <= iddrQ1[0];
+                        data_out[31-data_index] <= DAT_dat_reg[0];
                     end
                     data_index <= data_index + 5'h1;
                     if (DDR50)
-                      crc_in <= {iddrQ2,iddrQ1};
+                      crc_in <= {DAT_dat_regn,DAT_dat_reg};
                     else
-                      crc_in <= iddrQ1;
+                      crc_in <= DAT_dat_reg;
                     crc_ok <= 1;
                     transf_cnt <= transf_cnt + 16'h1;
                 end
                 else if (transf_cnt <= data_cycles + 16) begin
                     transf_cnt <= transf_cnt + 16'h1;
                     crc_en <= 0;
-                    last_din <= iddrQ1;
+                    last_din <= DAT_dat_reg;
                     if (DDR50)
-                      last_dinDDR <= iddrQ2;
+                      last_dinDDR <= DAT_dat_regn;
                     we<=0;
                     if (transf_cnt > data_cycles) begin
                         crc_c <= crc_c - 5'h1;
