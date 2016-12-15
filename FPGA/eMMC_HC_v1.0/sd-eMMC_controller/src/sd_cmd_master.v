@@ -58,7 +58,6 @@ module sd_cmd_master(
            output reg go_idle_o,
            output reg  [39:0] cmd_o,
            input [119:0] response_i,
-           input [119:0] response_i1,
            input crc_ok_i,
            input index_ok_i,
            input finish_i,
@@ -236,18 +235,7 @@ begin
 //                            response_3_o <= {response_i[23:0], 8'h00};
 //                        end
                         if (expect_response != 0 & (~long_response)) begin
-                            if (response_i[119:88] == response_i1[119:88]) begin
-                                response_0_o <= response_i[119:88];
-                            end
-                            else if(((cmd_o[37:32] != 40) || (cmd_o[37:32] != 39)) && (response_i[7:1] != 7'b1111111) && (response_i1[7:1] != 7'b1111111)) begin
-                                if((|response_i[119:107]) || (|response_i[104:103])) begin
-                                    response_0_o <= response_i[119:88];
-                                end
-                                else if((|response_i1[119:107]) || (|response_i1[104:103])) begin
-                                    response_0_o <= response_i1[119:88];
-                                end
-                            end
-                            else response_0_o <= response_i[119:88];
+                            response_0_o <= response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
                             response_3_o <= {8'h00, response_i[119:96]};

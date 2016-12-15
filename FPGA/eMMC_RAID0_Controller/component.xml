@@ -2045,8 +2045,8 @@
       </xilinx:taxonomies>
       <xilinx:displayName>RAID0_controller_v1_0</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>13</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-12-15T09:20:00Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>14</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-12-15T17:06:44Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="user.org:user:RAID0_controller:1.0_ARCHIVE_LOCATION">/home/baktiiar/workspace/github/pars/FPGA/eMMC_RAID0_Controller</xilinx:tag>
