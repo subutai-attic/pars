@@ -7,7 +7,7 @@
                 parameter integer C_S00_AXI_ADDR_WIDTH    = 32
         )
         (
-        //SD interface
+        //eMMC1 interface
         output wire SD_CLK,
         output wire sd_cmd_o,
         input wire sd_cmd_i,
@@ -15,6 +15,14 @@
         output wire [7:0] sd_dat_o,
         input wire [7:0] sd_dat_i,
         output wire sd_dat_t,
+        
+        // eMMC2 interface
+        output wire sd_cmd1_o,
+        input wire sd_cmd1_i,
+        output wire sd_cmd1_t,
+        output wire [7:0] sd_dat1_o,
+        input wire [7:0] sd_dat1_i,
+        output wire sd_dat1_t,
         
         // Interupt pinout 
         output wire interrupt,
@@ -99,6 +107,11 @@
     wire cmd_crc_ok;
     wire cmd_index_ok;
     wire cmd_finish;
+    // eMMC2
+    wire [119:0] cmd1_response;
+    wire cmd1_crc_ok;
+    wire cmd1_index_ok;
+    wire cmd1_finish;
 
     wire d_write;
     wire d_read;
@@ -179,6 +192,7 @@
     wire command_inhibit_dat_axi_clk;
     wire data_line_active_axi_clk;
     wire command_inhibit_cmd_sd_clk;
+    wire command1_inhibit_cmd_sd_clk;
     wire command_inhibit_cmd_axi_clk;
     
     // Transfer mode register
@@ -391,6 +405,23 @@
         .command_inhibit_cmd (command_inhibit_cmd_sd_clk)
         );
 
+    cmd_serial cmd_serial1(
+        .sd_clk     (SD_CLK),
+        .rst        (!s00_axi_aresetn | 
+                     soft_rst_cmd_sd_clk |
+                     go_idle),
+        .setting_i  (cmd_setting),
+        .cmd_i      (cmd),
+        .start_i    (cmd_start_tx),
+        .finish_o   (cmd1_finish),
+        .response_o (cmd1_response),
+        .crc_ok_o   (cmd1_crc_ok),
+        .index_ok_o (cmd1_index_ok),
+        .cmd_dat_i  (sd_cmd1_i),
+        .cmd_out_o  (sd_cmd1_o),
+        .cmd_oe_o   (sd_cmd1_t),
+        .command_inhibit_cmd (command1_inhibit_cmd_sd_clk)
+        );
     data_master data_master0(
         .sd_clk           (SD_CLK),
         .rst              (!s00_axi_aresetn | 
@@ -522,7 +553,7 @@
     bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
     bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
     bistable_domain_cross #(1) command_inh_dat_cross(!s00_axi_aresetn, SD_CLK, sd_data_busy, s00_axi_aclk, command_inhibit_dat_axi_clk);
-    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, command_inhibit_cmd_sd_clk, s00_axi_aclk, command_inhibit_cmd_axi_clk);
+    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, (command_inhibit_cmd_sd_clk & command1_inhibit_cmd_sd_clk), s00_axi_aclk, command_inhibit_cmd_axi_clk);
     bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
     bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
     bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);
