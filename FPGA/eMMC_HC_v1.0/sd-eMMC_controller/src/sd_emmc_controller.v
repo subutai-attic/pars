@@ -15,7 +15,7 @@
         output wire [7:0] sd_dat_o,
         input wire [7:0] sd_dat_i,
         output wire sd_dat_t,
-//        output wire REMMC,
+        
         // Interupt pinout 
         output wire interrupt,
 
@@ -87,7 +87,6 @@
     //SD clock
     wire [7:0]  divisor;
     wire int_clk_stbl;
-    wire SD_CLK90;
 
     wire go_idle;
     wire cmd_start_axi_clk;
@@ -107,8 +106,8 @@
     wire [31:0] data_out_tx_fifo;
     wire start_tx_fifo;
     wire start_rx_fifo;
-    wire tx_fifo_empty;
-    wire tx_fifo_full;
+//    wire tx_fifo_empty;
+//    wire tx_fifo_full;
     wire rx_fifo_full;
     wire sd_data_busy;
     wire data_busy;
@@ -151,11 +150,9 @@
     wire [`BLKSIZE_W-1:0] block_size_sd_clk;
     wire controll_setting_sd_clk;
     wire controll_setting_8bit_sd_clk;
-    wire ddr_en;
     wire [`INT_CMD_SIZE-1:0] cmd_int_status_sd_clk;
     wire [`INT_DATA_SIZE-1:0] data_int_status_sd_clk;
     wire [`BLKCNT_W-1:0] block_count_sd_clk;
-    wire [1:0] dma_addr_sd_clk;
     
     //Software Reset
     wire soft_rst_cmd_axi_clk;
@@ -172,9 +169,9 @@
     wire [28:0] int_signal_en_reg;
 
     // Present state register
-    wire tx_fifo_full_axi_clk;
-    wire rx_fifo_empty_sd_clk;
-    wire rx_fifo_empty_axi_clk;
+//    wire tx_fifo_full_axi_clk;
+//    wire rx_fifo_empty_sd_clk;
+//    wire rx_fifo_empty_axi_clk;
     wire rd_trans_act_axi_clk;
     wire rd_trans_act_sd_clk;
     wire wr_trans_act_axi_clk;
@@ -206,13 +203,12 @@
     // data aligning
     wire [31:0] write_dat_fifo;
     assign write_dat_fifo = {M_AXI_RDATA[7:0],M_AXI_RDATA[15:8],M_AXI_RDATA[23:16],M_AXI_RDATA[31:24]};
-//    assign REMMC = M_AXI_ARESETN;
-//    assign maxi_wlast = M_AXI_WLAST;
     
+    // UHS mode
+    wire [2:0] UHSModSel_axi_clk;
+    wire [2:0] UHSModSel_sd_clk;
+    wire sd_clk90;
     
-
-
-
         sd_emmc_controller_dma sd_emmc_controller_dma_inst(
             .clock(M_AXI_ACLK),
             .reset(M_AXI_ARESETN),
@@ -326,9 +322,8 @@
             .timeout_contr_wire(data_timeout_axi_clk),
             .sd_dat_bus_width(controll_setting_axi_clk),   
             .sd_dat_bus_width_8bit(controll_setting_8bit_axi_clk),   
-            .ddr_en(ddr_en),
-            .buff_read_en(!rx_fifo_empty_axi_clk),
-            .buff_writ_en(!tx_fifo_full_axi_clk),
+//            .buff_read_en(!rx_fifo_empty_axi_clk),
+//            .buff_writ_en(!tx_fifo_full_axi_clk),
             .write_trans_active(wr_trans_act_axi_clk),
             .read_trans_active(rd_trans_act_axi_clk),
             .dat_line_act(data_line_active_axi_clk),
@@ -340,17 +335,18 @@
             .dma_int(dma_int),
             .adma_sys_addr(system_addr),
             .blk_gap_req(stop_blk_gap_req),
-            .cc_int_puls(cmd_cmplt_axi_puls)
+            .cc_int_puls(cmd_cmplt_axi_puls),
+            .UHSModSel(UHSModSel_axi_clk)
         );
 
     // Clock divider
         sd_clock_divider sd_clock_divider_i (
             .AXI_CLOCK(s00_axi_aclk),
             .sd_clk(SD_CLK),
-            .sd_clk90(SD_CLK90),
             .DIVISOR(divisor),
             .AXI_RST(s00_axi_aresetn/* & int_clk_en*/),
-            .Internal_clk_stable(int_clk_stbl)
+            .Internal_clk_stable(int_clk_stbl),
+            .sd_clk90(sd_clk90)
         );
 
     sd_cmd_master sd_cmd_master0(
@@ -406,8 +402,8 @@
         .d_read_o         (d_read),
         .start_tx_fifo_o  (start_tx_fifo),
         .start_rx_fifo_o  (start_rx_fifo),
-        .tx_fifo_empty_i  (tx_fifo_empty),
-        .tx_fifo_full_i   (tx_fifo_full),
+//        .tx_fifo_empty_i  (tx_fifo_empty),
+//        .tx_fifo_full_i   (tx_fifo_full),
         .rx_fifo_full_i   (rx_fifo_full),
         .xfr_complete_i   (!data_busy),
         .crc_ok_i         (data_crc_ok),
@@ -418,39 +414,41 @@
 
     sd_data_serial_host sd_data_serial_host0(
         .sd_clk         (SD_CLK),
-        .sd_clk90       (SD_CLK90),
+        .sd_clk90       (sd_clk90),
         .rst            (!s00_axi_aresetn | 
                         soft_rst_dat_sd_clk ),
         .data_in        (data_out_tx_fifo),
-        .rd_out         (rd_fifo),
-        .data_out_o     (data_in_rx_fifo),
-        .we_out         (we_fifo),
-        .DAT_oe_out     (sd_dat_t),
-        .DAT_dat_out    (sd_dat_o),
+        .rd             (rd_fifo),
+        .data_out_o       (data_in_rx_fifo),
+        .we             (we_fifo),
+        .DAT_oe_o       (sd_dat_t),
+        .DAT_dat_o      (sd_dat_o),
         .DAT_dat_i      (sd_dat_i),
         .blksize        (block_size_sd_clk),
         .bus_4bit       (controll_setting_sd_clk),
         .bus_8bit       (controll_setting_8bit_sd_clk),
-        .ddr50_en       (ddr_en),
         .blkcnt         (block_count_sd_clk),
         .start          ({d_read, d_write}),
-        .byte_alignment (dma_addr_sd_clk),
         .sd_data_busy   (sd_data_busy),
         .busy           (data_busy),
-        .crc_ok_out     (data_crc_ok),
+        .crc_ok         (data_crc_ok),
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
 //        .next_block(next_block_st),
-        .start_write(start_write_sd_clk),
-        .write_next_block(next_block_st)
+        .start_write    (start_write_sd_clk),
+        .write_next_block(next_block_st),
+        .UHSMode        (UHSModSel_sd_clk)
         );
-
+/*
     sd_fifo_filler sd_fifo_filler0(
         .wb_clk    (s00_axi_aclk),
         .rst       (!s00_axi_aresetn |
                     soft_rst_dat_sd_clk ),
+        .wbm_we_o  (m_wb_we_o),
         .read_fifo_out (read_fifo_out),
         .write_fifo_in (write_dat_fifo),
+        .wbm_cyc_o (m_wb_cyc_o),
+        .wbm_stb_o (m_wb_stb_o),
         .fifo_data_read_ready (fifo_data_read_ready),
         .fifo_data_write_ready(fifo_data_write_ready),
         .en_rx_i   (start_rx_fifo),
@@ -466,7 +464,7 @@
         .wb_empty_o  (rx_fifo_empty_sd_clk),
         .fifo_reset(fifo_reset)
         );
-
+*/
     sd_data_xfer_trig sd_data_xfer_trig0 (
         .sd_clk                (SD_CLK),
         .rst                   (!s00_axi_aresetn |
@@ -477,6 +475,22 @@
         .start_tx_o            (data_start_tx),
         .start_rx_o            (data_start_rx)
         );
+        
+    fifo18Kb fifo18Kb_inst(
+        .aclk(s00_axi_aclk),
+        .sd_clk(SD_CLK),
+        .rst(!s00_axi_aresetn |
+             soft_rst_dat_sd_clk),
+        .axi_data_in    (write_dat_fifo),
+        .sd_data_in     (data_in_rx_fifo),
+        .sd_data_out    (data_out_tx_fifo),
+        .axi_data_out   (read_fifo_out),
+        .sd_rd_en       (rd_fifo),
+        .axi_rd_en      (fifo_data_read_ready),
+        .axi_wr_en      (fifo_data_write_ready),
+        .sd_wr_en       (we_fifo),
+        .sd_full_o      (rx_fifo_full)
+    );
 
     edge_detect soft_reset_edge_cmd(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_axi_clk[0]), .rise(soft_rst_cmd_axi_clk), .fall());
     edge_detect sotf_reset_edge_dat(.rst(!s00_axi_aresetn), .clk(s00_axi_aclk), .sig(software_reset_axi_clk[1]), .rise(soft_rst_dat_axi_clk), .fall());
@@ -504,9 +518,6 @@
     bistable_domain_cross #(1) controll_setting_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_axi_clk, SD_CLK, controll_setting_sd_clk);
     bistable_domain_cross #(1) controll_setting_8bit_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_8bit_axi_clk, SD_CLK, controll_setting_8bit_sd_clk);
     bistable_domain_cross #(`INT_CMD_SIZE) cmd_int_status_cross(!s00_axi_aresetn, SD_CLK, cmd_int_status_sd_clk, s00_axi_aclk, cmd_int_status_axi_clk);
-    
-    bistable_domain_cross #(1) buffer_read_enable_cross(!s00_axi_aresetn, SD_CLK, rx_fifo_empty_sd_clk, s00_axi_aclk, rx_fifo_empty_axi_clk);
-    bistable_domain_cross #(1) buffer_write_enable_cross(!s00_axi_aresetn, SD_CLK, tx_fifo_full, s00_axi_aclk, tx_fifo_full_axi_clk);
     bistable_domain_cross #(1) read_trans_act_cross(!s00_axi_aresetn, SD_CLK, rd_trans_act_sd_clk, s00_axi_aclk, rd_trans_act_axi_clk);
     bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
     bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
@@ -514,11 +525,9 @@
     bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, command_inhibit_cmd_sd_clk, s00_axi_aclk, command_inhibit_cmd_axi_clk);
     bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
     bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
-    
     bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);
-    bistable_domain_cross #(2) dma_addr_reg_cross(!s00_axi_aresetn, s00_axi_aclk, 0, SD_CLK, dma_addr_sd_clk);
     bistable_domain_cross #(`INT_DATA_SIZE) data_int_status_reg_cross(!s00_axi_aresetn, SD_CLK, data_int_status_sd_clk, s00_axi_aclk, data_int_status_axi_clk);
-    
+    bistable_domain_cross #(3) UHSModSel_cross(!s00_axi_aresetn, s00_axi_aclk, UHSModSel_axi_clk, SD_CLK, UHSModSel_sd_clk);
     
     assign interrupt = |(int_status_reg & int_status_en_reg & int_signal_en_reg);
     

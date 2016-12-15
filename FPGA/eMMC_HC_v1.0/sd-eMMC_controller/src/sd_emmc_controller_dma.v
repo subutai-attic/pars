@@ -1,22 +1,23 @@
 `timescale 1ns / 1ps 
 `include "sd_defines.h"
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Optimal-Dynamics LLC
+// Engineer: Azamat Beksadaev, Baktiiar Kukanov
 // 
 // Create Date: 02/24/2016 01:37:27 AM
-// Design Name: 
-// Module Name: sd_emmc_controller_dma
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
+// Design Name: ADMA (Advanced Direct Memory Access)
+// Module Name: emmc_controller_adma
+// Project Name: eMMC Host Controller
+// Target Devices: Xilinx ZYNQ 7000
+// Tool Versions: Vivado 2016.2
+// Description: This ADMA used to transfer data between System Memory and eMMC cards. From system memory side it uses Master AXI interface from eMMC side data exchanged over the FIFO buffer. 
+//              This ADMA meets the requirements of the "SD Host Controller Simplified Specification Version 3.00". In particular chapter 1.13.
+//              The ADMA based on SDMA that controlled by "sdma_contr_reg".
 // Dependencies: 
 // 
 // Revision:
 // Revision 0.01 - File Created
-// Additional Comments:
+// Additional Comments: 
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -119,6 +120,7 @@ reg [3:0] write_index;
 reg burst_tx;
 reg axi_bready;
 reg m_axi_rready_reg;
+reg [16:0] rd_dat_words;
 wire Tran;
 wire Link;
 wire stop_trans;
@@ -126,21 +128,21 @@ wire next_data_word;
 wire write_resp_error;
 wire read_resp_error;
 
-parameter IDLE             = 4'b0000;
-parameter MEM2CARD         = 4'b0001;
-parameter MEM2CARD_WAIT    = 4'b0010;
-parameter CARD2MEM_WAIT    = 4'b0011;
-parameter CARD2MEM_ACT     = 4'b0100;
+localparam IDLE             = 4'b0000;
+localparam MEM2CARD         = 4'b0001;
+localparam MEM2CARD_WAIT    = 4'b0010;
+localparam CARD2MEM_WAIT    = 4'b0011;
+localparam CARD2MEM_ACT     = 4'b0100;
 
-parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
+localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in following cases:
                                   // (1) After Power on reset or software reset.
                                   // (2) All descriptor data transfers are completed.
                                   //If a new ADMA2 operation is started by writing Command register, go to ST_FDS state. 
-                ST_FDS  = 3'b001, //State Fetch Descriptor. In this state ADMA2 fetches a descriptor line 
-                                  //and set parameters in internal registers.
-                ST_CADR = 3'b010, //State Change Address. In this state Link operation loads another Descriptor address
-                                  //to ADMA System Address register.
-                ST_TFR  = 3'b011; //State Transfer Data. In this state data transfer of one descriptor line is executed 
+                 ST_FDS  = 3'b001, //State Fetch Descriptor. In this state ADMA2 fetches a descriptor line 
+                                   //and set parameters in internal registers.
+                 ST_CADR = 3'b010, //State Change Address. In this state Link operation loads another Descriptor address
+                                   //to ADMA System Address register.
+                 ST_TFR  = 3'b011; //State Transfer Data. In this state data transfer of one descriptor line is executed 
                                   //between system memory and SD card.
                 
   assign m_axi_arsize	     = 3'b010;
@@ -276,7 +278,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
                       we_counter_reset <= 1'b1;
                       case (addr_accepted)
                           1'b0: begin 
-//                                  fifo_dat_rd_ready <= 1'b0;
                                   if (m_axi_awvalid && m_axi_awready) begin
                                     m_axi_awvalid <= 1'b0;
                                     addr_accepted <= 1'b1;
@@ -301,7 +302,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
 //                                  end
                                   else begin
                                     m_axi_wvalid <= 1'b1;
-//                                    fifo_dat_rd_ready <= 1'b0;
                                   end
                                   if (m_axi_wlast & m_axi_wvalid) begin
                                     state <= CARD2MEM_WAIT;
@@ -442,7 +442,6 @@ parameter [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state in
       */
       reg [1:0] start_dat_trans;
       reg [2:0] next_state;
-      reg [16:0] rd_dat_words;
       reg TFC;
       reg a;
       reg trans_act;
