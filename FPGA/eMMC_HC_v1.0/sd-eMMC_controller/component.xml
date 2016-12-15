@@ -2074,8 +2074,8 @@
         <xilinx:taxonomy>/UserIP</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>sd_emmc_controller_v1_0</xilinx:displayName>
-      <xilinx:coreRevision>486</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2016-12-15T09:34:31Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>488</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2016-12-15T10:52:43Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="nopcore"/>
         <xilinx:tag xilinx:name="user.org:user:sd_emmc_controller:1.0_ARCHIVE_LOCATION">/home/baktiiar/workspace/github/pars/FPGA/eMMC_HC_v1.0/sd-eMMC_controller</xilinx:tag>
