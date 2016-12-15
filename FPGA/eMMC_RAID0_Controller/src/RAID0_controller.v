@@ -17,12 +17,12 @@
         output wire sd_dat_t,
         
         // eMMC2 interface
-        output wire sd_cmd1_o,
-        input wire sd_cmd1_i,
-        output wire sd_cmd1_t,
-        output wire [7:0] sd_dat1_o,
-        input wire [7:0] sd_dat1_i,
-        output wire sd_dat1_t,
+//        output wire sd_cmd1_o,
+//        input wire sd_cmd1_i,
+//        output wire sd_cmd1_t,
+//        output wire [7:0] sd_dat1_o,
+//        input wire [7:0] sd_dat1_i,
+//        output wire sd_dat1_t,
         
         // Interupt pinout 
         output wire interrupt,
@@ -553,7 +553,7 @@
     bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
     bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
     bistable_domain_cross #(1) command_inh_dat_cross(!s00_axi_aresetn, SD_CLK, sd_data_busy, s00_axi_aclk, command_inhibit_dat_axi_clk);
-    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, (command_inhibit_cmd_sd_clk & command1_inhibit_cmd_sd_clk), s00_axi_aclk, command_inhibit_cmd_axi_clk);
+    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, command_inhibit_cmd_sd_clk, s00_axi_aclk, command_inhibit_cmd_axi_clk);
     bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
     bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
     bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);

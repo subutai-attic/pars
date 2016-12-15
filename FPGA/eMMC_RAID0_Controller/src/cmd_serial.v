@@ -142,7 +142,7 @@ always @(posedge sd_clk)
     cmd_dat_reg <= cmd_dat_i;
 
 //------------------------------------------
-sd_crc_7 CRC_7(
+crc_7 CRC_7(
              crc_bit,
              crc_enable,
              sd_clk,

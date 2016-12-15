@@ -145,7 +145,7 @@ wire DDRReadStart;
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
 assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
 assign data_cycles = (bus_8bit && DDR50) ? blksize >> 1 : (bus_8bit && !DDR50) ? blksize : bus_4bit ? blksize << 1 : blksize << 3;
-assign DDRReadStart = DDR50 && ~iddrQ1[0] && (state == READ_WAIT);
+assign DDRReadStart = DDR50 && ~DAT_dat_reg[0] && (state == READ_WAIT);
 
 //sd data input pad register
 always @(posedge sd_clk)
@@ -154,7 +154,7 @@ always @(posedge sd_clk)
 genvar i;
 generate
     for(i=0; i<16; i=i+1) begin: CRC_16_gen
-        sd_crc_16 CRC_16_i(
+        crc_16 CRC_16_i(
           crc_in[i],
           crc_en,
           sd_clk,
@@ -185,7 +185,7 @@ assign start_bit = !DAT_dat_reg[0];
 assign sd_data_busy = !DAT_dat_reg[0];
 assign read_trans_active = ((state == READ_DAT) || (state == READ_WAIT));
 assign write_trans_active = ((state == WRITE_DAT) || (state == WRITE_BUSY) || (state == WRITE_CRC) || (state == WRITE_WAIT));
-assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_i[0] && next_block);
+assign write_next_block = ((state == WRITE_WAIT) && DAT_dat_reg[0] && next_block);
 
 always @(state or start or start_bit or  transf_cnt or data_cycles or crc_status or crc_ok or busy_int or next_block or start_write or DDRReadStart)
 begin: FSM_COMBO
@@ -199,7 +199,7 @@ begin: FSM_COMBO
                 next_state <= IDLE;
         end
         WRITE_WAIT: begin
-            if (start_write && DAT_dat_i[0])
+            if (start_write && DAT_dat_reg[0])
                 next_state <= WRITE_DAT;
             else
                 next_state <= WRITE_WAIT;
