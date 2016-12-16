@@ -1,12 +1,12 @@
 `timescale 1ns / 1ps 
-`include "sd_defines.h"
+`include "sd_emmc_defines.h"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Optimal-Dynamics LLC
 // Engineer: Azamat Beksadaev, Baktiiar Kukanov
 // 
 // Create Date: 02/24/2016 01:37:27 AM
 // Design Name: ADMA (Advanced Direct Memory Access)
-// Module Name: emmc_controller_adma
+// Module Name: ADMA
 // Project Name: eMMC Host Controller
 // Target Devices: Xilinx ZYNQ 7000
 // Tool Versions: Vivado 2016.2
@@ -20,6 +20,29 @@
 // Additional Comments: 
 // 
 //////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+////                                                              ////
+//// Copyright (C) 2016 Authors                                   ////
+////                                                              ////
+//// This source file may be used and distributed without         ////
+//// restriction provided that this copyright statement is not    ////
+//// removed from the file and that any derivative work contains  ////
+//// the original copyright notice and the associated disclaimer. ////
+////                                                              ////
+//// This source file is free software; you can redistribute it   ////
+//// and/or modify it under the terms of the GNU Lesser General   ////
+//// Public License as published by the Free Software Foundation; ////
+//// either version 2.1 of the License, or (at your option) any   ////
+//// later version.                                               ////
+////                                                              ////
+//// This source is distributed in the hope that it will be       ////
+//// useful, but WITHOUT ANY WARRANTY; without even the implied   ////
+//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR      ////
+//// PURPOSE. See the GNU Lesser General Public License for more  ////
+//// details.                                                     ////
+////                                                              ////
+////                                                              ////
+//////////////////////////////////////////////////////////////////////
 
 
 module  sd_emmc_controller_dma (
@@ -27,12 +50,10 @@ module  sd_emmc_controller_dma (
             input  wire reset,
 
             // S_AXI
-//            input  wire [`BLKCNT_W -1:0] block_count,
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
             output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
-//            input wire cmd_int_rst_pulse,
             input wire data_present,
             input wire [31:0] descriptor_pointer_i,
             input wire blk_gap_req,
@@ -40,7 +61,6 @@ module  sd_emmc_controller_dma (
             // Data serial
             input wire xfer_compl,
             input wire is_we_en,
-//            input wire is_rd_en, 
             output reg start_write,
             input wire ser_next_blk,
             input wire [1:0] write_timeout,
@@ -97,11 +117,8 @@ module  sd_emmc_controller_dma (
 reg [3:0] state;
 reg [16:0] data_cycle;
 reg [16:0] we_counter;
-//reg [16:0] rd_counter;
 reg init_we_ff;
 reg init_we_ff2;
-//reg init_rd_ff;
-//reg init_rd_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
@@ -109,7 +126,6 @@ reg addr_accepted;
 reg we_counter_reset;
 reg rd_counter_reset;
 wire we_pulse;
-//wire rd_pulse;
 reg data_write_disable;
 reg [2:0] adma_state;
 reg sys_addr_sel;
@@ -234,7 +250,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
         m_axi_awvalid <= 0;
         m_axi_wvalid <= 0;
         data_cycle <= 0;
-//        fifo_dat_rd_ready <= 0;
         addr_accepted <= 0;
         m_axi_arvalid <= 0;
         fifo_rst <= 0;
@@ -244,7 +259,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
         case (state)
           IDLE: begin
                    data_cycle <= 0;
-//                   fifo_dat_rd_ready <= 0;
                    data_write_disable <= 0;
                    we_counter_reset <= 1;
                    rd_counter_reset <= 1;
@@ -264,7 +278,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                 end
           CARD2MEM_WAIT: begin
                        fifo_rst <= 0;
-//                       fifo_dat_rd_ready <= 1'b0;
                        if (we_counter >= (data_cycle + 16)) begin
                          state <= CARD2MEM_ACT;
                        end
@@ -291,15 +304,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                           1'b1: begin
                                   if (next_data_word) begin
                                     data_cycle <= data_cycle + 1;
-//                                    fifo_dat_rd_ready <= 1'b1;
-//                                    m_axi_wvalid <= 1'b0;
-//                                    data_write_disable <= 1'b1;
                                   end
-//                                  else if (data_write_disable) begin
-//                                    fifo_dat_rd_ready <= 1'b0;
-//                                    m_axi_wvalid <= 1'b0;
-//                                    data_write_disable <= 1'b0;
-//                                  end
                                   else begin
                                     m_axi_wvalid <= 1'b1;
                                   end
@@ -307,8 +312,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                                     state <= CARD2MEM_WAIT;
                                     m_axi_wvalid <= 1'b0;
                                     addr_accepted <= 1'b0;
-//                                    fifo_dat_rd_ready <= 1'b1;
-//                                    data_write_disable <= 1'b0;
                                     burst_tx <= 1'b1;
                                   end
                                 end
@@ -412,30 +415,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
         end
       end
     
-//    assign rd_pulse = (!init_rd_ff2) && init_rd_ff;
-
-//    always @ (posedge clock)
-//      begin: RD_PULS_GENERATOR
-//        if (reset == 1'b0) begin
-//          init_rd_ff <= 1'b0;
-//          init_rd_ff2 <= 1'b0;
-//        end
-//        else begin
-//          init_rd_ff <= is_rd_en;
-//          init_rd_ff2 <= init_rd_ff;
-//        end
-//      end
-
-//    always @ (posedge clock)
-//      begin: NUMBER_OF_FIFO_READING_COUNTER
-//        if (reset == 1'b0 || rd_counter_reset == 1'b0) begin
-//          rd_counter <= 0;
-//        end
-//        else begin
-//          if (rd_pulse)
-//            rd_counter <= rd_counter + 16'h0001;
-//        end
-//      end
       
       /* 
       *   ADMA
@@ -477,7 +456,6 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                       TFC <= 1'b0;
                       next_trans_act <= 1'b0;
                       a <= 1'b1;
-//                      rd_dat_words <= 17'h00008;
                       if (stop_trans) begin
                         if (descriptor_line[`valid] == 1) begin
                           next_state <= ST_CADR;

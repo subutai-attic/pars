@@ -1,11 +1,11 @@
-//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 // Company: Optimal Dynamics LLC
 // Engineer: Azamat Beksadaev, Baktiiar Kukanov 
 // 
 // Create Date: 10/02/2015 11:41:32 AM
 // Design Name: 
 // Module Name: data_serial
-// Project Name: RAID 0 Controller
+// Project Name: eMMC Host Controller
 // Target Devices: Xilinx ZYNQ 7000
 // Tool Versions: Vivado 2016.2
 // Description: 
@@ -16,7 +16,7 @@
 // Revision 0.01 - File Created
 // Additional Comments:
 // 
-//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 ////                                                              ////
 //// AXI SD-eMMC Card Controller IP Core                          ////
@@ -70,7 +70,7 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-`include "sd_defines.h"
+`include "sd_emmc_defines.h"
 
 module sd_data_serial_host(
            input sd_clk,
@@ -139,13 +139,12 @@ wire [7:0] iddrQ2;
 wire DDR50;
 reg [7:0] last_dinDDR;
 reg [15:0] d1d2_reg;
-//wire DDRReadStart;
 reg [7:0] DAT_dat_regn;
 
 assign data_out_o [31:0] = {data_out[7:0], data_out[15:8], data_out[23:16], data_out[31:24]};
 assign DDR50 = UHSMode == 3'b100 ? 1'b1: 1'b0;
 assign data_cycles = (bus_8bit && DDR50) ? blksize >> 1 : (bus_8bit && !DDR50) ? blksize : bus_4bit ? blksize << 1 : blksize << 3;
-//assign DDRReadStart = DDR50 && ~DAT_dat_reg[0] && (state == READ_WAIT);
+
 
 //sd data input pad register
 always @(posedge sd_clk)
