@@ -27,12 +27,12 @@ module  sd_emmc_controller_dma (
             input  wire reset,
 
             // S_AXI
-            input  wire [`BLKCNT_W -1:0] block_count,
+//            input  wire [`BLKCNT_W -1:0] block_count,
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
             output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
-            input wire cmd_int_rst_pulse,
+//            input wire cmd_int_rst_pulse,
             input wire data_present,
             input wire [31:0] descriptor_pointer_i,
             input wire blk_gap_req,
@@ -40,7 +40,7 @@ module  sd_emmc_controller_dma (
             // Data serial
             input wire xfer_compl,
             input wire is_we_en,
-            input wire is_rd_en, 
+//            input wire is_rd_en, 
             output reg start_write,
             input wire ser_next_blk,
             input wire [1:0] write_timeout,
@@ -97,11 +97,11 @@ module  sd_emmc_controller_dma (
 reg [3:0] state;
 reg [16:0] data_cycle;
 reg [16:0] we_counter;
-reg [16:0] rd_counter;
+//reg [16:0] rd_counter;
 reg init_we_ff;
 reg init_we_ff2;
-reg init_rd_ff;
-reg init_rd_ff2;
+//reg init_rd_ff;
+//reg init_rd_ff2;
 reg init_rready;
 reg init_rready2;
 reg init_rvalid;
@@ -109,7 +109,7 @@ reg addr_accepted;
 reg we_counter_reset;
 reg rd_counter_reset;
 wire we_pulse;
-wire rd_pulse;
+//wire rd_pulse;
 reg data_write_disable;
 reg [2:0] adma_state;
 reg sys_addr_sel;
@@ -412,30 +412,30 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
         end
       end
     
-    assign rd_pulse = (!init_rd_ff2) && init_rd_ff;
+//    assign rd_pulse = (!init_rd_ff2) && init_rd_ff;
 
-    always @ (posedge clock)
-      begin: RD_PULS_GENERATOR
-        if (reset == 1'b0) begin
-          init_rd_ff <= 1'b0;
-          init_rd_ff2 <= 1'b0;
-        end
-        else begin
-          init_rd_ff <= is_rd_en;
-          init_rd_ff2 <= init_rd_ff;
-        end
-      end
+//    always @ (posedge clock)
+//      begin: RD_PULS_GENERATOR
+//        if (reset == 1'b0) begin
+//          init_rd_ff <= 1'b0;
+//          init_rd_ff2 <= 1'b0;
+//        end
+//        else begin
+//          init_rd_ff <= is_rd_en;
+//          init_rd_ff2 <= init_rd_ff;
+//        end
+//      end
 
-    always @ (posedge clock)
-      begin: NUMBER_OF_FIFO_READING_COUNTER
-        if (reset == 1'b0 || rd_counter_reset == 1'b0) begin
-          rd_counter <= 0;
-        end
-        else begin
-          if (rd_pulse)
-            rd_counter <= rd_counter + 16'h0001;
-        end
-      end
+//    always @ (posedge clock)
+//      begin: NUMBER_OF_FIFO_READING_COUNTER
+//        if (reset == 1'b0 || rd_counter_reset == 1'b0) begin
+//          rd_counter <= 0;
+//        end
+//        else begin
+//          if (rd_pulse)
+//            rd_counter <= rd_counter + 16'h0001;
+//        end
+//      end
       
       /* 
       *   ADMA
