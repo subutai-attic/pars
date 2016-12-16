@@ -330,7 +330,7 @@
             .command_inh_dat(command_inhibit_dat_axi_clk),
             .com_inh_cmd(command_inhibit_cmd_axi_clk),
             .data_transfer_direction(dat_trans_dir_axi_clk),
-            .start_tx_fifo_i(start_tx_fifo),
+//            .start_tx_fifo_i(start_tx_fifo),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
             .dma_int(dma_int),
             .adma_sys_addr(system_addr),

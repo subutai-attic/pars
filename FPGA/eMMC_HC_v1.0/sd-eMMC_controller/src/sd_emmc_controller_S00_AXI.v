@@ -99,7 +99,7 @@
 		input wire command_inh_dat,
 		input wire com_inh_cmd,
 		output wire data_transfer_direction,
-		input wire start_tx_fifo_i,
+//		input wire start_tx_fifo_i,
 		output wire [1:0] dma_en_and_blk_c_en,
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
