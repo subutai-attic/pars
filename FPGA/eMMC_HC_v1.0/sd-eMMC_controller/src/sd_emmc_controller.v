@@ -104,8 +104,8 @@
     wire d_read;
     wire [31:0] data_in_rx_fifo;
     wire [31:0] data_out_tx_fifo;
-    wire start_tx_fifo;
-    wire start_rx_fifo;
+//    wire start_tx_fifo;
+//    wire start_rx_fifo;
 //    wire tx_fifo_empty;
 //    wire tx_fifo_full;
     wire rx_fifo_full;
@@ -400,8 +400,8 @@
         .timeout_i          (data_timeout_sd_clk),
         .d_write_o        (d_write),
         .d_read_o         (d_read),
-        .start_tx_fifo_o  (start_tx_fifo),
-        .start_rx_fifo_o  (start_rx_fifo),
+//        .start_tx_fifo_o  (start_tx_fifo),
+//        .start_rx_fifo_o  (start_rx_fifo),
 //        .tx_fifo_empty_i  (tx_fifo_empty),
 //        .tx_fifo_full_i   (tx_fifo_full),
         .rx_fifo_full_i   (rx_fifo_full),
