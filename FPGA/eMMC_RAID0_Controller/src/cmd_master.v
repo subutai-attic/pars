@@ -77,9 +77,13 @@ module cmd_master(
            output reg go_idle_o,
            output reg  [39:0] cmd_o,
            input [119:0] response_i,
+           input [119:0] response1_i,           
            input crc_ok_i,
+           input crc1_ok_i,
            input index_ok_i,
+           input index1_ok_i,
            input finish_i,
+           input finish1_i,
            input busy_i, //direct signal from data sd data input (data[0])
            //input card_detect,
            input [31:0] argument_i,
@@ -135,7 +139,7 @@ assign int_status_o = state == IDLE ? int_status_reg : 5'h0;
 //     end
 // end
 
-always @(state or start_i or finish_i or go_idle_o or busy_check or busy_i)
+always @(state or start_i or finish_i or finish1_i or go_idle_o or busy_check or busy_i)
 begin: FSM_COMBO
     case(state)
         IDLE: begin
@@ -145,9 +149,9 @@ begin: FSM_COMBO
                 next_state <= IDLE;
         end
         EXECUTE: begin
-            if ((finish_i && !busy_check) || go_idle_o)
+            if ((finish_i && finish1_i && !busy_check) || go_idle_o)
                 next_state <= IDLE;
-            else if (finish_i && busy_check)
+            else if (finish_i && finish1_i && busy_check)
                 next_state <= BUSY_CHECK;
             else
                 next_state <= EXECUTE;
@@ -235,24 +239,18 @@ begin
                 end
                 //Incoming New Status
                 else begin //if ( req_in_int == 1) begin
-                    if (finish_i) begin //Data avaible
-                        if (crc_check & !crc_ok_i) begin
+                    if (finish_i & finish1_i) begin //Data avaible
+                        if (crc_check & !crc_ok_i & !crc1_ok_i) begin
                             int_status_reg[`INT_CMD_CCRCE] <= 1;
                             int_status_reg[`INT_CMD_EI] <= 1;
                         end
-                        if (index_check & !index_ok_i) begin
+                        if (index_check & !index_ok_i & !index1_ok_i) begin
                             int_status_reg[`INT_CMD_CIE] <= 1;
                             int_status_reg[`INT_CMD_EI] <= 1;
                         end
                         if (next_state != BUSY_CHECK) begin
                             int_status_reg[`INT_CMD_CC] <= 1;
                         end
-//                        if (expect_response != 0) begin
-//                            response_0_o <= response_i[119:88];
-//                            response_1_o <= response_i[87:56];
-//                            response_2_o <= response_i[55:24];
-//                            response_3_o <= {response_i[23:0], 8'h00};
-//                        end
                         if (expect_response != 0 & (~long_response)) begin
                             response_0_o <= response_i[119:88];
                         end
