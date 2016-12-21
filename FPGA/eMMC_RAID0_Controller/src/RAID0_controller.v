@@ -335,7 +335,7 @@
             .blk_gap_req (stop_blk_gap_req)
         );
 
-        dma_controller dma_controller_inst1(
+        dma_controller1 dma_controller_inst1(
             .clock                  (M01_AXI_ACLK),
             .reset                  (M01_AXI_ARESETN),
             .m_axi_wvalid           (M01_AXI_WVALID),

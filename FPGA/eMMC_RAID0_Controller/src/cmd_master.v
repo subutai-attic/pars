@@ -116,29 +116,6 @@ parameter BUSY_CHECK = 2'b10;
 assign setting_o[1:0] = {long_response, expect_response};
 assign int_status_o = state == IDLE ? int_status_reg : 5'h0;
 
-//---------------Input ports---------------
-
-// always @ (posedge sd_clk or posedge rst   )
-// begin
-//     if (rst) begin
-//         debounce<=0;
-//         card_present<=0;
-//     end
-//     else begin
-//         if (!card_detect) begin//Card present
-//             if (debounce!=4'b1111)
-//                 debounce<=debounce+1'b1;
-//         end
-//         else
-//             debounce<=0;
-// 
-//         if (debounce==4'b1111)
-//             card_present<=1'b1;
-//         else
-//             card_present<=1'b0;
-//     end
-// end
-
 always @(state or start_i or finish_i or finish1_i or go_idle_o or busy_check or busy_i)
 begin: FSM_COMBO
     case(state)
@@ -251,8 +228,16 @@ begin
                         if (next_state != BUSY_CHECK) begin
                             int_status_reg[`INT_CMD_CC] <= 1;
                         end
-                        if (expect_response != 0 & (~long_response)) begin
-                            response_0_o <= response_i[119:88];
+                        if (expect_response != 0 & (~long_response)) begin                          
+                            if(cmd_o[37:32] != 1 && cmd_o[37:32] != 40 && cmd_o[37:32] != 39 && response_i != response1_i) begin
+                                if((|response1_i[119:101]) || (response1_i[95])) begin
+                                    response_0_o <= response1_i[119:88];
+                                end
+                                else
+                                response_0_o <= response_i[119:88];
+                            end
+                            else 
+                                response_0_o <= response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
                             response_3_o <= {8'h00, response_i[119:96]};
