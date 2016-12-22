@@ -71,7 +71,7 @@ module  sd_emmc_controller_dma (
             // FIFO Filler
             output wire fifo_dat_rd_ready,
             output wire fifo_dat_wr_ready_o,
-            input wire [31:0] read_fifo_data,
+//            input wire [31:0] read_fifo_data,
             output reg fifo_rst,
 
             // M_AXI
@@ -99,7 +99,7 @@ module  sd_emmc_controller_dma (
             output wire [1:0] m_axi_awburst,
             output wire [7:0] m_axi_awlen,
             output wire [2:0] m_axi_awsize,
-            output wire [31:0] m_axi_wdata,
+//            output wire [31:0] m_axi_wdata,
             output reg m_axi_wlast,
             input wire [0:0] m_axi_bid,
             input wire [1:0] m_axi_bresp,
@@ -111,11 +111,12 @@ module  sd_emmc_controller_dma (
             output wire [2 : 0] m_axi_arprot,
             output wire [3:0] m_axi_arqos,
             input wire [0:0] m_axi_rid,
-            input wire [1:0] m_axi_rresp
+            input wire [1:0] m_axi_rresp,
+            output wire [16:0] data_cycle_o
         );
 
-reg [3:0] state;
-reg [16:0] data_cycle;
+(* mark_debug = "true" *) reg [3:0] state;
+(* mark_debug = "true" *) reg [16:0] data_cycle;
 reg [16:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
@@ -176,7 +177,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
   assign next_data_word = m_axi_wready & m_axi_wvalid;
   assign m_axi_awid	   = 'b0;
   assign m_axi_awaddr  = descriptor_line [63:32];
-  assign m_axi_wdata   = read_fifo_data;
+//  assign m_axi_wdata   = read_fifo_data;
   assign m_axi_arqos   = 4'h0;
   assign m_axi_arprot  = 3'h0;
   assign m_axi_arcache = 4'b0011;
@@ -190,6 +191,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
   assign read_resp_error  = m_axi_rready & m_axi_rvalid & m_axi_rresp[1];
   assign write_resp_error = axi_bready & m_axi_bvalid & m_axi_bresp[1];
   assign m_axi_bready	  = axi_bready;
+  assign data_cycle_o     = data_cycle;
 
 
   	always @(posedge clock)                                     
