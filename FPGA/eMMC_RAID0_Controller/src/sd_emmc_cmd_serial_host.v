@@ -60,7 +60,8 @@ module sd_mmc_cmd_serial_host (
            cmd_dat_i,
            cmd_out_o,
            cmd_oe_o,
-           command_inhibit_cmd
+           command_inhibit_cmd,
+           go_ahead_i
        );
 
 //---------------Input ports---------------
@@ -69,7 +70,8 @@ input rst;                                  // system reset
 input [1:0] setting_i;                      // response settings big/small wait for response or not
 input [39:0] cmd_i;                         // command taken from command master module
 input start_i;                              // flag for start to send command to the SD card
-input cmd_dat_i;                            // command which will come from SD card    
+input cmd_dat_i;                            // command which will come from SD card
+input go_ahead_i;    
 //---------------Output ports---------------
 output reg [119:0] response_o;              // the output response which received from SD card
 output reg finish_o;                        // The flag of finished to send the command
@@ -179,7 +181,10 @@ begin: FSM_COMBO
                 next_state <= READ;
             end
         FINISH_WR:
-            next_state <= IDLE;
+            if(go_ahead_i)
+              next_state <= IDLE;
+            else
+              next_state <= FINISH_WR;
         default: 
             next_state <= INIT;
     endcase

@@ -91,15 +91,12 @@
 		output wire [`DATA_TIMEOUT_W-1:0] timeout_contr_wire,
 		output wire sd_dat_bus_width,
 		output wire sd_dat_bus_width_8bit,
-//		input wire buff_read_en,
-//		input wire buff_writ_en,
 		input wire write_trans_active,
 		input wire read_trans_active,
 		input wire dat_line_act,
 		input wire command_inh_dat,
 		input wire com_inh_cmd,
 		output wire data_transfer_direction,
-//		input wire start_tx_fifo_i,
 		output wire [1:0] dma_en_and_blk_c_en,
 		input wire [1:0] dma_int,
 		output wire [31:0] adma_sys_addr,
@@ -157,10 +154,7 @@
 	//interrupt register
     reg [31:0] cmd_int_reg;
     reg [11:0] blk_size_cnt = 0;
-//    reg [11:0] blk_size_cn  = 0;
     reg [15:0] blk_count_cnt = 0;
-//	wire     buff_read_en_int;
-//	wire     buff_write_en_int;
 	wire cmd_compl_int;
 	reg  cmd_int_rst_reg;
 	reg  cmd_start_reg;

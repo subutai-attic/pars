@@ -103,9 +103,13 @@
     wire cmd_start_tx;
     wire [39:0] cmd;
     wire [119:0] cmd_response;
+    wire [119:0] cmd1_response;
     wire cmd_crc_ok;
+    wire cmd1_crc_ok;
     wire cmd_index_ok;
+    wire cmd1_index_ok;
     wire cmd_finish;
+    wire cmd1_finish;
 
     wire d_write;
     wire d_read;
@@ -179,7 +183,9 @@
     wire command_inhibit_dat_axi_clk;
     wire data_line_active_axi_clk;
     wire command_inhibit_cmd_sd_clk;
+    wire command1_inhibit_cmd_sd_clk;
     wire command_inhibit_cmd_axi_clk;
+    wire command1_inhibit_cmd_axi_clk;
     
     // Transfer mode register
     wire dat_trans_dir_axi_clk;
@@ -210,6 +216,7 @@
     
     // raid0
     wire [16:0] data_cycle_o_axi;
+    wire go_ahead;
     
     sd_emmc_raid0 sd_emmc_raid_inst(
         .axi_clk            (M_AXI_ACLK),
@@ -223,10 +230,14 @@
         .go_idle_o          (go_idle),
         .cmd_o              (cmd),
         .response_i         (cmd_response),
+        .response1_i        (cmd1_response),
         .crc_ok_i           (cmd_crc_ok),
+        .crc1_ok_i          (cmd1_crc_ok),
         .index_ok_i         (cmd_index_ok),
+        .index1_ok_i        (cmd1_index_ok),
         .busy_i             (sd_data_busy),
         .finish_i           (cmd_finish),
+        .finish1_i          (cmd1_finish),
         .argument_i         (argument_sd_clk),
         .command_i          (command_sd_clk),
         .int_status_o       (cmd_int_status_sd_clk),
@@ -234,6 +245,9 @@
         .response_1_o       (response_1_sd_clk),
         .response_2_o       (response_2_sd_clk),
         .response_3_o       (response_3_sd_clk),
+        .go_ahead_o         (go_ahead),
+        .inhibit_cmd_i      (command_inhibit_cmd_sd_clk),
+        .inhibit_cmd1_i     (command1_inhibit_cmd_sd_clk),
         .read_fifo_data     (read_fifo_out),
         .m_axi_wdata        (M_AXI_WDATA),        
         .dma_data_cycles    (data_cycle_o_axi)
@@ -273,7 +287,6 @@
         .m_axi_awlen            (M_AXI_AWLEN),
         .m_axi_rdata            (M_AXI_RDATA),
         .m_axi_awsize           (M_AXI_AWSIZE),
-//        .m_axi_wdata            (M_AXI_WDATA),
         .m_axi_wstrb            (M_AXI_WSTRB),
         .m_axi_bid              (M_AXI_BID),
         .m_axi_bresp            (M_AXI_BRESP),
@@ -287,7 +300,6 @@
         .m_axi_rid              (M_AXI_RID),
         .m_axi_rresp            (M_AXI_RRESP),
         .fifo_dat_wr_ready_o    (fifo_data_write_ready),
-//        .read_fifo_data         (read_fifo_out),
         .fifo_rst               (fifo_reset),
         .start_write            (start_tx),
         .ser_next_blk           (next_block_st_axi),
@@ -372,48 +384,45 @@
     );
 
     sd_mmc_cmd_serial_host cmd_serial_host0(
-        .sd_clk     (SD_CLK),
-        .rst        (!s00_axi_aresetn | 
-                     soft_rst_cmd_sd_clk |
-                     go_idle),
-        .setting_i  (cmd_setting),
-        .cmd_i      (cmd),
-        .start_i    (cmd_start_tx),
-        .finish_o   (cmd_finish),
-        .response_o (cmd_response),
-        .crc_ok_o   (cmd_crc_ok),
-        .index_ok_o (cmd_index_ok),
-        .cmd_dat_i  (sd_cmd_i),
-        .cmd_out_o  (sd_cmd_o),
-        .cmd_oe_o   (sd_cmd_t),
-        .command_inhibit_cmd (command_inhibit_cmd_sd_clk)
+        .sd_clk              (SD_CLK),
+        .rst                 (!s00_axi_aresetn | soft_rst_cmd_sd_clk | go_idle),
+        .setting_i           (cmd_setting),
+        .cmd_i               (cmd),
+        .start_i             (cmd_start_tx),
+        .finish_o            (cmd_finish),
+        .response_o          (cmd_response),
+        .crc_ok_o            (cmd_crc_ok),
+        .index_ok_o          (cmd_index_ok),
+        .cmd_dat_i           (sd_cmd_i),
+        .cmd_out_o           (sd_cmd_o),
+        .cmd_oe_o            (sd_cmd_t),
+        .command_inhibit_cmd (command_inhibit_cmd_sd_clk),
+        .go_ahead_i          (go_ahead)
         );
 
     sd_mmc_cmd_serial_host cmd_serial_host1(
         .sd_clk              (SD_CLK),
-        .rst                 (!s00_axi_aresetn | 
-                              soft_rst_cmd_sd_clk |
-                              go_idle),
-        .setting_i           (),
-        .cmd_i               (),
-        .start_i             (),
-        .finish_o            (),
-        .response_o          (),
-        .crc_ok_o            (),
-        .index_ok_o          (),
+        .rst                 (!s00_axi_aresetn | soft_rst_cmd_sd_clk | go_idle),
+        .setting_i           (cmd_setting),
+        .cmd_i               (cmd),
+        .start_i             (cmd_start_tx),
+        .finish_o            (cmd1_finish),
+        .response_o          (cmd1_response),
+        .crc_ok_o            (cmd1_crc_ok),
+        .index_ok_o          (cmd1_index_ok),
         .cmd_dat_i           (sd_cmd1_i),
         .cmd_out_o           (sd_cmd1_o),
         .cmd_oe_o            (sd_cmd1_t),
-        .command_inhibit_cmd ()
+        .command_inhibit_cmd (command1_inhibit_cmd_sd_clk),
+        .go_ahead_i          (go_ahead)
         );
 
     sd_data_master sd_data_master0(
         .sd_clk           (SD_CLK),
-        .rst              (!s00_axi_aresetn | 
-                           soft_rst_dat_sd_clk ),
+        .rst              (!s00_axi_aresetn | soft_rst_dat_sd_clk ),
         .start_tx_i       (data_start_tx),
         .start_rx_i       (data_start_rx),
-        .timeout_i          (data_timeout_sd_clk),
+        .timeout_i        (data_timeout_sd_clk),
         .d_write_o        (d_write),
         .d_read_o         (d_read),
         .rx_fifo_full_i   (rx_fifo_full),
@@ -421,41 +430,39 @@
         .crc_ok_i         (data_crc_ok),
         .int_status_o     (data_int_status_sd_clk),
         .int_status_rst_i (data_int_rst_sd_clk),
-        .start_write(start_write_sd_clk)
+        .start_write      (start_write_sd_clk)
         );
 
     sd_data_serial_host sd_data_serial_host0(
-        .sd_clk         (SD_CLK),
-        .sd_clk90       (sd_clk90),
-        .rst            (!s00_axi_aresetn | 
-                        soft_rst_dat_sd_clk ),
-        .data_in        (data_out_tx_fifo),
-        .rd             (rd_fifo),
-        .data_out_o       (data_in_rx_fifo),
-        .we             (we_fifo),
-        .DAT_oe_o       (sd_dat_t),
-        .DAT_dat_o      (sd_dat_o),
-        .DAT_dat_i      (sd_dat_i),
-        .blksize        (block_size_sd_clk),
-        .bus_4bit       (controll_setting_sd_clk),
-        .bus_8bit       (controll_setting_8bit_sd_clk),
-        .blkcnt         (block_count_sd_clk),
-        .start          ({d_read, d_write}),
-        .sd_data_busy   (sd_data_busy),
-        .busy           (data_busy),
-        .crc_ok         (data_crc_ok),
-        .read_trans_active (rd_trans_act_sd_clk),
-        .write_trans_active(wr_trans_act_sd_clk),
-        .start_write    (start_write_sd_clk),
-        .write_next_block(next_block_st),
-        .UHSMode        (UHSModSel_sd_clk)
+        .sd_clk             (SD_CLK),
+        .sd_clk90           (sd_clk90),
+        .rst                (!s00_axi_aresetn | soft_rst_dat_sd_clk ),
+        .data_in            (data_out_tx_fifo),
+        .rd                 (rd_fifo),
+        .data_out_o         (data_in_rx_fifo),
+        .we                 (we_fifo),
+        .DAT_oe_o           (sd_dat_t),
+        .DAT_dat_o          (sd_dat_o),
+        .DAT_dat_i          (sd_dat_i),
+        .blksize            (block_size_sd_clk),
+        .bus_4bit           (controll_setting_sd_clk),
+        .bus_8bit           (controll_setting_8bit_sd_clk),
+        .blkcnt             (block_count_sd_clk),
+        .start              ({d_read, d_write}),
+        .sd_data_busy       (sd_data_busy),
+        .busy               (data_busy),
+        .crc_ok             (data_crc_ok),
+        .read_trans_active  (rd_trans_act_sd_clk),
+        .write_trans_active (wr_trans_act_sd_clk),
+        .start_write        (start_write_sd_clk),
+        .write_next_block   (next_block_st),
+        .UHSMode            (UHSModSel_sd_clk)
         );
     
     sd_data_serial_host sd_data_serial_host1(
         .sd_clk             (SD_CLK),
         .sd_clk90           (sd_clk90),
-        .rst                (!s00_axi_aresetn | 
-                            soft_rst_dat_sd_clk ),
+        .rst                (!s00_axi_aresetn | soft_rst_dat_sd_clk ),
         .data_in            (),
         .rd                 (),
         .data_out_o         (),
@@ -520,27 +527,28 @@
     monostable_domain_cross cmd_int_rst_cross(!s00_axi_aresetn, s00_axi_aclk, cmd_int_rst_axi_clk, SD_CLK, cmd_int_rst_sd_clk);
     monostable_domain_cross start_write_cross(!s00_axi_aresetn, s00_axi_aclk, start_tx_pulse, SD_CLK, start_write_sd_clk);
 
-    bistable_domain_cross #(32) argument_reg_cross(!s00_axi_aresetn, s00_axi_aclk, argument_axi_clk, SD_CLK, argument_sd_clk);
-    bistable_domain_cross #(`CMD_REG_SIZE) command_reg_cross(!s00_axi_aresetn, s00_axi_aclk, command_axi_clk, SD_CLK, command_sd_clk);
-    bistable_domain_cross #(32) response_0_reg_cross(!s00_axi_aresetn, SD_CLK, response_0_sd_clk, s00_axi_aclk, response_0_axi_clk);
-    bistable_domain_cross #(32) response_1_reg_cross(!s00_axi_aresetn, SD_CLK, response_1_sd_clk, s00_axi_aclk, response_1_axi_clk);
-    bistable_domain_cross #(32) response_2_reg_cross(!s00_axi_aresetn, SD_CLK, response_2_sd_clk, s00_axi_aclk, response_2_axi_clk);
-    bistable_domain_cross #(32) response_3_reg_cross(!s00_axi_aresetn, SD_CLK, response_3_sd_clk, s00_axi_aclk, response_3_axi_clk);
+    bistable_domain_cross #(32) argument_reg_cross              (!s00_axi_aresetn, s00_axi_aclk, argument_axi_clk, SD_CLK, argument_sd_clk);
+    bistable_domain_cross #(`CMD_REG_SIZE) command_reg_cross    (!s00_axi_aresetn, s00_axi_aclk, command_axi_clk, SD_CLK, command_sd_clk);
+    bistable_domain_cross #(32) response_0_reg_cross            (!s00_axi_aresetn, SD_CLK, response_0_sd_clk, s00_axi_aclk, response_0_axi_clk);
+    bistable_domain_cross #(32) response_1_reg_cross            (!s00_axi_aresetn, SD_CLK, response_1_sd_clk, s00_axi_aclk, response_1_axi_clk);
+    bistable_domain_cross #(32) response_2_reg_cross            (!s00_axi_aresetn, SD_CLK, response_2_sd_clk, s00_axi_aclk, response_2_axi_clk);
+    bistable_domain_cross #(32) response_3_reg_cross            (!s00_axi_aresetn, SD_CLK, response_3_sd_clk, s00_axi_aclk, response_3_axi_clk);
     bistable_domain_cross #(`DATA_TIMEOUT_W) data_timeout_reg_cross(!s00_axi_aresetn, s00_axi_aclk, data_timeout_axi_clk, SD_CLK, data_timeout_sd_clk);
-    bistable_domain_cross #(`BLKSIZE_W) block_size_cross(!s00_axi_aresetn, s00_axi_aclk, block_size_axi_clk, SD_CLK, block_size_sd_clk);
-    bistable_domain_cross #(1) controll_setting_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_axi_clk, SD_CLK, controll_setting_sd_clk);
-    bistable_domain_cross #(1) controll_setting_8bit_cross(!s00_axi_aresetn, s00_axi_aclk, controll_setting_8bit_axi_clk, SD_CLK, controll_setting_8bit_sd_clk);
-    bistable_domain_cross #(`INT_CMD_SIZE) cmd_int_status_cross(!s00_axi_aresetn, SD_CLK, cmd_int_status_sd_clk, s00_axi_aclk, cmd_int_status_axi_clk);
-    bistable_domain_cross #(1) read_trans_act_cross(!s00_axi_aresetn, SD_CLK, rd_trans_act_sd_clk, s00_axi_aclk, rd_trans_act_axi_clk);
-    bistable_domain_cross #(1) write_trans_act_cross(!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
-    bistable_domain_cross #(1) data_line_act_cross(!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
-    bistable_domain_cross #(1) command_inh_dat_cross(!s00_axi_aresetn, SD_CLK, sd_data_busy, s00_axi_aclk, command_inhibit_dat_axi_clk);
-    bistable_domain_cross #(1) command_inh_cmd_cross(!s00_axi_aresetn, SD_CLK, command_inhibit_cmd_sd_clk, s00_axi_aclk, command_inhibit_cmd_axi_clk);
-    bistable_domain_cross #(1) dat_trans_dir_cross(!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
-    bistable_domain_cross #(1) next_block(!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
-    bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross(!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);
+    bistable_domain_cross #(`BLKSIZE_W) block_size_cross        (!s00_axi_aresetn, s00_axi_aclk, block_size_axi_clk, SD_CLK, block_size_sd_clk);
+    bistable_domain_cross #(1) controll_setting_cross           (!s00_axi_aresetn, s00_axi_aclk, controll_setting_axi_clk, SD_CLK, controll_setting_sd_clk);
+    bistable_domain_cross #(1) controll_setting_8bit_cross      (!s00_axi_aresetn, s00_axi_aclk, controll_setting_8bit_axi_clk, SD_CLK, controll_setting_8bit_sd_clk);
+    bistable_domain_cross #(`INT_CMD_SIZE) cmd_int_status_cross (!s00_axi_aresetn, SD_CLK, cmd_int_status_sd_clk, s00_axi_aclk, cmd_int_status_axi_clk);
+    bistable_domain_cross #(1) read_trans_act_cross             (!s00_axi_aresetn, SD_CLK, rd_trans_act_sd_clk, s00_axi_aclk, rd_trans_act_axi_clk);
+    bistable_domain_cross #(1) write_trans_act_cross            (!s00_axi_aresetn, SD_CLK, wr_trans_act_sd_clk, s00_axi_aclk, wr_trans_act_axi_clk);
+    bistable_domain_cross #(1) data_line_act_cross              (!s00_axi_aresetn, SD_CLK, data_busy, s00_axi_aclk, data_line_active_axi_clk);
+    bistable_domain_cross #(1) command_inh_dat_cross            (!s00_axi_aresetn, SD_CLK, sd_data_busy, s00_axi_aclk, command_inhibit_dat_axi_clk);
+    bistable_domain_cross #(1) command_inh_cmd_cross            (!s00_axi_aresetn, SD_CLK, command_inhibit_cmd_sd_clk, s00_axi_aclk, command_inhibit_cmd_axi_clk);
+//    bistable_domain_cross #(1) command1_inh_cmd_cross           (!s00_axi_aresetn, SD_CLK, command1_inhibit_cmd_sd_clk, s00_axi_aclk, command1_inhibit_cmd_axi_clk);
+    bistable_domain_cross #(1) dat_trans_dir_cross              (!s00_axi_aresetn, s00_axi_aclk, dat_trans_dir_axi_clk, SD_CLK, dat_trans_dir_sd_clk);
+    bistable_domain_cross #(1) next_block                       (!s00_axi_aresetn, SD_CLK, next_block_st, s00_axi_aclk, next_block_st_axi);
+    bistable_domain_cross #(`BLKCNT_W) block_count_reg_cross    (!s00_axi_aresetn, s00_axi_aclk, block_count_axi_clk, SD_CLK, block_count_sd_clk);
     bistable_domain_cross #(`INT_DATA_SIZE) data_int_status_reg_cross(!s00_axi_aresetn, SD_CLK, data_int_status_sd_clk, s00_axi_aclk, data_int_status_axi_clk);
-    bistable_domain_cross #(3) UHSModSel_cross(!s00_axi_aresetn, s00_axi_aclk, UHSModSel_axi_clk, SD_CLK, UHSModSel_sd_clk);
+    bistable_domain_cross #(3) UHSModSel_cross                  (!s00_axi_aresetn, s00_axi_aclk, UHSModSel_axi_clk, SD_CLK, UHSModSel_sd_clk);
     
     assign interrupt = |(int_status_reg & int_status_en_reg & int_signal_en_reg);
     
