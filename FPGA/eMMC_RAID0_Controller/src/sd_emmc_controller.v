@@ -1,6 +1,6 @@
 `timescale 1 ns / 1 ps
 `include "sd_emmc_defines.h"
-        module sd_emmc_controller #
+    module sd_emmc_controller #
         (
  		        // Parameters of Axi Slave Bus Interface S00_AXI
                 parameter integer C_S00_AXI_DATA_WIDTH    = 32,
@@ -89,7 +89,7 @@
         input wire  M_AXI_RLAST,
         input wire  M_AXI_RVALID,
         output wire  M_AXI_RREADY
-        );
+    );
 
     //SD clock
     wire [7:0]  divisor;
@@ -221,8 +221,8 @@
     sd_emmc_raid0 sd_emmc_raid_inst(
         .axi_clk            (M_AXI_ACLK),
         .sd_clk             (SD_CLK),
-        .rst                (!s00_axi_aresetn | 
-                             soft_rst_cmd_sd_clk),
+        .hwreset            (!s00_axi_aresetn),
+        .rst                (!s00_axi_aresetn |  soft_rst_cmd_sd_clk),
         .start_i            (cmd_start_sd_clk),
         .int_status_rst_i   (cmd_int_rst_sd_clk),
         .setting_o          (cmd_setting),
@@ -381,7 +381,7 @@
         .AXI_RST(s00_axi_aresetn/* & int_clk_en*/),
         .Internal_clk_stable(int_clk_stbl),
         .sd_clk90(sd_clk90)
-    );
+        );
 
     sd_mmc_cmd_serial_host cmd_serial_host0(
         .sd_clk              (SD_CLK),
@@ -487,8 +487,7 @@
 
     sd_data_xfer_trig sd_data_xfer_trig0 (
         .sd_clk                (SD_CLK),
-        .rst                   (!s00_axi_aresetn |
-                                soft_rst_dat_sd_clk ),
+        .rst                   (!s00_axi_aresetn | soft_rst_dat_sd_clk ),
         .cmd_with_data_start_i (cmd_start_sd_clk & (command_sd_clk[5] == 1'b1)),
         .r_w_i                 (dat_trans_dir_sd_clk == 1'b1),
         .cmd_int_status_i      (cmd_int_status_sd_clk),
@@ -529,10 +528,10 @@
 
     bistable_domain_cross #(32) argument_reg_cross              (!s00_axi_aresetn, s00_axi_aclk, argument_axi_clk, SD_CLK, argument_sd_clk);
     bistable_domain_cross #(`CMD_REG_SIZE) command_reg_cross    (!s00_axi_aresetn, s00_axi_aclk, command_axi_clk, SD_CLK, command_sd_clk);
-    bistable_domain_cross #(32) response_0_reg_cross            (!s00_axi_aresetn, SD_CLK, response_0_sd_clk, s00_axi_aclk, response_0_axi_clk);
-    bistable_domain_cross #(32) response_1_reg_cross            (!s00_axi_aresetn, SD_CLK, response_1_sd_clk, s00_axi_aclk, response_1_axi_clk);
-    bistable_domain_cross #(32) response_2_reg_cross            (!s00_axi_aresetn, SD_CLK, response_2_sd_clk, s00_axi_aclk, response_2_axi_clk);
-    bistable_domain_cross #(32) response_3_reg_cross            (!s00_axi_aresetn, SD_CLK, response_3_sd_clk, s00_axi_aclk, response_3_axi_clk);
+    bistable_domain_cross #(32) response_0_reg_cross            (!s00_axi_aresetn, SD_CLK,      response_0_sd_clk, s00_axi_aclk, response_0_axi_clk);
+    bistable_domain_cross #(32) response_1_reg_cross            (!s00_axi_aresetn, SD_CLK,      response_1_sd_clk, s00_axi_aclk, response_1_axi_clk);
+    bistable_domain_cross #(32) response_2_reg_cross            (!s00_axi_aresetn, SD_CLK,      response_2_sd_clk, s00_axi_aclk, response_2_axi_clk);
+    bistable_domain_cross #(32) response_3_reg_cross            (!s00_axi_aresetn, SD_CLK,      response_3_sd_clk, s00_axi_aclk, response_3_axi_clk);
     bistable_domain_cross #(`DATA_TIMEOUT_W) data_timeout_reg_cross(!s00_axi_aresetn, s00_axi_aclk, data_timeout_axi_clk, SD_CLK, data_timeout_sd_clk);
     bistable_domain_cross #(`BLKSIZE_W) block_size_cross        (!s00_axi_aresetn, s00_axi_aclk, block_size_axi_clk, SD_CLK, block_size_sd_clk);
     bistable_domain_cross #(1) controll_setting_cross           (!s00_axi_aresetn, s00_axi_aclk, controll_setting_axi_clk, SD_CLK, controll_setting_sd_clk);

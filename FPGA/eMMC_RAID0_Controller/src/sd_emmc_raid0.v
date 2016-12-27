@@ -23,6 +23,7 @@
 module sd_emmc_raid0(
            input axi_clk,
            input sd_clk,
+           input hwreset,
            input rst,
            input start_i,
            input int_status_rst_i,
@@ -36,8 +37,8 @@ module sd_emmc_raid0(
            input crc1_ok_i,
            input index_ok_i,
            input index1_ok_i,
-           input finish_i,
-           input finish1_i,
+           (* mark_debug = "true" *)input finish_i,
+           (* mark_debug = "true" *)input finish1_i,
            input busy_i, //direct signal from data sd data input (data[0])
            input [31:0] argument_i,
            input [`CMD_REG_SIZE-1:0] command_i,
@@ -64,7 +65,7 @@ reg long_response;
 reg [`INT_CMD_SIZE-1:0] int_status_reg;
 reg [`CMD_TIMEOUT_W-1:0] watchdog;
 parameter SIZE = 2;
-reg [SIZE-1:0] state;
+(* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 2'b00;
 parameter EXECUTE    = 2'b01;
@@ -73,6 +74,11 @@ wire finish;
 localparam NEW_SEC_COUNT = 32'h03AB4000;
 wire [31:0] mult_emmc_cmd_resp;
 reg ExtCSDModify;
+(* mark_debug = "true" *) wire [31:0] resp;
+(* mark_debug = "true" *) wire [31:0] resp1;
+
+assign resp1 = response1_i[119:88];
+assign resp  = response_i[119:88];
 
 assign setting_o[1:0]       = {long_response, expect_response};
 assign int_status_o         = state == IDLE ? int_status_reg : 5'h0;
@@ -193,7 +199,7 @@ begin
                             int_status_reg[`INT_CMD_CC] <= 1;
                         end
                         if (expect_response != 0 & (~long_response)) begin
-                            response_0_o <= response_i[119:88];
+                            response_0_o <= mult_emmc_cmd_resp; //response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
                             response_3_o <= {8'h00, response_i[119:96]};
@@ -258,9 +264,9 @@ localparam  CMD0        = 6'b000000,
             CMD25       = 6'b011001;
             
  
-always @(posedge axi_clk or posedge rst)
+always @(posedge axi_clk or posedge hwreset)
 begin: RAID_FSM_CMD_LYR
-  if (rst) begin
+  if (hwreset) begin
     r_state <= R_PWR_ON;
   end
   else begin
@@ -270,7 +276,7 @@ begin: RAID_FSM_CMD_LYR
                     r_state <= R_IDLE;
                   end
       R_IDLE: begin
-                if (command_i[`CMD_INDEX] == CMD1 && mult_emmc_cmd_resp == 32'h40FF_8080)
+                if (command_i[`CMD_INDEX] == CMD1 && mult_emmc_cmd_resp == 32'hC0FF_8080)
                   r_state <= R_READY;
               end
       R_READY: begin
