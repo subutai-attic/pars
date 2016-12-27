@@ -480,6 +480,7 @@
         .start_xfr_o  (cmd_start_tx),
         .go_idle_o    (go_idle),
         .cmd_o        (cmd),
+        .cmd1_o       (cmd1),
         .response_i   (cmd_response),
         .response1_i  (cmd1_response),
         .crc_ok_i     (cmd_crc_ok),
@@ -522,7 +523,7 @@
                      soft_rst_cmd_sd_clk |
                      go_idle),
         .setting_i  (cmd_setting),
-        .cmd_i      (cmd),
+        .cmd_i      (cmd1),
         .start_i    (cmd_start_tx),
         .finish_o   (cmd1_finish),
         .response_o (cmd1_response),

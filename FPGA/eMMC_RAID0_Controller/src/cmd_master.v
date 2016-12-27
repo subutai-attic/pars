@@ -76,8 +76,9 @@ module cmd_master(
            output reg start_xfr_o,
            output reg go_idle_o,
            output reg  [39:0] cmd_o,
-           input [119:0] response_i,
-           input [119:0] response1_i,           
+           output reg  [39:0] cmd1_o,
+           (* mark_debug = "true" *) input [119:0] response_i,
+           (* mark_debug = "true" *) input [119:0] response1_i,           
            input crc_ok_i,
            input crc1_ok_i,
            input index_ok_i,
@@ -86,8 +87,8 @@ module cmd_master(
            input finish1_i,
            input busy_i, //direct signal from data sd data input (data[0])
            //input card_detect,
-           input [31:0] argument_i,
-           input [`CMD_REG_SIZE-1:0] command_i,
+           (* mark_debug = "true" *) input [31:0] argument_i,
+           (* mark_debug = "true" *) input [`CMD_REG_SIZE-1:0] command_i,
            output [`INT_CMD_SIZE-1:0] int_status_o,
            output reg [31:0] response_0_o,
            output reg [31:0] response_1_o,
@@ -165,6 +166,7 @@ begin
         expect_response <= 0;
         long_response <= 0;
         cmd_o <= 0;
+        cmd1_o <= 0;
         start_xfr_o <= 0;
         index_check <= 0;
         busy_check <= 0;
@@ -199,6 +201,9 @@ begin
                 cmd_o[39:38] <= 2'b01;
                 cmd_o[37:32] <= command_i[`CMD_INDEX];  //CMD_INDEX
                 cmd_o[31:0] <= argument_i; //CMD_Argument
+                cmd1_o[39:38] <= 2'b01;
+                cmd1_o[37:32] <= command_i[`CMD_INDEX];  //CMD_INDEX
+                cmd1_o[31:0] <= argument_i; //CMD_Argument
                 timeout_reg <= (command_i[`CMD_RESPONSE_CHECK] == 2'b10) ? 120 : ((command_i[`CMD_RESPONSE_CHECK] == 2'b01)? 250: 0);
                 watchdog <= 0;
                 if (start_i) begin
@@ -229,8 +234,12 @@ begin
                             int_status_reg[`INT_CMD_CC] <= 1;
                         end
                         if (expect_response != 0 & (~long_response)) begin                          
-                            if(cmd_o[37:32] != 1 && cmd_o[37:32] != 40 && cmd_o[37:32] != 39 && response_i != response1_i) begin
-                                if((|response1_i[119:101]) || (response1_i[95])) begin
+                            if(cmd_o[37:32] != 40 && cmd_o[37:32] != 39 && response_i != response1_i) begin
+                                if(cmd_o[37:32] == 1 && response_i != 32'hC0FF8080)
+                                    response_0_o <= response_i[119:88];
+                                if(cmd_o[37:32] == 1 && response1_i != 32'hC0FF8080)
+                                    response_0_o <= response1_i[119:88];                                    
+                                else if((|response1_i[119:101]) || (response1_i[95])) begin
                                     response_0_o <= response1_i[119:88];
                                 end
                                 else
@@ -240,11 +249,18 @@ begin
                                 response_0_o <= response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
+                            if(cmd_o[37:32] == 1 && response1_i != 32'hC0FF8080)
+                                response_0_o <= response1_i[119:88];                                    
+                            else if((|response1_i[119:101]) || (response1_i[95])) begin
+                                response_0_o <= response1_i[119:88];
+                            end
                             response_3_o <= {8'h00, response_i[119:96]};
                             response_2_o <= response_i[95:64];
                             response_1_o <= response_i[63:32];
                             response_0_o <= response_i[31:0];
+                            
                         end
+                        
                         // end
                     end ////Data avaible
                 end //Status change
