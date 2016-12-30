@@ -406,14 +406,14 @@
         .setting_i           (cmd_setting),
         .cmd_i               (cmd),
         .start_i             (cmd_start_tx),
-        .finish_o            (cmd1_finish),
-        .response_o          (cmd1_response),
-        .crc_ok_o            (cmd1_crc_ok),
-        .index_ok_o          (cmd1_index_ok),
-        .cmd_dat_i           (sd_cmd1_i),
-        .cmd_out_o           (sd_cmd1_o),
-        .cmd_oe_o            (sd_cmd1_t),
-        .command_inhibit_cmd (command1_inhibit_cmd_sd_clk),
+        .finish_o            (cmd1_finish),                 //output to taid0
+        .response_o          (cmd1_response),               //output to raid0
+        .crc_ok_o            (cmd1_crc_ok),                 //output to raid0
+        .index_ok_o          (cmd1_index_ok),               //output to raid0
+        .cmd_dat_i           (sd_cmd1_i),                   //card
+        .cmd_out_o           (sd_cmd1_o),                   //card
+        .cmd_oe_o            (sd_cmd1_t),                   //card
+        .command_inhibit_cmd (command1_inhibit_cmd_sd_clk), //output to S00_AXI, raid0
         .go_ahead_i          (go_ahead)
         );
 
