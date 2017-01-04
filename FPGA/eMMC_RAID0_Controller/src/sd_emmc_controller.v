@@ -222,6 +222,7 @@
     wire next_block_st_axi;
     wire next_block_st_dev1_axi;
     wire fifo_reset;
+    wire fifo1_reset;
     
     //Interrupts
     wire [28:0] int_status_reg;
@@ -365,7 +366,7 @@
         .m_axi_rid              (M_AXI_RID),
         .m_axi_rresp            (M_AXI_RRESP),
         .fifo_dat_wr_ready_o    (fifo_data_write_ready),    //used
-        .fifo_rst               (fifo_reset),
+        .fifo_rst               (fifo_reset),               //used
         .start_write            (start_tx),                 //used
         .ser_next_blk           (next_block_st_axi),        //used
         .write_timeout          ({d_read, d_write}),        //used
@@ -419,6 +420,7 @@
         .read_fifo_data     (read_fifo1_out),
         .fifo_dat_rd_ready  (fifo1_data_read_ready),
         .fifo_dat_wr_ready_o(fifo1_data_write_ready),
+        .fifo_rst           (fifo1_reset),
         .is_we_en           (we_fifo1),
         .write_timeout      ({d_read1, d_write1}),
         .xfer_compl         (!data_busy_dev1),
@@ -628,9 +630,9 @@
         );
         
     fifo18Kb fifo18Kb_inst0(
-        .aclk(s00_axi_aclk),
-        .sd_clk(SD_CLK),
-        .rst(!s00_axi_aresetn | soft_rst_dat_sd_clk),
+        .aclk           (s00_axi_aclk),
+        .sd_clk         (SD_CLK),
+        .rst(           !s00_axi_aresetn | soft_rst_dat_sd_clk | fifo_reset),
         .axi_data_in    (write_dat_fifo),
         .sd_data_in     (data_in_rx_fifo),
         .sd_data_out    (data_out_tx_fifo),
@@ -643,9 +645,9 @@
     );
     
         fifo18Kb fifo18Kb_inst1(
-        .aclk(s00_axi_aclk),
-        .sd_clk(SD_CLK),
-        .rst(!s00_axi_aresetn | soft_rst_dat_sd_clk),
+        .aclk           (s00_axi_aclk),
+        .sd_clk         (SD_CLK),
+        .rst            (!s00_axi_aresetn | soft_rst_dat_sd_clk | fifo1_reset),
         .axi_data_in    (write_dat_fifo1),          //compl
         .sd_data_in     (data_in_rx_fifo1),         //compl
         .sd_data_out    (data_out_tx_fifo1),        //compl
