@@ -430,10 +430,9 @@
         );
         
     fifo18Kb fifo18Kb_inst(
-        .aclk(s00_axi_aclk),
-        .sd_clk(SD_CLK),
-        .rst(!s00_axi_aresetn |
-             soft_rst_dat_sd_clk),
+        .aclk           (s00_axi_aclk),
+        .sd_clk         (SD_CLK),
+        .rst            (!s00_axi_aresetn | soft_rst_dat_sd_clk | fifo_reset),
         .axi_data_in    (write_dat_fifo),
         .sd_data_in     (data_in_rx_fifo),
         .sd_data_out    (data_out_tx_fifo),
