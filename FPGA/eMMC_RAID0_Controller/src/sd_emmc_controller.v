@@ -323,8 +323,8 @@
         .clock                  (M_AXI_ACLK),
         .reset                  (M_AXI_ARESETN),
         .is_we_en               (we_fifo),                  //used
-        .dma_ena_trans_mode     (dma_and_blkcnt_en [0]),
-        .dir_dat_trans_mode     (dat_trans_dir_axi_clk),
+        .dma_ena_trans_mode     (dma_and_blkcnt_en [0]),    //used
+        .dir_dat_trans_mode     (dat_trans_dir_axi_clk),    //used
         .xfer_compl             (!data_busy),               //used
         .m_axi_wvalid           (M_AXI_WVALID),
         .m_axi_wready           (M_AXI_WREADY),
@@ -418,6 +418,8 @@
         .m_axi_rvalid       (M01_AXI_RVALID),
         .m_axi_rready       (M01_AXI_RREADY),
         .read_fifo_data     (read_fifo1_out),
+        .dma_ena_trans_mode (dma_and_blkcnt_en [0]),
+        .dir_dat_trans_mode (dat_trans_dir_axi_clk),
         .fifo_dat_rd_ready  (fifo1_data_read_ready),
         .fifo_dat_wr_ready_o(fifo1_data_write_ready),
         .fifo_rst           (fifo1_reset),
