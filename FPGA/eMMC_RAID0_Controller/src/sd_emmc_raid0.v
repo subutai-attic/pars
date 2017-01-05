@@ -53,7 +53,8 @@ module sd_emmc_raid0(
            input wire [31:0] read_fifo_data,
            output wire [31:0] m_axi_wdata,
            input [16:0] dma_data_cycles,
-           input [1:0]  dma_int1
+           input [1:0]  dma_int1,
+           input [1:0]  adma_mst_state_i
        );
 
 //-----------Types--------------------------------------------------------

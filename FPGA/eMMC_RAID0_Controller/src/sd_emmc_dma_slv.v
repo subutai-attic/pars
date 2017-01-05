@@ -45,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-module  sd_emmc_controller_dma_slv (
+module  sd_emmc_controller_adma_slv (
             input  wire clock,
             input  wire reset,
 
@@ -112,11 +112,14 @@ module  sd_emmc_controller_dma_slv (
             output wire [3:0] m_axi_arqos,
             input wire [0:0] m_axi_rid,
             input wire [1:0] m_axi_rresp,
-            output wire [16:0] data_cycle_o
+            output wire [16:0] data_cycle_o,
+            
+            // ADMA_MASTER
+            input wire [63:0] adma_mst_bd_line_i
         );
 
 (* mark_debug = "true" *) reg [3:0] state;
-(* mark_debug = "true" *) reg [16:0] data_cycle;
+reg [16:0] data_cycle;
 reg [16:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
@@ -128,7 +131,7 @@ reg we_counter_reset;
 reg rd_counter_reset;
 wire we_pulse;
 reg data_write_disable;
-reg [2:0] adma_state;
+(* mark_debug = "true" *) reg [2:0] slv_adma_state;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;
@@ -170,7 +173,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
   assign stop_trans          = state == IDLE ? 1'b1 : 1'b0;
   assign fifo_dat_rd_ready   = m_axi_wready & m_axi_wvalid;
   assign fifo_dat_wr_ready_o = sdma_contr_reg[`DatTarg] ? 1'b0 : m_axi_rready;
-  assign m_axi_araddr        = sdma_contr_reg[`AddrSel] ? descriptor_pointer_reg : descriptor_line [63:32];
+  assign m_axi_araddr        = /*sdma_contr_reg[`AddrSel] ? descriptor_pointer_reg : */descriptor_line [63:32];
   assign m_axi_arlen         = sdma_contr_reg[`BurstLen];
   assign Tran = (descriptor_line[5:4] == 2'b10) ? 1'b1 : 1'b0;
   assign Link = (descriptor_line[5:4] == 2'b11) ? 1'b1 : 1'b0;
@@ -441,7 +444,7 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
           a <= 0;
         end
         else begin
-          case (adma_state)
+          case (slv_adma_state)
             ST_STOP: begin
                        if (dma_ena_trans_mode & cmd_compl_puls & data_present /*& dat_int_rst*/) begin
                          next_state <= ST_FDS;
@@ -533,12 +536,12 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
       always @(posedge clock)
       begin: FSM_SEQ
         if (reset == 1'b0) begin
-          adma_state <= ST_STOP;
+          slv_adma_state <= ST_STOP;
           trans_act <= 0;
         end
         else begin
           trans_act <= next_trans_act;
-          adma_state <= next_state;
+          slv_adma_state <= next_state;
         end
       end
 

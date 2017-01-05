@@ -284,6 +284,8 @@
     // raid0
     wire [16:0] data_cycle_o_axi;
     wire go_ahead;
+    wire [1:0] adma_mst_state;
+    wire [63:0] adma_mst_bd_line;
     
     sd_emmc_raid0 sd_emmc_raid_inst(
         .axi_clk            (M_AXI_ACLK),
@@ -318,10 +320,11 @@
         .read_fifo_data     (read_fifo_out),
         .m_axi_wdata        (M_AXI_WDATA),        
         .dma_data_cycles    (data_cycle_o_axi),
-        .dma_int1           (dma_int1)
+        .dma_int1           (dma_int1),
+        .adma_mst_state_i   (adma_mst_state)
     );
         
-    sd_emmc_controller_dma sd_emmc_controller_dma_inst(
+    sd_emmc_controller_adma_mst sd_emmc_controller_adma_mst(
         .clock                  (M_AXI_ACLK),
         .reset                  (M_AXI_ARESETN),
         .is_we_en               (we_fifo),                  //used
@@ -376,10 +379,12 @@
         .data_present           (command_axi_clk[5]),       //used
         .cmd_compl_puls         (cmd_cmplt_axi_puls),       //used
         .blk_gap_req            (stop_blk_gap_req),         //used
-        .data_cycle_o           (data_cycle_o_axi)          //no need to instantiate it to dma_slv
+        .data_cycle_o           (data_cycle_o_axi),         //no need to instantiate it to dma_slv
+        .adma_mst_state_o       (adma_mst_state),
+        .adma_mst_bd_line_o     (adma_mst_bd_line)
     );
     
-    sd_emmc_controller_dma_slv sd_emmc_controller_dma_slv0(
+    sd_emmc_controller_adma_slv sd_emmc_controller_adma_slv0(
         .clock                  (M01_AXI_ACLK),
         .reset                  (M01_AXI_ARESETN),
         .m_axi_awid             (M01_AXI_AWID),
@@ -434,7 +439,8 @@
         .ser_next_blk           (next_block_st_dev1_axi),
         .blk_gap_req            (stop_blk_gap_req),
         .dma_interrupts         (dma_int1),
-        .dat_int_rst            (data_int_rst)
+        .dat_int_rst            (data_int_rst),
+        .adma_mst_bd_line_i     (adma_mst_bd_line)
     );
     
     

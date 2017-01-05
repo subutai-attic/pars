@@ -45,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////
 
 
-module  sd_emmc_controller_dma (
+module  sd_emmc_controller_adma_mst (
             input  wire clock,
             input  wire reset,
 
@@ -112,11 +112,13 @@ module  sd_emmc_controller_dma (
             output wire [3:0] m_axi_arqos,
             input wire [0:0] m_axi_rid,
             input wire [1:0] m_axi_rresp,
-            output wire [16:0] data_cycle_o
+            output wire [16:0] data_cycle_o,
+            output wire [1:0] adma_mst_state_o,
+            output wire [63:0] adma_mst_bd_line_o
         );
 
 (* mark_debug = "true" *) reg [3:0] state;
-(* mark_debug = "true" *) reg [16:0] data_cycle;
+reg [16:0] data_cycle;
 reg [16:0] we_counter;
 reg init_we_ff;
 reg init_we_ff2;
@@ -188,10 +190,12 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
   assign m_axi_awprot  = 3'h0;
   assign m_axi_awqos   = 4'h0;
   assign m_axi_wstrb   = 4'hf;
-  assign read_resp_error  = m_axi_rready & m_axi_rvalid & m_axi_rresp[1];
-  assign write_resp_error = axi_bready & m_axi_bvalid & m_axi_bresp[1];
-  assign m_axi_bready	  = axi_bready;
-  assign data_cycle_o     = data_cycle;
+  assign read_resp_error    = m_axi_rready & m_axi_rvalid & m_axi_rresp[1];
+  assign write_resp_error   = axi_bready & m_axi_bvalid & m_axi_bresp[1];
+  assign m_axi_bready	    = axi_bready;
+  assign data_cycle_o       = data_cycle;
+  assign adma_mst_state_o   = adma_state[1:0];
+  assign adma_mst_bd_line_o = descriptor_line;
 
 
   	always @(posedge clock)                                     
