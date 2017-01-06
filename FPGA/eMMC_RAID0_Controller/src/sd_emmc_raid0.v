@@ -37,8 +37,8 @@ module sd_emmc_raid0(
            input crc1_ok_i,
            input index_ok_i,
            input index1_ok_i,
-           input finish_i,
-           input finish1_i,
+           (* mark_debug = "true" *) input finish_i,
+           (* mark_debug = "true" *) input finish1_i,
            input busy_i, //direct signal from data sd data input (data[0])
            input [31:0] argument_i,
            input [`CMD_REG_SIZE-1:0] command_i,
@@ -74,16 +74,16 @@ wire finish;
 localparam NEW_SEC_COUNT = 32'h03AB4000;
 wire [31:0] mult_emmc_cmd_resp;
 reg ExtCSDModify;
-wire [31:0] resp;
-wire [31:0] resp1;
+(* mark_debug = "true" *) wire [31:0] resp;
+(* mark_debug = "true" *) wire [31:0] resp1;
 
 assign resp1 = response1_i[119:88];
 assign resp  = response_i[119:88];
 
 assign setting_o[1:0]       = {long_response, expect_response};
 assign int_status_o         = state == IDLE ? int_status_reg : 5'h0;
-assign finish               = finish_i & finish1_i;
-assign mult_emmc_cmd_resp   = response_i[119:88] & response1_i[119:88];
+assign finish               = /*finish_i &*/ finish1_i;
+assign mult_emmc_cmd_resp   = /*response_i[119:88] &*/ response1_i[119:88];
 assign m_axi_wdata          = ExtCSDModify ? NEW_SEC_COUNT : read_fifo_data;
 
 always @(state or start_i or finish or go_idle_o or busy_check or busy_i)
@@ -187,11 +187,11 @@ begin
                 //Incoming New Status
                 else begin //if ( req_in_int == 1) begin
                     if (finish) begin //Data avaible
-                        if (crc_check & !crc_ok_i & !crc1_ok_i) begin
+                        if (crc_check & /*!crc_ok_i &*/ !crc1_ok_i) begin
                             int_status_reg[`INT_CMD_CCRCE] <= 1;
                             int_status_reg[`INT_CMD_EI] <= 1;
                         end
-                        if (index_check & !index_ok_i & !index1_ok_i) begin
+                        if (index_check & /*!index_ok_i &*/ !index1_ok_i) begin
                             int_status_reg[`INT_CMD_CIE] <= 1;
                             int_status_reg[`INT_CMD_EI] <= 1;
                         end
@@ -202,10 +202,10 @@ begin
                             response_0_o <= mult_emmc_cmd_resp; //response_i[119:88];
                         end
                         else if (expect_response != 0 & long_response) begin
-                            response_3_o <= {8'h00, response_i[119:96]};
-                            response_2_o <= response_i[95:64];
-                            response_1_o <= response_i[63:32];
-                            response_0_o <= response_i[31:0];
+                            response_3_o <= {8'h00, response1_i[119:96]};
+                            response_2_o <= response1_i[95:64];
+                            response_1_o <= response1_i[63:32];
+                            response_0_o <= response1_i[31:0];
                         end
                         // end
                     end ////Data avaible
@@ -231,7 +231,7 @@ begin: MULT_MMC_RESP_SYNC
     go_ahead_o <= 0;
   end
   else begin
-    if (inhibit_cmd_i && inhibit_cmd1_i) begin
+    if (/*inhibit_cmd_i &&*/ inhibit_cmd1_i) begin
       go_ahead_o <= 1;
     end
     else begin
@@ -308,7 +308,7 @@ begin: RAID_FSM_CMD_LYR
                 end
       EXT_CSD_MOD: begin
                      if(dma_data_cycles == 52) begin
-                       ExtCSDModify <= 1'b0;
+                       ExtCSDModify <= 1'b1;
                        r_state <= R_TRANSF;
                      end
                    end

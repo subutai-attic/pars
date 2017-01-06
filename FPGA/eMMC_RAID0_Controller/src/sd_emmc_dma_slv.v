@@ -52,7 +52,7 @@ module  sd_emmc_controller_dma_slv (
             // S_AXI
             input wire dma_ena_trans_mode,
             input wire dir_dat_trans_mode,
-            output reg [1:0] dma_interrupts,
+            (* mark_debug = "true" *) output reg [1:0] dma_interrupts,
             input wire dat_int_rst,
             input wire data_present,
             input wire [31:0] descriptor_pointer_i,
@@ -297,6 +297,9 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                                     m_axi_awvalid <= 1'b0;
                                     addr_accepted <= 1'b1;
                                     descriptor_line [63:32] <= descriptor_line [63:32] + 64;
+//                                    if (((data_cycle + 1) % 128 == 0) && data_cycle != 0) begin
+//                                        descriptor_line [63:32] <= descriptor_line [63:32] + 1024;
+//                                    end
                                     burst_tx <= 1'b0;
                                   end
                                   else begin
