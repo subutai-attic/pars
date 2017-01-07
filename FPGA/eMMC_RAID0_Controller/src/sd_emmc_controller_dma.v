@@ -130,7 +130,7 @@ reg we_counter_reset;
 reg rd_counter_reset;
 wire we_pulse;
 reg data_write_disable;
-reg [2:0] adma_state;
+(* mark_debug = "true" *) reg [2:0] adma_state;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;

@@ -73,7 +73,7 @@ reg [`DATA_TIMEOUT_W-1:0] timeout_reg;
 reg [`DATA_TIMEOUT_W-1:0] watchdog;
 reg tx_cycle;
 parameter SIZE = 3;
-reg [SIZE-1:0] state;
+(* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE          = 3'b000;
 parameter START_TX_FIFO = 3'b001;

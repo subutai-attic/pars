@@ -114,7 +114,7 @@ reg crc_rst;
 wire [15:0] crc_out [15:0];
 reg [`BLKSIZE_W-1+4:0] transf_cnt;
 parameter SIZE = 6;
-reg [SIZE-1:0] state;
+(* mark_debug = "true" *) reg [SIZE-1:0] state;
 reg [SIZE-1:0] next_state;
 parameter IDLE       = 6'b000001;
 parameter WRITE_DAT  = 6'b000010;

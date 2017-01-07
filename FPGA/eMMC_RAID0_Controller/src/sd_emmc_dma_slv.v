@@ -115,7 +115,8 @@ module  sd_emmc_controller_adma_slv (
             output wire [16:0] data_cycle_o,
             
             // ADMA_MASTER
-            input wire [63:0] adma_mst_bd_line_i
+            input wire [63:0] adma_mst_bd_line_i,
+            (* mark_debug = "true" *) input wire [1:0]  adma_mst_state_i
         );
 
 (* mark_debug = "true" *) reg [3:0] state;
@@ -135,7 +136,7 @@ reg data_write_disable;
 reg sys_addr_sel;
 reg [31:0] descriptor_pointer_reg;
 reg [63:0] descriptor_line;
-reg [11:0] sdma_contr_reg;
+(* mark_debug = "true" *) reg [11:0] sdma_contr_reg;
 reg [3:0] write_index;
 reg burst_tx;
 reg axi_bready;
@@ -351,9 +352,9 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                                 if (m_axi_rready) begin
                                   data_cycle <= data_cycle + 1;
                                 end
-                                if (sdma_contr_reg[`DatTarg]) begin
-                                  descriptor_line <= {m_axi_rdata, descriptor_line[63:32]};
-                                end
+//                                if (sdma_contr_reg[`DatTarg]) begin
+//                                  descriptor_line <= {m_axi_rdata, descriptor_line[63:32]};
+//                                end
                                 if (m_axi_rlast) begin
                                  addr_accepted <= 1'b0;  //The burst read stopped
                                  data_cycle <= data_cycle + 1;
@@ -369,6 +370,9 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                             end
                         end
         endcase
+        if (adma_mst_state_i == 2'b10)
+          descriptor_line <= adma_mst_bd_line_i;
+
         // abort the state when timeout on data serializer
         if (write_timeout == 2'b11) begin
           state <= IDLE;
@@ -446,11 +450,12 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
         else begin
           case (slv_adma_state)
             ST_STOP: begin
-                       if (dma_ena_trans_mode & cmd_compl_puls & data_present /*& dat_int_rst*/) begin
-                         next_state <= ST_FDS;
-                         sdma_contr_reg <= 12'h01E; //Read from SysRam, read to descriptor line, read from adma_descriptor_pointer addres, read two beats in burst, start read. 
-                         rd_dat_words <= 17'h00008;
-                         descriptor_pointer_reg <= descriptor_pointer_i;
+                       if (adma_mst_state_i == 2'b10 /*dma_ena_trans_mode & cmd_compl_puls & data_present*/) begin
+                         next_state <= ST_TFR;//ST_FDS;
+                         trans_act <= 1'b0;
+//                         sdma_contr_reg <= 12'h01E; //Read from SysRam, read to descriptor line, read from adma_descriptor_pointer addres, read two beats in burst, start read. 
+//                         rd_dat_words <= 17'h00008;
+//                         descriptor_pointer_reg <= descriptor_pointer_i;
                        end
                        else begin
                          TFC <= 0;
@@ -496,11 +501,11 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
                         next_state <= ST_STOP;
                         dma_interrupts[0] <= 1'b1;
                       end
-                      else if (TFC && ~descriptor_line[`End] && !blk_gap_req) begin
-                        next_state <= ST_FDS;
-                        sdma_contr_reg <= 12'h01E;
-                        rd_dat_words <= 17'h00008;
-                      end
+//                      else if (TFC && ~descriptor_line[`End] && !blk_gap_req) begin
+//                        next_state <= ST_FDS;
+//                        sdma_contr_reg <= 12'h01E;
+//                        rd_dat_words <= 17'h00008;
+//                      end
                       else begin
                         case (trans_act)
                           1'b0: begin
@@ -533,17 +538,17 @@ localparam [2:0] ST_STOP = 3'b000, //State Stop DMA. ADMA2 stays in this state i
         end
       end  
       
-      always @(posedge clock)
-      begin: FSM_SEQ
-        if (reset == 1'b0) begin
-          slv_adma_state <= ST_STOP;
-          trans_act <= 0;
-        end
-        else begin
-          trans_act <= next_trans_act;
-          slv_adma_state <= next_state;
-        end
+    always @(posedge clock)
+    begin: FSM_SEQ
+      if (reset == 1'b0) begin
+        slv_adma_state <= ST_STOP;
+        trans_act <= 0;
       end
+      else begin
+        trans_act <= next_trans_act;
+        slv_adma_state <= next_state;
+      end
+    end
 
 
 endmodule
