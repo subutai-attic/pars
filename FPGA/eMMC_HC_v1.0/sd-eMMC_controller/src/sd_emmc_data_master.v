@@ -46,7 +46,7 @@
 //// from http://www.opencores.org/lgpl.shtml                     ////
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
-`include "sd_defines.h"
+`include "sd_emmc_defines.h"
 
 module sd_data_master (
            input sd_clk,
@@ -58,10 +58,6 @@ module sd_data_master (
            output reg d_write_o,
            output reg d_read_o,
            //To fifo filler
-           output reg start_tx_fifo_o,
-           output reg start_rx_fifo_o,
-//           input tx_fifo_empty_i,
-//           input tx_fifo_full_i,
            input rx_fifo_full_i,
            //TODO: should be dependent on rx_fifo_empty_i signal (wishbone read all data case)
            //SD-DATA_Host
@@ -137,8 +133,6 @@ end
 always @(posedge sd_clk or posedge rst)
 begin
     if (rst) begin
-        start_tx_fifo_o <= 0;
-        start_rx_fifo_o <= 0;
         d_write_o <= 0;
         d_read_o <= 0;
         trans_done <= 0;
@@ -150,8 +144,6 @@ begin
     else begin
         case(state)
             IDLE: begin
-                start_tx_fifo_o <= 0;
-                start_rx_fifo_o <= 0;
                 d_write_o <= 0;
                 d_read_o <= 0;
                 trans_done <= 0;
@@ -160,37 +152,17 @@ begin
                 watchdog <= 0;
             end
             START_RX_FIFO: begin
-                start_rx_fifo_o <= 1;
-                start_tx_fifo_o <= 0;
                 tx_cycle <= 0;
                 d_read_o <= 1;
             end
             START_TX_FIFO:  begin
-                start_rx_fifo_o <= 0;
-                start_tx_fifo_o <= 1;
                 tx_cycle <= 1;
-//                if (tx_fifo_full_i == 1)
-                    d_write_o <= 1;
+                d_write_o <= 1;
             end
             DATA_TRANSFER: begin
                 d_read_o <= 0;
                 d_write_o <= 0;
                 watchdog <= watchdog + `DATA_TIMEOUT_W'd1;
-//                int_status_o[`INT_DATA_BRE] <= (next_block || (crc_ok_i & xfr_complete_i & !trans_done)) ? 1 : int_status_o[`INT_DATA_BRE];
-
-//                if (tx_cycle) begin
-//                    if (tx_fifo_empty_i) begin
-//                        if (!trans_done) begin
-//                            int_status_o[`INT_DATA_CFE] <= 1;
-//                            int_status_o[`INT_DATA_EI] <= 1;
-//                        end
-//                        trans_done <= 1;
-//                        //stop sd_data_serial_host
-//                        d_write_o <= 1;
-//                        d_read_o <= 1;
-//                    end
-//                end
-//                else begin
                     if (rx_fifo_full_i) begin
                         if (!trans_done) begin
                             int_status_o[`INT_DATA_CFE] <= 1;

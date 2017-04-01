@@ -1,3 +1,23 @@
+//////////////////////////////////////////////////////////////////////////////////
+// Company: Optimal Dynamics LLC
+// Engineer: Azamat Beksadaev, Baktiiar Kukanov 
+// 
+// Create Date: 10/02/2015 11:41:32 AM
+// Design Name: 
+// Module Name: data_serial
+// Project Name: eMMC Host Controller
+// Target Devices: Xilinx ZYNQ 7000
+// Tool Versions: Vivado 2016.2
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ns / 1ps
 
 module IDDR_p(

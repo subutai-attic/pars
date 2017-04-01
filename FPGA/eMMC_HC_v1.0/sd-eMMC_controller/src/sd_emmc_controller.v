@@ -1,5 +1,5 @@
 `timescale 1 ns / 1 ps
-`include "sd_defines.h"
+`include "sd_emmc_defines.h"
         module sd_emmc_controller #
         (
  		        // Parameters of Axi Slave Bus Interface S00_AXI
@@ -104,10 +104,6 @@
     wire d_read;
     wire [31:0] data_in_rx_fifo;
     wire [31:0] data_out_tx_fifo;
-    wire start_tx_fifo;
-    wire start_rx_fifo;
-//    wire tx_fifo_empty;
-//    wire tx_fifo_full;
     wire rx_fifo_full;
     wire sd_data_busy;
     wire data_busy;
@@ -169,9 +165,6 @@
     wire [28:0] int_signal_en_reg;
 
     // Present state register
-//    wire tx_fifo_full_axi_clk;
-//    wire rx_fifo_empty_sd_clk;
-//    wire rx_fifo_empty_axi_clk;
     wire rd_trans_act_axi_clk;
     wire rd_trans_act_sd_clk;
     wire wr_trans_act_axi_clk;
@@ -190,7 +183,6 @@
     
     // data write to SD card
     wire start_tx;
-//    wire start_tx_pulse;
     wire start_write_sd_clk;
 
     // dma
@@ -213,10 +205,8 @@
             .clock(M_AXI_ACLK),
             .reset(M_AXI_ARESETN),
             .is_we_en(we_fifo),
-            .is_rd_en(rd_fifo),
             .dma_ena_trans_mode(dma_and_blkcnt_en [0]),
             .dir_dat_trans_mode(dat_trans_dir_axi_clk),
-            .block_count(block_count_axi_clk),
             .xfer_compl(!data_busy),
             .m_axi_wvalid(M_AXI_WVALID),
             .m_axi_wready(M_AXI_WREADY),
@@ -261,11 +251,9 @@
             .fifo_dat_wr_ready_o(fifo_data_write_ready),
             .read_fifo_data(read_fifo_out),
             .fifo_rst(fifo_reset),
-            .cmd_int_rst_pulse(cmd_int_rst_axi_clk),
             .start_write(start_tx),
             .ser_next_blk(next_block_st_axi),
             .write_timeout({d_read, d_write}),
-//            .burst_tx(burst_tx),
             .descriptor_pointer_i(system_addr),
             .data_present(command_axi_clk[5]),
             .cmd_compl_puls(cmd_cmplt_axi_puls),
@@ -298,9 +286,7 @@
             .S_AXI_RRESP(s00_axi_rresp),
             .S_AXI_RVALID(s00_axi_rvalid),
             .S_AXI_RREADY(s00_axi_rready),
-//            .fifo_data_write_ready(fifo_data_write_ready),
             .clock_divisor(divisor),
-//            .internal_clock_en(int_clk_en),
             .Internal_clk_stable(int_clk_stbl),
             .cmd_start(cmd_start),
             .cmd_int_rst(cmd_int_rst),
@@ -322,15 +308,12 @@
             .timeout_contr_wire(data_timeout_axi_clk),
             .sd_dat_bus_width(controll_setting_axi_clk),   
             .sd_dat_bus_width_8bit(controll_setting_8bit_axi_clk),   
-//            .buff_read_en(!rx_fifo_empty_axi_clk),
-//            .buff_writ_en(!tx_fifo_full_axi_clk),
             .write_trans_active(wr_trans_act_axi_clk),
             .read_trans_active(rd_trans_act_axi_clk),
             .dat_line_act(data_line_active_axi_clk),
             .command_inh_dat(command_inhibit_dat_axi_clk),
             .com_inh_cmd(command_inhibit_cmd_axi_clk),
             .data_transfer_direction(dat_trans_dir_axi_clk),
-            .start_tx_fifo_i(start_tx_fifo),
             .dma_en_and_blk_c_en(dma_and_blkcnt_en),
             .dma_int(dma_int),
             .adma_sys_addr(system_addr),
@@ -400,10 +383,6 @@
         .timeout_i          (data_timeout_sd_clk),
         .d_write_o        (d_write),
         .d_read_o         (d_read),
-        .start_tx_fifo_o  (start_tx_fifo),
-        .start_rx_fifo_o  (start_rx_fifo),
-//        .tx_fifo_empty_i  (tx_fifo_empty),
-//        .tx_fifo_full_i   (tx_fifo_full),
         .rx_fifo_full_i   (rx_fifo_full),
         .xfr_complete_i   (!data_busy),
         .crc_ok_i         (data_crc_ok),
@@ -434,37 +413,11 @@
         .crc_ok         (data_crc_ok),
         .read_trans_active (rd_trans_act_sd_clk),
         .write_trans_active(wr_trans_act_sd_clk),
-//        .next_block(next_block_st),
         .start_write    (start_write_sd_clk),
         .write_next_block(next_block_st),
         .UHSMode        (UHSModSel_sd_clk)
         );
-/*
-    sd_fifo_filler sd_fifo_filler0(
-        .wb_clk    (s00_axi_aclk),
-        .rst       (!s00_axi_aresetn |
-                    soft_rst_dat_sd_clk ),
-        .wbm_we_o  (m_wb_we_o),
-        .read_fifo_out (read_fifo_out),
-        .write_fifo_in (write_dat_fifo),
-        .wbm_cyc_o (m_wb_cyc_o),
-        .wbm_stb_o (m_wb_stb_o),
-        .fifo_data_read_ready (fifo_data_read_ready),
-        .fifo_data_write_ready(fifo_data_write_ready),
-        .en_rx_i   (start_rx_fifo),
-        .en_tx_i   (start_tx_fifo),
-        .sd_clk    (SD_CLK),
-        .dat_i     (data_in_rx_fifo),
-        .dat_o     (data_out_tx_fifo),
-        .wr_i      (we_fifo),
-        .rd_i      (rd_fifo),
-        .sd_empty_o  (tx_fifo_empty),
-        .sd_full_o   (rx_fifo_full),
-        .wb_full_o   (tx_fifo_full),
-        .wb_empty_o  (rx_fifo_empty_sd_clk),
-        .fifo_reset(fifo_reset)
-        );
-*/
+
     sd_data_xfer_trig sd_data_xfer_trig0 (
         .sd_clk                (SD_CLK),
         .rst                   (!s00_axi_aresetn |
@@ -477,10 +430,9 @@
         );
         
     fifo18Kb fifo18Kb_inst(
-        .aclk(s00_axi_aclk),
-        .sd_clk(SD_CLK),
-        .rst(!s00_axi_aresetn |
-             soft_rst_dat_sd_clk),
+        .aclk           (s00_axi_aclk),
+        .sd_clk         (SD_CLK),
+        .rst            (!s00_axi_aresetn | soft_rst_dat_sd_clk | fifo_reset),
         .axi_data_in    (write_dat_fifo),
         .sd_data_in     (data_in_rx_fifo),
         .sd_data_out    (data_out_tx_fifo),
